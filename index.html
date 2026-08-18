@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>생각서랍 - 1인 기업가를 위한 AI 아이디어 파이프라인</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React & React DOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <!-- Babel (JSX 변환) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body { background-color: #171310; color: #f1e9dc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const Icon = ({ path, size = 16, color = 'currentColor', className = '' }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        {path}
+      </svg>
+    );
+
+    const Icons = {
+      Mic: (p) => <Icon {...p} path={<><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></>} />,
+      Camera: (p) => <Icon {...p} path={<><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></>} />,
+      Video: (p) => <Icon {...p} path={<><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></>} />,
+      Trash: (p) => <Icon {...p} path={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></>} />,
+      Plus: (p) => <Icon {...p} path={<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>} />,
+      X: (p) => <Icon {...p} path={<><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>} />,
+      Sparkles: (p) => <Icon {...p} path={<><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/></>} />,
+      Inbox: (p) => <Icon {...p} path={<><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></>} />,
+      ClipboardCheck: (p) => <Icon {...p} path={<><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></>} />,
+      Archive: (p) => <Icon {...p} path={<><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></>} />,
+      FileText: (p) => <Icon {...p} path={<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></>} />,
+      RotateCcw: (p) => <Icon {...p} path={<><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></>} />,
+      Loader: (p) => <Icon {...p} className="animate-spin" path={<><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></>} />
+    };
+
+    const STORAGE_KEY = 'ideas-v3-standalone';
+    const CATEGORIES = ['제품', '서비스', '콘텐츠', '마케팅', '운영/자동화', '기타'];
+
+    const COLORS = {
+      bg: '#171310',
+      surface: '#211b16',
+      surfaceRaised: '#2a221c',
+      border: '#3a3128',
+      ink: '#f1e9dc',
+      inkDim: '#a89b8a',
+      accent: '#c9a227',
+      success: '#6b8f71',
+      danger: '#a8452e',
+      info: '#4f7ea3',
+    };
+
+    function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+    function formatDate(iso) {
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return '';
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function simulateAIEvaluation(idea) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          const isGood = (idea.content && idea.content.length > 10) || idea.media;
+          resolve({
+            b2b: isGood ? 85 : 50,
+            costTime: isGood ? 90 : 45,
+            patent: isGood ? 75 : 30,
+            solo: isGood ? 80 : 60,
+            verdict: isGood ? '승인' : '보류',
+            advice: isGood 
+              ? '1인 실행 가능성이 매우 높습니다. 초기 타깃 고객군을 명확히 설정하고 특허 출원을 준비해보세요.' 
+              : '아이디어의 핵심 차별성이 조금 부족합니다. 기존 시장 서비스와의 차이점을 보완해보세요.',
+            evaluatedAt: new Date().toISOString()
+          });
+        }, 1200);
+      });
+    }
+
+    function simulateAISpec(idea) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          const title = idea.content ? idea.content.slice(0, 20) : '시각/동영상 미디어 기반';
+          resolve(`[발명의 명칭]\n${title}... 관련 자동화 시스템 및 방법\n\n[기술분야]\n본 발명은 ${idea.category} 분야의 효율성을 극대화하기 위한 시스템에 관한 것입니다.\n\n[발명의 배경]\n기존 방식은 인력 소모와 시간 지연이 발생하는 문제점이 있었습니다.\n\n[과제의 해결 수단]\nAI 및 동영상 분석 로직을 도입하여 처리 과정을 단축시킵니다.\n\n[발명의 효과]\n작업 시간을 80% 이상 절감하고 정확도를 대폭 향상시킵니다.\n\n[간이 청구범위]\n1. ${idea.content || '첨부된 미디어'} 데이터를 분석하여 자동 처리하는 제어 장치.`);
+        }, 1000);
+      });
+    }
+
+    function StampBadge({ verdict }) {
+      const cfg = {
+        '승인': { color: COLORS.success, label: '승인', rotate: '-6deg' },
+        '반려': { color: COLORS.danger, label: '반려', rotate: '4deg' },
+        '보류': { color: COLORS.info, label: '보류', rotate: '-3deg' },
+      }[verdict] || { color: COLORS.inkDim, label: verdict || '미평가', rotate: '0deg' };
+
+      return (
+        <div className="inline-flex items-center justify-center px-2.5 py-0.5 rounded text-xs font-black tracking-widest"
+             style={{ color: cfg.color, border: `2px double ${cfg.color}`, transform: `rotate(${cfg.rotate})` }}>
+          {cfg.label}
+        </div>
+      );
+    }
+
+    function ScoreBar({ label, value }) {
+      const v = Math.max(0, Math.min(100, Number(value) || 0));
+      const color = v >= 70 ? COLORS.success : v >= 40 ? COLORS.accent : COLORS.danger;
+      return (
+        <div className="flex items-center gap-2 text-xs">
+          <span className="w-24 shrink-0" style={{ color: COLORS.inkDim }}>{label}</span>
+          <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: COLORS.surfaceRaised }}>
+            <div className="h-full transition-all duration-500" style={{ width: `${v}%`, backgroundColor: color }} />
+          </div>
+          <span className="w-6 text-right font-mono" style={{ color: COLORS.ink }}>{v}</span>
+        </div>
+      );
+    }
+
+    function App() {
+      const [ideas, setIdeas] = useState([]);
+      const [activeTab, setActiveTab] = useState('collect');
+      const [inputText, setInputText] = useState('');
+      const [category, setCategory] = useState(CATEGORIES[0]);
+      const [attachedMedia, setAttachedMedia] = useState(null);
+      const [isListening, setIsListening] = useState(false);
+      const [loadingId, setLoadingId] = useState(null);
+      const [specModalIdea, setSpecModalIdea] = useState(null);
+      const [specLoading, setSpecLoading] = useState(false);
+
+      const photoInputRef = useRef(null);
+      const videoInputRef = useRef(null);
+
+      useEffect(() => {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          try { setIdeas(JSON.parse(saved)); } catch (e) {}
+        }
+      }, []);
+
+      useEffect(() => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(ideas));
+      }, [ideas]);
+
+      // 스마트폰 음성 인식
+      const handleMicToggle = () => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          alert("현재 스마트폰 브라우저에서 음성 인식을 지원하지 않거나 권한이 필요합니다.");
+          return;
+        }
+
+        if (isListening) {
+          setIsListening(false);
+          return;
+        }
+
+        try {
+          const recognition = new SpeechRecognition();
+          recognition.lang = 'ko-KR';
+          recognition.interimResults = false;
+
+          recognition.onstart = () => setIsListening(true);
+          recognition.onend = () => setIsListening(false);
+          recognition.onerror = () => setIsListening(false);
+
+          recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            setInputText(prev => prev ? `${prev} ${transcript}` : transcript);
+          };
+
+          recognition.start();
+        } catch (e) {
+          alert("마이크 연결 실패: 브라우저 마이크 권한을 확인해주세요.");
+          setIsListening(false);
+        }
+      };
+
+      // 미디어 첨부 (사진/동영상)
+      const handleMediaChange = (e, defaultType) => {
+        const file = e.target.files[0];
+        if (file) {
+          const isVideo = file.type.startsWith('video') || defaultType === 'video';
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setAttachedMedia({
+              type: isVideo ? 'video' : 'image',
+              url: reader.result
+            });
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+
+      const handleAdd = () => {
+        if (!inputText.trim() && !attachedMedia) return;
+        const newIdea = {
+          id: uid(),
+          content: inputText.trim(),
+          category,
+          media: attachedMedia,
+          status: 'inbox',
+          validation: null,
+          specDraft: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        setIdeas([newIdea, ...ideas]);
+        setInputText('');
+        setAttachedMedia(null);
+      };
+
+      const handleDelete = (id) => setIdeas(ideas.filter(i => i.id !== id));
+
+      const handleValidate = async (idea) => {
+        setLoadingId(idea.id);
+        const evalResult = await simulateAIEvaluation(idea);
+        setIdeas(ideas.map(i => i.id === idea.id ? { ...i, validation: evalResult, updatedAt: new Date().toISOString() } : i));
+        setLoadingId(null);
+      };
+
+      const handleApprove = (id) => setIdeas(ideas.map(i => i.id === id ? { ...i, status: 'executing', updatedAt: new Date().toISOString() } : i));
+      const handleMoveIncubator = (id) => setIdeas(ideas.map(i => i.id === id ? { ...i, status: 'incubator', updatedAt: new Date().toISOString() } : i));
+      const handleRestore = (id) => setIdeas(ideas.map(i => i.id === id ? { ...i, status: 'inbox', updatedAt: new Date().toISOString() } : i));
+
+      const handleOpenSpec = async (idea) => {
+        setSpecModalIdea(idea);
+        if (!idea.specDraft) {
+          setSpecLoading(true);
+          const draft = await simulateAISpec(idea);
+          setIdeas(ideas.map(i => i.id === idea.id ? { ...i, specDraft: draft } : i));
+          setSpecModalIdea(prev => ({ ...prev, specDraft: draft }));
+          setSpecLoading(false);
+        }
+      };
+
+      const inboxIdeas = ideas.filter(i => i.status === 'inbox');
+      const incubatorIdeas = ideas.filter(i => i.status === 'incubator');
+      const executeIdeas = ideas.filter(i => i.status === 'executing');
+
+      return (
+        <div className="min-h-screen flex justify-center" style={{ background: COLORS.bg }}>
+          <div className="w-full max-w-md flex flex-col min-h-screen border-x border-[#3a3128] relative">
+            
+            <header className="p-4 border-b border-[#3a3128] bg-[#171310] sticky top-0 z-10">
+              <h1 className="text-xl font-bold tracking-tight text-[#f1e9dc]">생각서랍</h1>
+              <p className="text-xs text-[#a89b8a] mt-0.5">1인 기업가를 위한 AI 아이디어 파이프라인</p>
+            </header>
+
+            <main className="flex-1 p-4 pb-24 overflow-y-auto">
+              
+              {activeTab === 'collect' && (
+                <div>
+                  <div className="p-4 rounded-2xl mb-4" style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}` }}>
+                    <textarea
+                      value={inputText}
+                      onChange={(e) => setInputText(e.target.value)}
+                      placeholder={isListening ? "음성을 듣고 있습니다..." : "아이디어를 글, 음성, 사진, 동영상으로 기록해보세요..."}
+                      rows={3}
+                      className="w-full bg-transparent resize-none outline-none text-sm text-[#f1e9dc] placeholder-stone-500"
+                    />
+
+                    {/* 사진/동영상 미리보기 */}
+                    {attachedMedia && (
+                      <div className="relative my-2">
+                        {attachedMedia.type === 'video' ? (
+                          <video src={attachedMedia.url} controls className="h-40 w-full object-cover rounded-lg border border-[#3a3128]" />
+                        ) : (
+                          <img src={attachedMedia.url} alt="첨부" className="h-20 w-20 object-cover rounded-lg border border-[#3a3128]" />
+                        )}
+                        <button onClick={() => setAttachedMedia(null)} className="absolute -top-2 -right-2 bg-red-600 rounded-full p-1 text-white">
+                          <Icons.X size={12} />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* 직접 카메라 촬영을 강제하는 input 태그 */}
+                    <input
+                      type="file"
+                      ref={photoInputRef}
+                      accept="image/*"
+                      capture="environment"
+                      onChange={(e) => handleMediaChange(e, 'image')}
+                      className="hidden"
+                    />
+                    <input
+                      type="file"
+                      ref={videoInputRef}
+                      accept="video/*"
+                      capture="environment"
+                      onChange={(e) => handleMediaChange(e, 'video')}
+                      className="hidden"
+                    />
+
+                    {/* 하단 툴바 */}
+                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-[#3a3128]">
+                      <div className="flex items-center gap-1.5">
+                        {/* 음성 버튼 */}
+                        <button
+                          onClick={handleMicToggle}
+                          className={`p-2 rounded-lg transition-all ${isListening ? 'bg-red-500/20 text-red-400 animate-pulse' : 'bg-[#2a221c] text-[#a89b8a] hover:text-[#f1e9dc]'}`}
+                          title="음성 입력"
+                        >
+                          <Icons.Mic size={16} />
+                        </button>
+
+                        {/* 사진 촬영 버튼 */}
+                        <button
+                          onClick={() => photoInputRef.current?.click()}
+                          className="p-2 rounded-lg bg-[#2a221c] text-[#a89b8a] hover:text-[#f1e9dc]"
+                          title="사진 촬영"
+                        >
+                          <Icons.Camera size={16} />
+                        </button>
+
+                        {/* 동영상 녹화 버튼 */}
+                        <button
+                          onClick={() => videoInputRef.current?.click()}
+                          className="p-2 rounded-lg bg-[#2a221c] text-[#a89b8a] hover:text-[#f1e9dc]"
+                          title="동영상 녹화"
+                        >
+                          <Icons.Video size={16} />
+                        </button>
+
+                        <select
+                          value={category}
+                          onChange={(e) => setCategory(e.target.value)}
+                          className="text-xs rounded px-1.5 py-1.5 bg-[#2a221c] text-[#f1e9dc] outline-none"
+                        >
+                          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+
+                      <button
+                        onClick={handleAdd}
+                        disabled={!inputText.trim() && !attachedMedia}
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 disabled:opacity-40"
+                        style={{ background: COLORS.accent, color: '#1a1512' }}
+                      >
+                        <Icons.Plus size={14} /> 기록
+                      </button>
+                    </div>
+                  </div>
+
+                  <h2 className="text-xs font-semibold text-[#a89b8a] mb-2">기록된 생각 ({inboxIdeas.length})</h2>
+                  {inboxIdeas.length === 0 ? (
+                    <div className="text-center py-12 text-xs text-[#a89b8a]">아직 작성된 아이디어가 없습니다.</div>
+                  ) : (
+                    inboxIdeas.map(idea => (
+                      <div key={idea.id} className="p-4 rounded-xl mb-3" style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}` }}>
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="text-[10px] px-2 py-0.5 rounded font-bold" style={{ background: '#c9a22720', color: COLORS.accent }}>{idea.category}</span>
+                          <button onClick={() => handleDelete(idea.id)} className="text-[#a89b8a] hover:text-red-400"><Icons.Trash size={14} /></button>
+                        </div>
+                        {idea.media && (
+                          idea.media.type === 'video' ? (
+                            <video src={idea.media.url} controls className="h-40 w-full object-cover rounded-lg mb-2" />
+                          ) : (
+                            <img src={idea.media.url} alt="첨부" className="h-32 w-full object-cover rounded-lg mb-2" />
+                          )
+                        )}
+                        <p className="text-sm text-[#f1e9dc] whitespace-pre-wrap">{idea.content}</p>
+                        <p className="text-[10px] text-[#a89b8a] mt-2">{formatDate(idea.createdAt)}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'review' && (
+                <div>
+                  <h2 className="text-xs font-semibold text-[#a89b8a] mb-3">AI 검증 대기 / 평가 ({inboxIdeas.length})</h2>
+                  {inboxIdeas.length === 0 ? (
+                    <div className="text-center py-12 text-xs text-[#a89b8a]">검증할 아이디어가 없습니다.</div>
+                  ) : (
+                    inboxIdeas.map(idea => (
+                      <div key={idea.id} className="p-4 rounded-xl mb-4" style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}` }}>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-[10px] px-2 py-0.5 rounded font-bold" style={{ background: '#c9a22720', color: COLORS.accent }}>{idea.category}</span>
+                          {idea.validation && <StampBadge verdict={idea.validation.verdict} />}
+                        </div>
+                        {idea.media && (
+                          idea.media.type === 'video' ? (
+                            <video src={idea.media.url} controls className="h-32 w-full object-cover rounded-lg mb-2" />
+                          ) : (
+                            <img src={idea.media.url} alt="첨부" className="h-24 w-full object-cover rounded-lg mb-2" />
+                          )
+                        )}
+                        <p className="text-sm text-[#f1e9dc] mb-3">{idea.content}</p>
+
+                        {!idea.validation ? (
+                          <button
+                            onClick={() => handleValidate(idea)}
+                            disabled={loadingId === idea.id}
+                            className="w-full py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1"
+                            style={{ background: COLORS.accent, color: '#1a1512' }}
+                          >
+                            {loadingId === idea.id ? <Icons.Loader size={14} /> : <Icons.Sparkles size={14} />}
+                            {loadingId === idea.id ? 'AI 검증 진행 중...' : 'AI 검증 실행'}
+                          </button>
+                        ) : (
+                          <div className="space-y-3 pt-2 border-t border-[#3a3128]">
+                            <div className="space-y-1">
+                              <ScoreBar label="B2B 확장성" value={idea.validation.b2b} />
+                              <ScoreBar label="시간/비용 절감" value={idea.validation.costTime} />
+                              <ScoreBar label="특허 진입장벽" value={idea.validation.patent} />
+                              <ScoreBar label="1인 실행력" value={idea.validation.solo} />
+                            </div>
+                            <div className="p-2.5 rounded bg-[#2a221c] text-xs text-[#f1e9dc]">
+                              <p className="font-bold text-[#c9a227] mb-1">AI 조언</p>
+                              <p>{idea.validation.advice}</p>
+                            </div>
+                            <div className="flex gap-2 pt-1">
+                              <button onClick={() => handleApprove(idea.id)} className="flex-1 py-1.5 rounded text-xs font-bold" style={{ background: COLORS.success, color: '#1a1512' }}>
+                                실행으로 이동
+                              </button>
+                              <button onClick={() => handleMoveIncubator(idea.id)} className="flex-1 py-1.5 rounded text-xs" style={{ background: COLORS.surfaceRaised, color: COLORS.inkDim }}>
+                                보류함으로 이동
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'incubator' && (
+                <div>
+                  <h2 className="text-xs font-semibold text-[#a89b8a] mb-3">보류 및 아이디어 보관함 ({incubatorIdeas.length})</h2>
+                  {incubatorIdeas.length === 0 ? (
+                    <div className="text-center py-12 text-xs text-[#a89b8a]">보류된 아이디어가 없습니다.</div>
+                  ) : (
+                    incubatorIdeas.map(idea => (
+                      <div key={idea.id} className="p-4 rounded-xl mb-3" style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}` }}>
+                        <p className="text-sm text-[#f1e9dc] mb-3">{idea.content}</p>
+                        <button onClick={() => handleRestore(idea.id)} className="px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1" style={{ background: COLORS.info, color: '#fff' }}>
+                          <Icons.RotateCcw size={12} /> 생각 탭으로 복원
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'execute' && (
+                <div>
+                  <h2 className="text-xs font-semibold text-[#a89b8a] mb-3">실행 및 특허 출원 준비 ({executeIdeas.length})</h2>
+                  {executeIdeas.length === 0 ? (
+                    <div className="text-center py-12 text-xs text-[#a89b8a]">실행 단계로 승인된 아이디어가 없습니다.</div>
+                  ) : (
+                    executeIdeas.map(idea => (
+                      <div key={idea.id} className="p-4 rounded-xl mb-3" style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}` }}>
+                        <p className="text-sm text-[#f1e9dc] mb-3">{idea.content}</p>
+                        <button
+                          onClick={() => handleOpenSpec(idea)}
+                          className="w-full py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1"
+                          style={{ background: COLORS.accent, color: '#1a1512' }}
+                        >
+                          <Icons.FileText size={14} /> {idea.specDraft ? '특허 명세서 보기' : '특허 명세서 자동 작성'}
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+            </main>
+
+            {specModalIdea && (
+              <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+                <div className="w-full max-w-sm rounded-xl p-4 flex flex-col max-h-[80vh]" style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}` }}>
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-sm font-bold text-[#f1e9dc]">특허 임시명세서 초안</h3>
+                    <button onClick={() => setSpecModalIdea(null)} className="text-[#a89b8a]"><Icons.X size={16} /></button>
+                  </div>
+                  <div className="flex-1 overflow-y-auto text-xs text-[#f1e9dc] whitespace-pre-wrap leading-relaxed p-2 rounded bg-[#171310]">
+                    {specLoading ? 'AI가 특허 명세서를 작성하는 중입니다...' : specModalIdea.specDraft}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <nav className="fixed bottom-0 w-full max-w-md grid grid-cols-4 border-t border-[#3a3128] bg-[#211b16]">
+              {[
+                { id: 'collect', num: '01', label: '생각', icon: Icons.Inbox, count: inboxIdeas.length },
+                { id: 'review', num: '02', label: '검증', icon: Icons.ClipboardCheck, count: inboxIdeas.length },
+                { id: 'incubator', num: '03', label: '보류', icon: Icons.Archive, count: incubatorIdeas.length },
+                { id: 'execute', num: '04', label: '실행', icon: Icons.FileText, count: executeIdeas.length },
+              ].map(t => {
+                const IconComp = t.icon;
+                const active = activeTab === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => setActiveTab(t.id)}
+                    className={`py-3 flex flex-col items-center justify-center relative ${active ? 'text-[#c9a227]' : 'text-[#a89b8a]'}`}
+                  >
+                    <IconComp size={18} />
+                    <span className="text-[10px] mt-1 font-semibold">{t.num} {t.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
