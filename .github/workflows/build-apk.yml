@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: 4. 생각서랍 초경량 멀티 첨부 UI (HTML/JS) 구성
+      - name: 4. 생각서랍 첫생각/노트 통합 및 수정창 음성인식 UI 구성
         run: |
           mkdir -p www
           cat << 'EOF' > www/index.html
@@ -92,9 +92,9 @@ jobs:
                 gap: 6px;
               }
 
-              /* 카테고리 필터 바 */
-              .filter-bar {
-                display: none;
+              /* 카테고리 바 (첫 생각, 노트, 사진, 스케치, 동영상, 전체) */
+              .category-bar {
+                display: flex;
                 padding: 8px 14px;
                 background: #121214;
                 gap: 6px;
@@ -102,18 +102,23 @@ jobs:
                 border-bottom: 1px solid var(--border);
                 flex-shrink: 0;
               }
-              .filter-bar.active { display: flex; }
-              .filter-pill {
-                padding: 4px 10px;
+              .category-pill {
+                padding: 5px 12px;
                 border-radius: 14px;
                 background: var(--card);
                 border: 1px solid var(--border);
-                font-size: 0.75rem;
+                font-size: 0.78rem;
                 color: var(--muted);
                 cursor: pointer;
                 white-space: nowrap;
+                font-weight: 600;
+                transition: all 0.15s;
               }
-              .filter-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+              .category-pill.active {
+                background: var(--primary);
+                color: #ffffff;
+                border-color: var(--primary);
+              }
 
               /* 메인 피드 */
               .main-feed {
@@ -124,10 +129,10 @@ jobs:
                 flex-direction: column;
                 gap: 12px;
               }
-              .empty-hint {
+              .empty-canvas {
                 margin: auto;
                 text-align: center;
-                color: #55555c;
+                color: #48484a;
                 font-size: 0.95rem;
                 line-height: 1.6;
               }
@@ -391,6 +396,40 @@ jobs:
                 overflow-y: auto;
               }
 
+              /* 수정창 내 마이크 입력 래퍼 */
+              .edit-input-wrapper {
+                position: relative;
+                width: 100%;
+                display: flex;
+              }
+              .edit-mic-btn {
+                position: absolute;
+                right: 12px;
+                bottom: 12px;
+                width: 38px;
+                height: 38px;
+                border-radius: 50%;
+                background: #192233;
+                border: 1px solid #2d3d5a;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+              }
+              .edit-mic-btn svg { width: 20px; height: 20px; fill: #94a3b8; }
+              .edit-mic-btn.listening {
+                background: var(--danger);
+                border-color: #f87171;
+                animation: micPulse 1.2s infinite;
+              }
+              .edit-mic-btn.listening svg { fill: #ffffff; }
+              @keyframes micPulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+                100% { transform: scale(1); }
+              }
+
               /* 스케치 전용 팔레트 */
               .palette-bar {
                 display: flex;
@@ -420,26 +459,26 @@ jobs:
 
             <!-- 헤더 -->
             <header>
-              <button class="header-btn" onclick="toggleFilterBar()">☰</button>
+              <button class="header-btn" onclick="selectCategory('첫 생각')">✨</button>
               <div class="brand-title">💡 생각서랍</div>
               <button class="header-btn" onclick="openArchiveModal()">📂</button>
             </header>
 
-            <!-- 필터 바 -->
-            <div class="filter-bar" id="filter-bar">
-              <div class="filter-pill active" onclick="applyFilter('전체', this)">전체</div>
-              <div class="filter-pill" onclick="applyFilter('메모', this)">📝 메모</div>
-              <div class="filter-pill" onclick="applyFilter('음성', this)">✨ 음성</div>
-              <div class="filter-pill" onclick="applyFilter('사진', this)">📷 사진</div>
-              <div class="filter-pill" onclick="applyFilter('스케치', this)">🎨 스케치</div>
-              <div class="filter-pill" onclick="applyFilter('동영상', this)">🎬 동영상</div>
+            <!-- 개편된 카테고리 바 -->
+            <div class="category-bar">
+              <div class="category-pill active" onclick="selectCategory('첫 생각')">💡 첫 생각</div>
+              <div class="category-pill" onclick="selectCategory('노트')">📝 노트</div>
+              <div class="category-pill" onclick="selectCategory('사진')">📷 사진</div>
+              <div class="category-pill" onclick="selectCategory('스케치')">🎨 스케치</div>
+              <div class="category-pill" onclick="selectCategory('동영상')">🎬 동영상</div>
+              <div class="category-pill" onclick="selectCategory('전체')">📂 전체</div>
             </div>
 
-            <!-- 피드 영역 -->
+            <!-- 피드 영역 (첫 생각 선택 시 항상 깨끗한 빈 화면) -->
             <div class="main-feed" id="feed-container">
-              <div class="empty-hint" id="empty-hint">
+              <div class="empty-canvas" id="empty-hint">
                 떠오르는 생각을 자유롭게 기록하세요.<br>
-                사진 여러 장, 동영상, 스케치를 한 번에 담아 저장할 수 있습니다.
+                저장 즉시 서랍으로 들어가 깨끗한 화면이 유지됩니다.
               </div>
             </div>
 
@@ -470,7 +509,7 @@ jobs:
               <div class="capsule-box">
                 <button id="btn-plus" class="btn-plus" onclick="togglePlusMenu()">＋</button>
                 <textarea id="prompt-input" class="main-input" placeholder="생각을 입력하거나 사진·영상을 덧붙이세요..." rows="1" oninput="handleInputChange(this)"></textarea>
-                <button class="btn-mic" onclick="triggerVoice()">
+                <button class="btn-mic" onclick="triggerVoice('main')">
                   <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                 </button>
                 <button id="btn-wave" class="btn-action-send" onclick="handleSendAction()">
@@ -507,7 +546,7 @@ jobs:
               </div>
             </div>
 
-            <!-- 수정 전용 모달 -->
+            <!-- 수정 전용 모달 (음성인식 마이크 탑재) -->
             <div id="edit-modal" class="modal-full">
               <div class="modal-top">
                 <span style="font-weight:bold; font-size:1rem;">✏️ 생각 및 메모 수정</span>
@@ -518,32 +557,35 @@ jobs:
               </div>
               <div class="modal-body">
                 <div id="edit-media-preview" class="card-media-grid"></div>
-                <textarea id="edit-input" class="main-input" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px; min-height:160px; width:100%;" placeholder="수정할 메모를 입력하세요..."></textarea>
+                <div class="edit-input-wrapper">
+                  <textarea id="edit-input" class="main-input" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 50px 12px 14px; min-height:180px; width:100%;" placeholder="수정할 메모를 입력하거나 마이크로 이어서 말씀하세요..."></textarea>
+                  <button id="edit-mic-btn" class="edit-mic-btn" onclick="triggerVoice('edit')">
+                    <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                  </button>
+                </div>
               </div>
             </div>
 
             <!-- 보관함 모달 -->
             <div id="archive-modal" class="modal-full">
               <div class="modal-top">
-                <span style="font-weight:bold; font-size:1.05rem;">📂 생각보관함</span>
+                <span style="font-weight:bold; font-size:1.05rem;">📂 생각보관함 (전체)</span>
                 <button class="card-btn" style="background:var(--danger);" onclick="closeArchiveModal()">닫기</button>
               </div>
               <div class="main-feed" id="archive-feed"></div>
             </div>
 
             <script>
-              let currentFilter = '전체';
+              let currentCategory = '첫 생각';
               let currentAttachments = [];
               let editingThoughtId = null;
+              let activeVoiceTarget = 'main'; // 'main' 또는 'edit'
 
-              function toggleFilterBar() {
-                document.getElementById('filter-bar').classList.toggle('active');
-              }
-
-              function applyFilter(cat, el) {
-                currentFilter = cat;
-                document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-                el.classList.add('active');
+              function selectCategory(cat) {
+                currentCategory = cat;
+                document.querySelectorAll('.category-pill').forEach(p => {
+                  p.classList.toggle('active', p.innerText.includes(cat));
+                });
                 renderFeed();
               }
 
@@ -562,7 +604,7 @@ jobs:
               function triggerGallery() { closePlusMenu(); document.getElementById('gallery-file').click(); }
               function triggerVideo() { closePlusMenu(); document.getElementById('video-file').click(); }
 
-              /* 이미지 초경량 압축 (용량 초과 방지) */
+              /* 이미지 압축 */
               function compressImage(file, maxWidth = 800, quality = 0.65) {
                 return new Promise((resolve) => {
                   const reader = new FileReader();
@@ -588,7 +630,7 @@ jobs:
                 });
               }
 
-              /* 동영상 썸네일 자동 생성 */
+              /* 동영상 썸네일 추출 */
               function captureVideoThumbnail(file) {
                 return new Promise((resolve) => {
                   const url = URL.createObjectURL(file);
@@ -613,7 +655,6 @@ jobs:
                 });
               }
 
-              /* 복수 사진 압축 및 트레이 등록 */
               async function processMediaFiles(input, type) {
                 const files = input.files;
                 if (files && files.length > 0) {
@@ -631,7 +672,6 @@ jobs:
                 }
               }
 
-              /* 동영상 썸네일 추출 및 트레이 등록 */
               async function processVideoFile(input) {
                 const file = input.files[0];
                 if (file) {
@@ -686,61 +726,82 @@ jobs:
                 }
               }
 
-              /* 생각 카드 저장 */
+              /* 생각 저장 (자동 분류 및 '첫 생각' 자동 원위치) */
               function handleSendAction() {
                 const input = document.getElementById('prompt-input');
                 const text = input.value.trim();
                 const hasAttachments = currentAttachments.length > 0;
                 
                 if (text || hasAttachments) {
-                  let badge = '메모';
+                  // 카테고리 자동 배정 로직 (노트/사진/스케치/동영상)
+                  let category = '노트';
                   if (hasAttachments) {
-                    const types = [...new Set(currentAttachments.map(a => a.type))];
-                    badge = types.join('+');
+                    const hasVideo = currentAttachments.some(a => a.type === '동영상');
+                    const hasSketch = currentAttachments.some(a => a.type === '스케치');
+                    const hasPhoto = currentAttachments.some(a => a.type === '사진');
+                    if (hasVideo) category = '동영상';
+                    else if (hasSketch) category = '스케치';
+                    else if (hasPhoto) category = '사진';
                   }
-                  saveThought(badge, text, [...currentAttachments]);
+
+                  saveThought(category, text, [...currentAttachments]);
                   
                   input.value = '';
                   input.style.height = 'auto';
                   currentAttachments = [];
                   renderAttachmentTray();
                   updateSendButtonState();
+
+                  // 저장 후 항상 '첫 생각'으로 자동 원위치 (깨끗한 화면 유지)
+                  selectCategory('첫 생각');
                 } else {
-                  triggerVoice();
+                  triggerVoice('main');
                 }
               }
 
-              /* 음성 인식 */
-              function triggerVoice() {
+              /* 음성 인식 (메인 및 수정창 통합) */
+              function triggerVoice(target) {
+                activeVoiceTarget = target;
                 closePlusMenu();
-                const waveBtn = document.getElementById('btn-wave');
+                
+                const btn = (target === 'edit') ? document.getElementById('edit-mic-btn') : document.getElementById('btn-wave');
+                if (btn) btn.classList.add('listening');
+
                 if (window.AndroidBridge && window.AndroidBridge.startSpeechRecognition) {
-                  waveBtn.classList.add('listening');
                   window.AndroidBridge.startSpeechRecognition();
                 } else {
                   const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
                   if (!Speech) {
                     alert('음성인식 기능을 지원하지 않는 기기입니다.');
+                    if (btn) btn.classList.remove('listening');
                     return;
                   }
                   const rec = new Speech();
                   rec.lang = 'ko-KR';
-                  rec.onstart = () => waveBtn.classList.add('listening');
                   rec.onresult = (e) => appendVoiceResult(e.results[0][0].transcript);
-                  rec.onend = () => waveBtn.classList.remove('listening');
+                  rec.onend = () => { if (btn) btn.classList.remove('listening'); };
                   rec.start();
                 }
               }
 
               function appendVoiceResult(text) {
-                const input = document.getElementById('prompt-input');
-                const prev = input.value.trim();
-                input.value = prev ? prev + ' ' + text : text;
-                handleInputChange(input);
+                if (activeVoiceTarget === 'edit') {
+                  const editArea = document.getElementById('edit-input');
+                  const prev = editArea.value.trim();
+                  editArea.value = prev ? prev + ' ' + text : text;
+                } else {
+                  const input = document.getElementById('prompt-input');
+                  const prev = input.value.trim();
+                  input.value = prev ? prev + ' ' + text : text;
+                  handleInputChange(input);
+                }
               }
 
               window.receiveVoiceResult = function(text) {
-                document.getElementById('btn-wave').classList.remove('listening');
+                const btnMain = document.getElementById('btn-wave');
+                const btnEdit = document.getElementById('edit-mic-btn');
+                if (btnMain) btnMain.classList.remove('listening');
+                if (btnEdit) btnEdit.classList.remove('listening');
                 if (text && text.trim()) appendVoiceResult(text);
               };
 
@@ -749,7 +810,8 @@ jobs:
                 if (window.AndroidBridge && window.AndroidBridge.getPendingVoiceText) {
                   const text = window.AndroidBridge.getPendingVoiceText();
                   if (text && text.trim().length > 0) {
-                    saveThought('음성 (플로팅)', text, []);
+                    saveThought('노트', text, []);
+                    selectCategory('첫 생각');
                   }
                 }
               }, 400);
@@ -768,14 +830,11 @@ jobs:
                 renderFeed();
               }
 
-              function saveThought(type, content, mediaList) {
-                currentFilter = '전체';
-                document.querySelectorAll('.filter-pill').forEach(p => p.classList.toggle('active', p.innerText.trim() === '전체'));
-                
+              function saveThought(category, content, mediaList) {
                 const list = getStorage();
                 list.unshift({
                   id: Date.now(),
-                  type,
+                  category: category,
                   content: content || '',
                   mediaList: mediaList || [],
                   time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
@@ -783,22 +842,36 @@ jobs:
                 setStorage(list);
               }
 
+              /* 카테고리별 피드 렌더링 */
               function renderFeed() {
                 const list = getStorage();
                 const feed = document.getElementById('feed-container');
-                const hint = document.getElementById('empty-hint');
-                const filtered = currentFilter === '전체' ? list : list.filter(i => i.type.includes(currentFilter));
+
+                // 1. '첫 생각' 선택 시: 무조건 깨끗한 빈 화면 표시
+                if (currentCategory === '첫 생각') {
+                  feed.innerHTML = `
+                    <div class="empty-canvas">
+                      떠오르는 생각을 자유롭게 기록하세요.<br>
+                      저장 즉시 서랍으로 들어가 깨끗한 화면이 유지됩니다.
+                    </div>
+                  `;
+                  return;
+                }
+
+                // 2. 나머지 카테고리 선택 시: 해당 카테고리 저장 카드 목록 표시
+                const filtered = (currentCategory === '전체') 
+                  ? list 
+                  : list.filter(i => (i.category || i.type || '').includes(currentCategory));
 
                 if (filtered.length === 0) {
-                  feed.innerHTML = '';
-                  feed.appendChild(hint);
+                  feed.innerHTML = `<div class="empty-canvas">저장된 [${currentCategory}] 생각이 없습니다.</div>`;
                   return;
                 }
 
                 feed.innerHTML = filtered.map(item => `
                   <div class="thought-card">
                     <div class="card-header">
-                      <span class="card-badge">${item.type}</span>
+                      <span class="card-badge">${item.category || item.type || '노트'}</span>
                       <span class="card-time">${item.time}</span>
                     </div>
                     ${item.mediaList && item.mediaList.length > 0 ? `
@@ -833,7 +906,7 @@ jobs:
                 }
               }
 
-              /* 수정 모달 */
+              /* 수정 모달 (음성 입력 연동) */
               function openEditModal(id) {
                 const item = getStorage().find(i => i.id === id);
                 if (item) {
@@ -926,7 +999,7 @@ jobs:
                 feed.innerHTML = list.map(item => `
                   <div class="thought-card">
                     <div class="card-header">
-                      <span class="card-badge">${item.type}</span>
+                      <span class="card-badge">${item.category || item.type || '노트'}</span>
                       <span class="card-time">${item.time}</span>
                     </div>
                     ${item.mediaList && item.mediaList.length > 0 ? `
@@ -945,7 +1018,7 @@ jobs:
               }
               function closeArchiveModal() { document.getElementById('archive-modal').classList.remove('active'); }
 
-              renderFeed();
+              selectCategory('첫 생각');
             </script>
           </body>
           </html>
