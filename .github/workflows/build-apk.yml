@@ -13,35 +13,42 @@ jobs:
       - name: 저장소 가져오기
         uses: actions/checkout@v4
 
-      - name: Node.js 18 설정
+      - name: Node.js 20 설정
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Java JDK 17 설정
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: 'zulu'
           java-version: '17'
 
-      - name: 앱 빌드 파일 정리 및 구성
+      - name: Android SDK 설정
+        uses: android-actions/setup-android@v3
+
+      - name: Android 라이선스 자동 동의
+        run: |
+          yes | sdkmanager --licenses || true
+
+      - name: 웹 파일 복사 및 안드로이드 프로젝트 초기화
         run: |
           mkdir -p www
           cp index.html www/
           npm init -y
-          npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
-          npx cap init "생각서랍" "com.k2hkkh.ideadrawer" --web-dir "www"
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npx cap init "생각서랍" "com.k2hkkh.ideadrawer" --web-dir www
           npx cap add android
-          sed -i 's/<\/manifest>/    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" \/>\n    <uses-permission android:name="android.permission.RECORD_AUDIO" \/>\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" \/>\n<\/manifest>/g' android/app/src/main/AndroidManifest.xml
+          sed -i '/<\/manifest>/i <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" /><uses-permission android:name="android.permission.RECORD_AUDIO" /><uses-permission android:name="android.permission.FOREGROUND_SERVICE" />' android/app/src/main/AndroidManifest.xml
           npx cap sync android
 
-      - name: APK 파일 조립 (Gradle)
+      - name: APK 파일 빌드
         run: |
           cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          chmod +x ./gradlew
+          ./gradlew assembleDebug
 
-      - name: 완성된 APK 업로드
+      - name: 완성된 APK 파일 업로드
         uses: actions/upload-artifact@v4
         with:
           name: 생각서랍-설치파일-APK
