@@ -341,7 +341,6 @@ jobs:
                 if (tabId === 'sketch') initCanvasSize();
               }
 
-              /* 텍스트 및 미디어 삭제/초기화 */
               function clearVoiceText() {
                 document.getElementById('voice-input-text').value = '';
                 document.getElementById('voice-status').innerText = '버튼을 누르고 생각을 말씀하세요';
@@ -365,7 +364,6 @@ jobs:
                 document.getElementById(actionsId).style.display = 'none';
               }
 
-              /* 음성 인식 호출 */
               function triggerNativeVoice() {
                 const btn = document.getElementById('gemini-mic');
                 const status = document.getElementById('voice-status');
@@ -397,7 +395,6 @@ jobs:
                 }
               }
 
-              /* 네이티브 음성인식 결과 수신 */
               window.receiveVoiceResult = function(text) {
                 switchTab('voice');
                 document.getElementById('gemini-mic').classList.remove('listening');
@@ -405,7 +402,6 @@ jobs:
                 document.getElementById('voice-status').innerText = '✨ 음성 입력이 완료되었습니다.';
               };
 
-              /* 스케치 드로잉 */
               const canvas = document.getElementById('sketch-board');
               const ctx = canvas.getContext('2d');
               let isDrawing = false;
@@ -433,7 +429,6 @@ jobs:
               canvas.addEventListener('touchend', () => { isDrawing = false; });
               function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-              /* 보관함 */
               function saveIdea(type, text) {
                 if (!text || text.trim() === '') {
                   alert('저장할 내용이 없습니다.');
@@ -463,7 +458,7 @@ jobs:
           </html>
           EOF
 
-      - name: 5. 네이티브 서비스 및 액티비티 구축
+      - name: 5. 백그라운드 단독 음성인식 플로팅 샤잠 서비스 구축
         run: |
           cat << 'EOF' > package.json
           {
@@ -489,13 +484,13 @@ jobs:
           npm install
           npx cap add android
 
-          # 최신 안드로이드 권한 및 서비스 주입
+          # 최신 권한 및 서비스 주입
           node -e '
           const fs = require("fs");
           const p = "android/app/src/main/AndroidManifest.xml";
           let xml = fs.readFileSync(p, "utf8");
-          const perms = "\n    <uses-permission android:name=\"android.permission.SYSTEM_ALERT_WINDOW\" />\n    <uses-permission android:name=\"android.permission.RECORD_AUDIO\" />\n    <uses-permission android:name=\"android.permission.CAMERA\" />\n    <uses-permission android:name=\"android.permission.FOREGROUND_SERVICE\" />\n    <uses-permission android:name=\"android.permission.FOREGROUND_SERVICE_SPECIAL_USE\" />\n";
-          const srv = "\n    <service android:name=\"com.k2hkkh.ideadrawer.FloatingWidgetService\" android:enabled=\"true\" android:exported=\"false\" android:foregroundServiceType=\"specialUse\" />\n";
+          const perms = "\n    <uses-permission android:name=\"android.permission.SYSTEM_ALERT_WINDOW\" />\n    <uses-permission android:name=\"android.permission.RECORD_AUDIO\" />\n    <uses-permission android:name=\"android.permission.CAMERA\" />\n    <uses-permission android:name=\"android.permission.FOREGROUND_SERVICE\" />\n    <uses-permission android:name=\"android.permission.FOREGROUND_SERVICE_MICROPHONE\" />\n";
+          const srv = "\n    <service android:name=\"com.k2hkkh.ideadrawer.FloatingWidgetService\" android:enabled=\"true\" android:exported=\"false\" android:foregroundServiceType=\"microphone\" />\n";
           xml = xml.replace("<application", perms + "    <application");
           xml = xml.replace("</application>", srv + "    </application>");
           fs.writeFileSync(p, xml, "utf8");
@@ -503,7 +498,7 @@ jobs:
 
           mkdir -p android/app/src/main/java/com/k2hkkh/ideadrawer
 
-          # 플로팅 위젯 소스코드 (원터치 시 메인 화면으로 즉시 전환하여 음성 인식 자동 트리거)
+          # 플로팅 위젯 소스코드 (앱 실행 없이 백그라운드에서 직접 음성인식 -> 완료 시 생각서랍 자동 호출)
           cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/FloatingWidgetService.java
           package com.k2hkkh.ideadrawer;
 
@@ -516,18 +511,29 @@ jobs:
           import android.graphics.PixelFormat;
           import android.graphics.drawable.GradientDrawable;
           import android.os.Build;
+          import android.os.Bundle;
+          import android.os.Handler;
           import android.os.IBinder;
+          import android.os.Looper;
+          import android.speech.RecognitionListener;
+          import android.speech.RecognizerIntent;
+          import android.speech.SpeechRecognizer;
           import android.util.TypedValue;
           import android.view.Gravity;
           import android.view.MotionEvent;
           import android.view.View;
           import android.view.WindowManager;
           import android.widget.TextView;
+          import android.widget.Toast;
           import androidx.core.app.NotificationCompat;
+          import java.util.ArrayList;
 
           public class FloatingWidgetService extends Service {
               private WindowManager windowManager;
               private TextView floatingView;
+              private SpeechRecognizer speechRecognizer;
+              private boolean isListening = false;
+              private GradientDrawable normalBg, activeBg;
 
               @Override
               public IBinder onBind(Intent intent) { return null; }
@@ -540,7 +546,7 @@ jobs:
                   try {
                       Notification notification = new NotificationCompat.Builder(this, "floating_channel")
                               .setContentTitle("생각서랍 플로팅 실행 중")
-                              .setContentText("버튼을 터치하면 바로 음성 녹음이 시작됩니다.")
+                              .setContentText("터치하여 바로 음성으로 기록하세요.")
                               .setSmallIcon(android.R.drawable.ic_btn_speak_now)
                               .setPriority(NotificationCompat.PRIORITY_LOW)
                               .build();
@@ -554,10 +560,15 @@ jobs:
                   floatingView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 26);
                   floatingView.setGravity(Gravity.CENTER);
 
-                  GradientDrawable bg = new GradientDrawable();
-                  bg.setShape(GradientDrawable.OVAL);
-                  bg.setColor(Color.parseColor("#4F46E5"));
-                  floatingView.setBackground(bg);
+                  normalBg = new GradientDrawable();
+                  normalBg.setShape(GradientDrawable.OVAL);
+                  normalBg.setColor(Color.parseColor("#4F46E5"));
+
+                  activeBg = new GradientDrawable();
+                  activeBg.setShape(GradientDrawable.OVAL);
+                  activeBg.setColor(Color.parseColor("#EF4444"));
+
+                  floatingView.setBackground(normalBg);
 
                   int layoutType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ?
                           WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY :
@@ -596,10 +607,7 @@ jobs:
                                   float diffX = Math.abs(event.getRawX() - initialTouchX);
                                   float diffY = Math.abs(event.getRawY() - initialTouchY);
                                   if (diffX < 15 && diffY < 15) {
-                                      Intent appIntent = new Intent(FloatingWidgetService.this, MainActivity.class);
-                                      appIntent.putExtra("TRIGGER_VOICE", true);
-                                      appIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                      startActivity(appIntent);
+                                      toggleSpeechRecognition();
                                   }
                                   return true;
                           }
@@ -608,6 +616,75 @@ jobs:
                   });
 
                   windowManager.addView(floatingView, params);
+              }
+
+              private void toggleSpeechRecognition() {
+                  new Handler(Looper.getMainLooper()).post(() -> {
+                      if (isListening) {
+                          if (speechRecognizer != null) speechRecognizer.stopListening();
+                          return;
+                      }
+
+                      try {
+                          if (speechRecognizer != null) speechRecognizer.destroy();
+                          speechRecognizer = SpeechRecognizer.createSpeechRecognizer(FloatingWidgetService.this);
+                          Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                          intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                          intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
+
+                          speechRecognizer.setRecognitionListener(new RecognitionListener() {
+                              @Override
+                              public void onReadyForSpeech(Bundle params) {
+                                  isListening = true;
+                                  floatingView.setBackground(activeBg);
+                                  floatingView.setText("🎙️");
+                                  Toast.makeText(FloatingWidgetService.this, "💡 말씀해 주세요 (듣는 중...)", Toast.LENGTH_SHORT).show();
+                              }
+
+                              @Override public void onBeginningOfSpeech() {}
+                              @Override public void onRmsChanged(float rmsdB) {}
+                              @Override public void onBufferReceived(byte[] buffer) {}
+                              @Override public void onEndOfSpeech() {}
+
+                              @Override
+                              public void onError(int error) {
+                                  resetFloatingButton();
+                                  Toast.makeText(FloatingWidgetService.this, "음성 인식이 취소되었습니다.", Toast.LENGTH_SHORT).show();
+                              }
+
+                              @Override
+                              public void onResults(Bundle results) {
+                                  resetFloatingButton();
+                                  ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                                  if (matches != null && !matches.isEmpty()) {
+                                      String spokenText = matches.get(0);
+                                      Intent appIntent = new Intent(FloatingWidgetService.this, MainActivity.class);
+                                      appIntent.putExtra("VOICE_RESULT", spokenText);
+                                      appIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                      startActivity(appIntent);
+                                  }
+                              }
+
+                              @Override public void onPartialResults(Bundle partialResults) {}
+                              @Override public void onEvent(int eventType, Bundle params) {}
+                          });
+
+                          speechRecognizer.startListening(intent);
+                      } catch (Exception e) {
+                          resetFloatingButton();
+                          Toast.makeText(FloatingWidgetService.this, "음성 인식기를 실행할 수 없습니다.", Toast.LENGTH_SHORT).show();
+                      }
+                  });
+              }
+
+              private void resetFloatingButton() {
+                  isListening = false;
+                  floatingView.setBackground(normalBg);
+                  floatingView.setText("✨");
+                  if (speechRecognizer != null) {
+                      try { speechRecognizer.destroy(); } catch (Exception ignored) {}
+                      speechRecognizer = null;
+                  }
               }
 
               private void createNotificationChannel() {
@@ -621,6 +698,7 @@ jobs:
               @Override
               public void onDestroy() {
                   super.onDestroy();
+                  resetFloatingButton();
                   if (floatingView != null && windowManager != null) {
                       try { windowManager.removeView(floatingView); } catch (Exception ignored) {}
                   }
@@ -628,7 +706,7 @@ jobs:
           }
           EOF
 
-          # 메인 액티비티 소스코드 (자동 음성 트리거 + 네이티브 음성 엔진)
+          # 메인 액티비티 소스코드 (인텐트 수신 및 앱 내 음성 인식)
           cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/MainActivity.java
           package com.k2hkkh.ideadrawer;
 
@@ -663,12 +741,12 @@ jobs:
                       getBridge().getWebView().addJavascriptInterface(new Object() {
                           @JavascriptInterface
                           public void startSpeechRecognition() {
-                              new Handler(Looper.getMainLooper()).post(() -> startVoiceInput());
+                              new Handler(Looper.getMainLooper()).post(() -> startInAppVoice());
                           }
                       }, "AndroidBridge");
                   }
 
-                  handleTriggerIntent(getIntent());
+                  handleVoiceIntent(getIntent());
               }
 
               private void requestAppPermissions() {
@@ -683,7 +761,7 @@ jobs:
                   }
               }
 
-              public void startVoiceInput() {
+              public void startInAppVoice() {
                   if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
                       requestAppPermissions();
                       return;
@@ -713,8 +791,7 @@ jobs:
                               ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                               if (matches != null && !matches.isEmpty()) {
                                   String recognized = matches.get(0);
-                                  String clean = recognized.replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ");
-                                  evalJS("if (window.receiveVoiceResult) window.receiveVoiceResult('" + clean + "');");
+                                  sendTextToWebView(recognized);
                               }
                           }
                           @Override public void onPartialResults(Bundle partialResults) {}
@@ -744,12 +821,20 @@ jobs:
               public void onNewIntent(Intent intent) {
                   super.onNewIntent(intent);
                   setIntent(intent);
-                  handleTriggerIntent(intent);
+                  handleVoiceIntent(intent);
               }
 
-              private void handleTriggerIntent(Intent intent) {
-                  if (intent != null && intent.getBooleanExtra("TRIGGER_VOICE", false)) {
-                      new Handler(Looper.getMainLooper()).postDelayed(() -> startVoiceInput(), 400);
+              private void handleVoiceIntent(Intent intent) {
+                  if (intent != null && intent.hasExtra("VOICE_RESULT")) {
+                      String voiceText = intent.getStringExtra("VOICE_RESULT");
+                      new Handler(Looper.getMainLooper()).postDelayed(() -> sendTextToWebView(voiceText), 350);
+                  }
+              }
+
+              private void sendTextToWebView(String text) {
+                  if (text != null) {
+                      String cleanText = text.replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ");
+                      evalJS("if (window.receiveVoiceResult) window.receiveVoiceResult('" + cleanText + "');");
                   }
               }
 
