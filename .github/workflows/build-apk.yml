@@ -24,42 +24,23 @@ jobs:
         with:
           node-version: 20
 
-      - name: 4. 앱 구성 및 플로팅 샤잠 서비스 파일 생성
+      - name: 4. 앱 구성 및 플로팅 샤잠 서비스 파일 구성
         run: |
           mkdir -p www
           cp index.html www/index.html
           
-          cat << 'EOF' > package.json
-          {
-            "name": "my-idea-drawer",
-            "version": "1.0.0",
-            "private": true,
-            "dependencies": {
-              "@capacitor/android": "^6.0.0",
-              "@capacitor/cli": "^6.0.0",
-              "@capacitor/core": "^6.0.0"
-            }
-          }
-          EOF
-
-          cat << 'EOF' > capacitor.config.json
-          {
-            "appId": "com.k2hkkh.ideadrawer",
-            "appName": "생각서랍",
-            "webDir": "www"
-          }
-          EOF
-
-          npm install
+          npm init -y
+          npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
+          npx cap init "생각서랍" "com.k2hkkh.ideadrawer" --web-dir www
           npx cap add android
 
-          # 권한 및 플로팅 서비스 안전 등록 (Node 스크립트)
+          # 권한 및 플로팅 서비스 등록
           node -e '
           const fs = require("fs");
           const p = "android/app/src/main/AndroidManifest.xml";
           let xml = fs.readFileSync(p, "utf8");
-          const perms = "\n    <uses-permission android:name=\"android.permission.SYSTEM_ALERT_WINDOW\" />\n    <uses-permission android:name=\"android.permission.RECORD_AUDIO\" />\n";
-          const srv = "\n    <service android:name=\".FloatingWidgetService\" android:enabled=\"true\" android:exported=\"false\" />\n";
+          const perms = "<uses-permission android:name=\"android.permission.SYSTEM_ALERT_WINDOW\" />\n    <uses-permission android:name=\"android.permission.RECORD_AUDIO\" />\n";
+          const srv = "<service android:name=\"com.k2hkkh.ideadrawer.FloatingWidgetService\" android:enabled=\"true\" android:exported=\"false\" />\n";
           xml = xml.replace("<application", perms + "    <application");
           xml = xml.replace("</application>", srv + "    </application>");
           fs.writeFileSync(p, xml, "utf8");
@@ -90,7 +71,9 @@ jobs:
               private TextView floatingView;
 
               @Override
-              public IBinder onBind(Intent intent) { return null; }
+              public IBinder onBind(Intent intent) {
+                  return null;
+              }
 
               @Override
               public void onCreate() {
@@ -107,9 +90,12 @@ jobs:
                   bg.setColor(Color.parseColor("#4F46E5"));
                   floatingView.setBackground(bg);
 
-                  int layoutType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ?
-                          WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY :
-                          WindowManager.LayoutParams.TYPE_PHONE;
+                  int layoutType;
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                      layoutType = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+                  } else {
+                      layoutType = WindowManager.LayoutParams.TYPE_PHONE;
+                  }
 
                   final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                           160, 160,
@@ -167,7 +153,7 @@ jobs:
           }
           EOF
 
-          # 메인 액티비티 소스코드 생성
+          # 메인 액티비티 소스코드 생성 (Public onResume 적용)
           cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/MainActivity.java
           package com.k2hkkh.ideadrawer;
 
@@ -181,24 +167,24 @@ jobs:
               @Override
               public void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
-                  startWidgetIfAllowed();
+                  checkAndStartWidget();
               }
 
               @Override
-              protected void onResume() {
+              public void onResume() {
                   super.onResume();
-                  startWidgetIfAllowed();
+                  checkAndStartWidget();
               }
 
-              private void startWidgetIfAllowed() {
+              private void checkAndStartWidget() {
                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                       if (Settings.canDrawOverlays(this)) {
-                          Intent serviceIntent = new Intent(this, FloatingWidgetService.class);
-                          startService(serviceIntent);
+                          Intent intent = new Intent(this, FloatingWidgetService.class);
+                          startService(intent);
                       }
                   } else {
-                      Intent serviceIntent = new Intent(this, FloatingWidgetService.class);
-                      startService(serviceIntent);
+                      Intent intent = new Intent(this, FloatingWidgetService.class);
+                      startService(intent);
                   }
               }
           }
