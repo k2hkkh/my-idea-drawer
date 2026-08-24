@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: 4. 생각서랍 4대 탭 UI 파일 구성
+      - name: 4. 생각서랍 4대 탭 및 미디어 메모 UI 구성
         run: |
           mkdir -p www
           cat << 'EOF' > www/index.html
@@ -87,26 +87,27 @@ jobs:
               }
               .container {
                 flex: 1;
-                padding: 16px;
+                padding: 14px;
                 display: flex;
                 flex-direction: column;
-                gap: 14px;
+                gap: 12px;
+                overflow-y: auto;
               }
-              .tab-content { display: none; flex: 1; flex-direction: column; gap: 12px; }
+              .tab-content { display: none; flex-direction: column; gap: 12px; }
               .tab-content.active { display: flex; }
 
               /* 제미나이 스타일 음성 버튼 */
               .voice-container {
-                flex: 1;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                gap: 16px;
+                gap: 14px;
+                padding: 10px 0;
               }
               .gemini-btn {
-                width: 90px;
-                height: 90px;
+                width: 86px;
+                height: 86px;
                 border-radius: 50%;
                 background: linear-gradient(135deg, #4f46e5, #38bdf8);
                 border: none;
@@ -152,20 +153,20 @@ jobs:
 
               .text-area {
                 width: 100%;
-                min-height: 110px;
+                min-height: 90px;
                 background: var(--card);
                 border: 1px solid #334155;
                 border-radius: 12px;
                 padding: 12px;
                 color: #ffffff;
-                font-size: 1rem;
+                font-size: 0.95rem;
                 resize: none;
               }
 
-              /* 캔버스 */
+              /* 캔버스 드로잉 */
               .canvas-box {
-                flex: 1;
-                min-height: 240px;
+                width: 100%;
+                height: 220px;
                 background: #ffffff;
                 border-radius: 12px;
                 touch-action: none;
@@ -177,32 +178,31 @@ jobs:
                 justify-content: space-between;
                 align-items: center;
                 background: var(--card);
-                padding: 8px 12px;
+                padding: 6px 12px;
                 border-radius: 10px;
               }
 
-              /* 미디어 */
+              /* 미디어 박스 */
               .media-panel {
-                flex: 1;
                 border: 2px dashed #475569;
                 border-radius: 12px;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                gap: 12px;
+                gap: 10px;
                 background: var(--card);
-                padding: 16px;
+                padding: 14px;
                 text-align: center;
               }
               .btn-action {
                 background: var(--primary);
                 color: #fff;
-                padding: 12px 20px;
+                padding: 10px 18px;
                 border-radius: 10px;
                 border: none;
                 font-weight: bold;
-                font-size: 0.95rem;
+                font-size: 0.9rem;
                 cursor: pointer;
               }
               .btn-group {
@@ -214,10 +214,10 @@ jobs:
                 flex: 1;
                 background: #475569;
                 color: #ffffff;
-                padding: 14px;
+                padding: 12px;
                 border: none;
                 border-radius: 12px;
-                font-size: 0.95rem;
+                font-size: 0.9rem;
                 font-weight: bold;
                 cursor: pointer;
               }
@@ -226,10 +226,10 @@ jobs:
                 flex: 2;
                 background: #10b981;
                 color: #ffffff;
-                padding: 14px;
+                padding: 12px;
                 border: none;
                 border-radius: 12px;
-                font-size: 0.95rem;
+                font-size: 0.9rem;
                 font-weight: bold;
                 cursor: pointer;
               }
@@ -238,7 +238,7 @@ jobs:
                 padding: 12px;
                 border-radius: 10px;
                 border-left: 4px solid var(--accent);
-                margin-top: 10px;
+                margin-top: 8px;
               }
             </style>
           </head>
@@ -257,7 +257,7 @@ jobs:
             </nav>
 
             <div class="container">
-              <!-- 1. 음성 -->
+              <!-- 1. 음성 탭 -->
               <div id="tab-voice" class="tab-content active">
                 <div class="voice-container">
                   <button id="gemini-mic" class="gemini-btn" onclick="triggerNativeVoice()">
@@ -268,60 +268,61 @@ jobs:
                       <div class="wave-bar"></div>
                     </div>
                   </button>
-                  <p id="voice-status" style="color:var(--muted); font-size:0.9rem;">버튼을 누르고 생각을 말씀하세요</p>
-                  <textarea id="voice-input-text" class="text-area" placeholder="음성인식 결과가 여기에 작성됩니다..."></textarea>
+                  <p id="voice-status" style="color:var(--muted); font-size:0.85rem;">버튼을 누르고 말씀하세요 (추가 녹음 시 이어쓰기)</p>
                 </div>
+                <textarea id="voice-input-text" class="text-area" style="min-height:110px;" placeholder="음성인식 결과가 여기에 이어집니다..."></textarea>
                 <div class="btn-group">
-                  <button class="btn-delete" onclick="clearVoiceText()">🗑️ 지우기</button>
+                  <button class="btn-delete" onclick="clearVoiceText()">🗑️ 내용 지우기</button>
                   <button class="save-btn" onclick="saveIdea('음성', document.getElementById('voice-input-text').value)">서랍에 저장</button>
                 </div>
               </div>
 
-              <!-- 2. 사진 -->
+              <!-- 2. 사진 탭 -->
               <div id="tab-photo" class="tab-content">
                 <div class="media-panel">
-                  <p style="color:var(--muted); font-size:0.9rem;">카메라로 즉시 촬영하거나 사진을 불러옵니다.</p>
-                  <input type="file" accept="image/*" capture="environment" id="photo-input" style="display:none;" onchange="handleMediaSelected(this, 'photo-view', 'photo-actions')" />
+                  <input type="file" accept="image/*" capture="environment" id="photo-input" style="display:none;" onchange="handleMediaSelected(this, 'photo-view')" />
                   <button class="btn-action" onclick="document.getElementById('photo-input').click()">📷 카메라 촬영 / 사진 선택</button>
-                  <img id="photo-view" style="max-width:100%; max-height:180px; border-radius:8px; display:none;" />
+                  <img id="photo-view" style="max-width:100%; max-height:160px; border-radius:8px; display:none;" />
                 </div>
-                <div id="photo-actions" class="btn-group" style="display:none;">
-                  <button class="btn-delete" onclick="deleteMedia('photo-input', 'photo-view', 'photo-actions')">🗑️ 사진 삭제</button>
-                  <button class="save-btn" onclick="saveIdea('사진', '사진 메모가 저장되었습니다.')">사진 저장</button>
+                <textarea id="photo-memo" class="text-area" placeholder="사진과 함께 남길 생각/메모를 적어주세요..."></textarea>
+                <div class="btn-group">
+                  <button class="btn-delete" onclick="deleteMedia('photo-input', 'photo-view', 'photo-memo')">🗑️ 사진/메모 삭제</button>
+                  <button class="save-btn" onclick="saveMediaIdea('사진', 'photo-memo', 'photo-view')">사진 저장</button>
                 </div>
               </div>
 
-              <!-- 3. 스케치 -->
+              <!-- 3. 스케치 탭 -->
               <div id="tab-sketch" class="tab-content">
                 <div class="tools">
-                  <div style="display:flex; align-items:center; gap:8px;">
-                    <span style="font-size:0.85rem; color:var(--muted);">펜 색상:</span>
-                    <input type="color" id="draw-color" value="#000000" style="width:36px; height:36px; border:none; border-radius:6px; cursor:pointer;" />
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:0.8rem; color:var(--muted);">펜:</span>
+                    <input type="color" id="draw-color" value="#000000" style="width:32px; height:32px; border:none; border-radius:4px; cursor:pointer;" />
                   </div>
-                  <button class="btn-delete" style="padding:6px 14px; flex:none;" onclick="clearCanvas()">지우기</button>
+                  <button class="btn-delete" style="padding:4px 10px; flex:none; font-size:0.8rem;" onclick="clearCanvas()">캔버스 지우기</button>
                 </div>
                 <div class="canvas-box" id="canvas-wrapper">
                   <canvas id="sketch-board"></canvas>
                 </div>
-                <button class="save-btn" style="width:100%;" onclick="saveIdea('스케치', '스케치 드로잉이 저장되었습니다.')">스케치 저장</button>
+                <textarea id="sketch-memo" class="text-area" placeholder="스케치에 대한 생각/설명을 적어주세요..."></textarea>
+                <button class="save-btn" style="width:100%;" onclick="saveIdea('스케치', document.getElementById('sketch-memo').value || '스케치 드로잉')">스케치 저장</button>
               </div>
 
-              <!-- 4. 동영상 -->
+              <!-- 4. 동영상 탭 -->
               <div id="tab-video" class="tab-content">
                 <div class="media-panel">
-                  <p style="color:var(--muted); font-size:0.9rem;">동영상을 촬영하여 상황을 생생하게 남깁니다.</p>
-                  <input type="file" accept="video/*" capture="environment" id="video-input" style="display:none;" onchange="handleMediaSelected(this, 'video-view', 'video-actions')" />
+                  <input type="file" accept="video/*" capture="environment" id="video-input" style="display:none;" onchange="handleMediaSelected(this, 'video-view')" />
                   <button class="btn-action" onclick="document.getElementById('video-input').click()">🎬 영상 녹화 / 비디오 선택</button>
-                  <video id="video-view" controls style="max-width:100%; max-height:180px; border-radius:8px; display:none;"></video>
+                  <video id="video-view" controls style="max-width:100%; max-height:160px; border-radius:8px; display:none;"></video>
                 </div>
-                <div id="video-actions" class="btn-group" style="display:none;">
-                  <button class="btn-delete" onclick="deleteMedia('video-input', 'video-view', 'video-actions')">🗑️ 영상 삭제</button>
-                  <button class="save-btn" onclick="saveIdea('동영상', '동영상 메모가 저장되었습니다.')">영상 저장</button>
+                <textarea id="video-memo" class="text-area" placeholder="동영상과 함께 남길 생각/메모를 적어주세요..."></textarea>
+                <div class="btn-group">
+                  <button class="btn-delete" onclick="deleteMedia('video-input', 'video-view', 'video-memo')">🗑️ 영상/메모 삭제</button>
+                  <button class="save-btn" onclick="saveMediaIdea('동영상', 'video-memo', 'video-view')">영상 저장</button>
                 </div>
               </div>
 
-              <!-- 보관 목록 -->
-              <div id="idea-list" style="margin-top:10px;"></div>
+              <!-- 저장 목록 -->
+              <div id="idea-list" style="margin-top:8px;"></div>
             </div>
 
             <script>
@@ -332,30 +333,29 @@ jobs:
                 });
                 document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                 document.getElementById('tab-' + tabId).classList.add('active');
-                if (tabId === 'sketch') initCanvasSize();
+                if (tabId === 'sketch') setTimeout(initCanvasSize, 50);
               }
 
               function clearVoiceText() {
                 document.getElementById('voice-input-text').value = '';
-                document.getElementById('voice-status').innerText = '버튼을 누르고 생각을 말씀하세요';
+                document.getElementById('voice-status').innerText = '버튼을 누르고 말씀하세요 (추가 녹음 시 이어쓰기)';
               }
 
-              function handleMediaSelected(input, viewId, actionsId) {
+              function handleMediaSelected(input, viewId) {
                 const file = input.files[0];
                 if (file) {
                   const el = document.getElementById(viewId);
                   el.src = URL.createObjectURL(file);
                   el.style.display = 'block';
-                  document.getElementById(actionsId).style.display = 'flex';
                 }
               }
 
-              function deleteMedia(inputId, viewId, actionsId) {
+              function deleteMedia(inputId, viewId, memoId) {
                 document.getElementById(inputId).value = '';
                 const view = document.getElementById(viewId);
                 view.src = '';
                 view.style.display = 'none';
-                document.getElementById(actionsId).style.display = 'none';
+                if (memoId) document.getElementById(memoId).value = '';
               }
 
               function triggerNativeVoice() {
@@ -369,7 +369,7 @@ jobs:
                 } else {
                   const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
                   if (!Speech) {
-                    alert('음성인식 기능을 지원하지 않는 브라우저입니다.');
+                    alert('음성인식 기능을 지원하지 않는 기기입니다.');
                     return;
                   }
                   const rec = new Speech();
@@ -379,7 +379,7 @@ jobs:
                     status.innerText = '듣고 있습니다... 말씀해 주세요.';
                   };
                   rec.onresult = (e) => {
-                    document.getElementById('voice-input-text').value = e.results[0][0].transcript;
+                    appendVoiceText(e.results[0][0].transcript);
                   };
                   rec.onend = () => {
                     btn.classList.remove('listening');
@@ -389,13 +389,21 @@ jobs:
                 }
               }
 
+              /* 텍스트 이어쓰기(Append) 로직 */
+              function appendVoiceText(newText) {
+                const area = document.getElementById('voice-input-text');
+                const prev = area.value.trim();
+                area.value = prev ? prev + ' ' + newText : newText;
+              }
+
               window.receiveVoiceResult = function(text) {
                 switchTab('voice');
                 document.getElementById('gemini-mic').classList.remove('listening');
-                document.getElementById('voice-input-text').value = text;
-                document.getElementById('voice-status').innerText = '✨ 음성 입력이 완료되었습니다.';
+                appendVoiceText(text);
+                document.getElementById('voice-status').innerText = '✨ 새로운 음성이 이어붙여졌습니다.';
               };
 
+              /* 스케치 캔버스 */
               const canvas = document.getElementById('sketch-board');
               const ctx = canvas.getContext('2d');
               let isDrawing = false;
@@ -423,6 +431,7 @@ jobs:
               canvas.addEventListener('touchend', () => { isDrawing = false; });
               function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
+              /* 보관함 */
               function saveIdea(type, text) {
                 if (!text || text.trim() === '') {
                   alert('저장할 내용이 없습니다.');
@@ -433,6 +442,17 @@ jobs:
                 localStorage.setItem('user_ideas', JSON.stringify(list));
                 renderStorage();
                 alert(type + ' 저장이 완료되었습니다!');
+              }
+
+              function saveMediaIdea(type, memoId, viewId) {
+                const memo = document.getElementById(memoId).value.trim();
+                const view = document.getElementById(viewId);
+                if (!memo && (!view.src || view.style.display === 'none')) {
+                  alert('촬영된 미디어나 메모를 입력해 주세요.');
+                  return;
+                }
+                const content = memo ? memo : `[${type} 파일 저장됨]`;
+                saveIdea(type, content);
               }
 
               function renderStorage() {
@@ -452,7 +472,7 @@ jobs:
           </html>
           EOF
 
-      - name: 5. 무설치 업데이트 및 자동 버전 증가 네이티브 시스템 주입
+      - name: 5. 플로팅 음성엔진 및 네이티브 백그라운드 서비스 주입
         run: |
           cat << 'EOF' > package.json
           {
@@ -471,10 +491,7 @@ jobs:
           {
             "appId": "com.k2hkkh.ideadrawer",
             "appName": "생각서랍",
-            "webDir": "www",
-            "server": {
-              "cleartext": true
-            }
+            "webDir": "www"
           }
           EOF
 
@@ -491,7 +508,7 @@ jobs:
           const fs = require("fs");
           const p = "android/app/src/main/AndroidManifest.xml";
           let xml = fs.readFileSync(p, "utf8");
-          const perms = "\n    <uses-permission android:name=\"android.permission.SYSTEM_ALERT_WINDOW\" />\n    <uses-permission android:name=\"android.permission.RECORD_AUDIO\" />\n    <uses-permission android:name=\"android.permission.CAMERA\" />\n    <uses-permission android:name=\"android.permission.FOREGROUND_SERVICE\" />\n    <uses-permission android:name=\"android.permission.FOREGROUND_SERVICE_MICROPHONE\" />\n";
+          const perms = "\n    <uses-permission android:name=\"android.permission.SYSTEM_ALERT_WINDOW\" />\n    <uses-permission android:name=\"android.permission.RECORD_AUDIO\" />\n    <uses-permission android:name=\"android.permission.CAMERA\" />\n    <uses-permission android:name=\"android.permission.VIBRATE\" />\n    <uses-permission android:name=\"android.permission.FOREGROUND_SERVICE\" />\n    <uses-permission android:name=\"android.permission.FOREGROUND_SERVICE_MICROPHONE\" />\n";
           const srv = "\n    <service android:name=\"com.k2hkkh.ideadrawer.FloatingWidgetService\" android:enabled=\"true\" android:exported=\"false\" android:foregroundServiceType=\"microphone\" />\n";
           xml = xml.replace("<application", perms + "    <application");
           xml = xml.replace("</application>", srv + "    </application>");
@@ -500,7 +517,7 @@ jobs:
 
           mkdir -p android/app/src/main/java/com/k2hkkh/ideadrawer
 
-          # 플로팅 위젯 소스코드 (단독 백그라운드 음성인식 엔진)
+          # 플로팅 위젯 소스코드 (강력한 진동 및 메인루퍼 SpeechRecognizer 백그라운드 녹음)
           cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/FloatingWidgetService.java
           package com.k2hkkh.ideadrawer;
 
@@ -508,6 +525,7 @@ jobs:
           import android.app.NotificationChannel;
           import android.app.NotificationManager;
           import android.app.Service;
+          import android.content.Context;
           import android.content.Intent;
           import android.graphics.Color;
           import android.graphics.PixelFormat;
@@ -517,6 +535,7 @@ jobs:
           import android.os.Handler;
           import android.os.IBinder;
           import android.os.Looper;
+          import android.os.Vibrator;
           import android.speech.RecognitionListener;
           import android.speech.RecognizerIntent;
           import android.speech.SpeechRecognizer;
@@ -547,8 +566,8 @@ jobs:
 
                   try {
                       Notification notification = new NotificationCompat.Builder(this, "floating_channel")
-                              .setContentTitle("생각서랍 플로팅 실행 중")
-                              .setContentText("터치하여 바로 음성으로 기록하세요.")
+                              .setContentTitle("생각서랍 플로팅 대기 중")
+                              .setContentText("버튼을 터치하여 바로 음성으로 기록하세요.")
                               .setSmallIcon(android.R.drawable.ic_btn_speak_now)
                               .setPriority(NotificationCompat.PRIORITY_LOW)
                               .build();
@@ -609,7 +628,7 @@ jobs:
                                   float diffX = Math.abs(event.getRawX() - initialTouchX);
                                   float diffY = Math.abs(event.getRawY() - initialTouchY);
                                   if (diffX < 15 && diffY < 15) {
-                                      toggleSpeechRecognition();
+                                      toggleFloatingSpeech();
                                   }
                                   return true;
                           }
@@ -620,19 +639,26 @@ jobs:
                   windowManager.addView(floatingView, params);
               }
 
-              private void toggleSpeechRecognition() {
+              private void toggleFloatingSpeech() {
                   new Handler(Looper.getMainLooper()).post(() -> {
                       if (isListening) {
                           if (speechRecognizer != null) speechRecognizer.stopListening();
                           return;
                       }
 
+                      vibrateDevice();
+
                       try {
-                          if (speechRecognizer != null) speechRecognizer.destroy();
-                          speechRecognizer = SpeechRecognizer.createSpeechRecognizer(FloatingWidgetService.this);
+                          if (speechRecognizer != null) {
+                              speechRecognizer.destroy();
+                              speechRecognizer = null;
+                          }
+
+                          speechRecognizer = SpeechRecognizer.createSpeechRecognizer(getApplicationContext());
                           Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
                           intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
                           intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
+                          intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
 
                           speechRecognizer.setRecognitionListener(new RecognitionListener() {
                               @Override
@@ -640,7 +666,7 @@ jobs:
                                   isListening = true;
                                   floatingView.setBackground(activeBg);
                                   floatingView.setText("🎙️");
-                                  Toast.makeText(FloatingWidgetService.this, "💡 말씀해 주세요 (듣는 중...)", Toast.LENGTH_SHORT).show();
+                                  Toast.makeText(getApplicationContext(), "💡 듣고 있습니다. 말씀해 주세요...", Toast.LENGTH_SHORT).show();
                               }
 
                               @Override public void onBeginningOfSpeech() {}
@@ -651,12 +677,13 @@ jobs:
                               @Override
                               public void onError(int error) {
                                   resetFloatingButton();
-                                  Toast.makeText(FloatingWidgetService.this, "음성 인식이 취소되었습니다.", Toast.LENGTH_SHORT).show();
+                                  Toast.makeText(getApplicationContext(), "음성 인식이 취소되었습니다. 다시 터치해 주세요.", Toast.LENGTH_SHORT).show();
                               }
 
                               @Override
                               public void onResults(Bundle results) {
                                   resetFloatingButton();
+                                  vibrateDevice();
                                   ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                                   if (matches != null && !matches.isEmpty()) {
                                       String spokenText = matches.get(0);
@@ -674,9 +701,16 @@ jobs:
                           speechRecognizer.startListening(intent);
                       } catch (Exception e) {
                           resetFloatingButton();
-                          Toast.makeText(FloatingWidgetService.this, "음성 인식기를 실행할 수 없습니다.", Toast.LENGTH_SHORT).show();
+                          Toast.makeText(getApplicationContext(), "음성 엔진을 실행할 수 없습니다.", Toast.LENGTH_SHORT).show();
                       }
                   });
+              }
+
+              private void vibrateDevice() {
+                  try {
+                      Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                      if (v != null) v.vibrate(60);
+                  } catch (Exception ignored) {}
               }
 
               private void resetFloatingButton() {
@@ -708,7 +742,7 @@ jobs:
           }
           EOF
 
-          # 메인 액티비티 소스코드 (화면 복귀 및 웹뷰 브릿지)
+          # 메인 액티비티 소스코드 (음성인식 브릿지 및 인텐트 처리)
           cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/MainActivity.java
           package com.k2hkkh.ideadrawer;
 
@@ -731,7 +765,7 @@ jobs:
           import java.util.ArrayList;
 
           public class MainActivity extends BridgeActivity {
-              private SpeechRecognizer speechRecognizer;
+              private SpeechRecognizer inAppRecognizer;
 
               @Override
               public void onCreate(Bundle savedInstanceState) {
@@ -770,15 +804,15 @@ jobs:
                   }
 
                   try {
-                      if (speechRecognizer != null) speechRecognizer.destroy();
-                      speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
+                      if (inAppRecognizer != null) inAppRecognizer.destroy();
+                      inAppRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
                       Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
                       intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
                       intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
 
-                      speechRecognizer.setRecognitionListener(new RecognitionListener() {
+                      inAppRecognizer.setRecognitionListener(new RecognitionListener() {
                           @Override public void onReadyForSpeech(Bundle params) {
-                              Toast.makeText(MainActivity.this, "💡 말씀해 주세요...", Toast.LENGTH_SHORT).show();
+                              Toast.makeText(MainActivity.this, "💡 말씀하세요...", Toast.LENGTH_SHORT).show();
                           }
                           @Override public void onBeginningOfSpeech() {}
                           @Override public void onRmsChanged(float rmsdB) {}
@@ -792,8 +826,7 @@ jobs:
                           public void onResults(Bundle results) {
                               ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                               if (matches != null && !matches.isEmpty()) {
-                                  String recognized = matches.get(0);
-                                  sendTextToWebView(recognized);
+                                  sendTextToWebView(matches.get(0));
                               }
                           }
                           @Override public void onPartialResults(Bundle partialResults) {}
@@ -801,7 +834,7 @@ jobs:
                       });
 
                       evalJS("if (document.getElementById('gemini-mic')) document.getElementById('gemini-mic').classList.add('listening');");
-                      speechRecognizer.startListening(intent);
+                      inAppRecognizer.startListening(intent);
                   } catch (Exception e) {
                       Toast.makeText(this, "음성 인식기를 구동할 수 없습니다.", Toast.LENGTH_SHORT).show();
                   }
