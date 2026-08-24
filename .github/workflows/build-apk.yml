@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: 4. 생각서랍 첫생각/노트 통합 및 수정창 음성인식 UI 구성
+      - name: 4. 생각서랍 플로팅 텍스트 즉시 동기화 UI 구성
         run: |
           mkdir -p www
           cat << 'EOF' > www/index.html
@@ -92,7 +92,7 @@ jobs:
                 gap: 6px;
               }
 
-              /* 카테고리 바 (첫 생각, 노트, 사진, 스케치, 동영상, 전체) */
+              /* 카테고리 바 */
               .category-bar {
                 display: flex;
                 padding: 8px 14px;
@@ -162,7 +162,7 @@ jobs:
               }
               .card-time { font-size: 0.75rem; color: var(--muted); }
               
-              /* 카드 내부 멀티 미디어 그리드 */
+              /* 멀티 미디어 그리드 */
               .card-media-grid {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
@@ -223,6 +223,7 @@ jobs:
                 object-fit: cover;
                 border-radius: 8px;
                 border: 1px solid var(--accent);
+                background: #fff;
               }
               .tray-remove-btn {
                 position: absolute;
@@ -396,6 +397,30 @@ jobs:
                 overflow-y: auto;
               }
 
+              /* 수정창 내 미디어 관리 툴바 */
+              .edit-media-toolbar {
+                display: flex;
+                gap: 6px;
+                background: #121214;
+                padding: 8px 10px;
+                border-radius: 10px;
+                border: 1px solid var(--border);
+                overflow-x: auto;
+              }
+              .edit-add-btn {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                color: #ffffff;
+                padding: 6px 10px;
+                border-radius: 8px;
+                font-size: 0.78rem;
+                cursor: pointer;
+                white-space: nowrap;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+              }
+
               /* 수정창 내 마이크 입력 래퍼 */
               .edit-input-wrapper {
                 position: relative;
@@ -451,8 +476,9 @@ jobs:
                 touch-action: none;
                 position: relative;
                 min-height: 260px;
+                margin: 10px;
               }
-              canvas { width: 100%; height: 100%; display: block; border-radius: 14px; }
+              canvas { width: 100%; height: 100%; display: block; border-radius: 14px; background: #ffffff; }
             </style>
           </head>
           <body>
@@ -464,7 +490,7 @@ jobs:
               <button class="header-btn" onclick="openArchiveModal()">📂</button>
             </header>
 
-            <!-- 개편된 카테고리 바 -->
+            <!-- 카테고리 바 -->
             <div class="category-bar">
               <div class="category-pill active" onclick="selectCategory('첫 생각')">💡 첫 생각</div>
               <div class="category-pill" onclick="selectCategory('노트')">📝 노트</div>
@@ -474,7 +500,7 @@ jobs:
               <div class="category-pill" onclick="selectCategory('전체')">📂 전체</div>
             </div>
 
-            <!-- 피드 영역 (첫 생각 선택 시 항상 깨끗한 빈 화면) -->
+            <!-- 메인 피드 -->
             <div class="main-feed" id="feed-container">
               <div class="empty-canvas" id="empty-hint">
                 떠오르는 생각을 자유롭게 기록하세요.<br>
@@ -488,19 +514,19 @@ jobs:
             <!-- 하단 캡슐 입력 바 -->
             <div class="bottom-bar-wrapper">
               <div class="plus-menu-popover" id="plus-menu">
-                <div class="menu-item" onclick="triggerCamera()">
+                <div class="menu-item" onclick="triggerCamera('main')">
                   <div class="menu-item-icon">📷</div>
                   <span>카메라 촬영 추가</span>
                 </div>
-                <div class="menu-item" onclick="triggerGallery()">
+                <div class="menu-item" onclick="triggerGallery('main')">
                   <div class="menu-item-icon">🖼️</div>
                   <span>사진 선택 (다중)</span>
                 </div>
-                <div class="menu-item" onclick="openSketchModal()">
+                <div class="menu-item" onclick="openSketchModal('main')">
                   <div class="menu-item-icon">🎨</div>
                   <span>스케치 그려서 추가</span>
                 </div>
-                <div class="menu-item" onclick="triggerVideo()">
+                <div class="menu-item" onclick="triggerVideo('main')">
                   <div class="menu-item-icon">🎬</div>
                   <span>동영상 추가</span>
                 </div>
@@ -537,7 +563,7 @@ jobs:
                 </div>
                 <div style="display:flex; gap:6px;">
                   <button class="card-btn" style="background:var(--surface);" onclick="clearCanvas()">지우기</button>
-                  <button class="card-btn" style="background:var(--primary);" onclick="attachSketch()">＋ 첨부 추가</button>
+                  <button class="card-btn" style="background:var(--primary);" onclick="attachSketch()">＋ 스케치 첨부</button>
                   <button class="card-btn" style="background:var(--danger);" onclick="closeSketchModal()">닫기</button>
                 </div>
               </div>
@@ -546,16 +572,22 @@ jobs:
               </div>
             </div>
 
-            <!-- 수정 전용 모달 (음성인식 마이크 탑재) -->
+            <!-- 수정 전용 모달 -->
             <div id="edit-modal" class="modal-full">
               <div class="modal-top">
-                <span style="font-weight:bold; font-size:1rem;">✏️ 생각 및 메모 수정</span>
+                <span style="font-weight:bold; font-size:1rem;">✏️ 생각 및 본문 미디어 수정</span>
                 <div style="display:flex; gap:8px;">
                   <button class="card-btn" style="background:var(--primary);" onclick="confirmEditThought()">💾 수정 완료</button>
                   <button class="card-btn" style="background:var(--danger);" onclick="closeEditModal()">취소</button>
                 </div>
               </div>
               <div class="modal-body">
+                <div class="edit-media-toolbar">
+                  <button class="edit-add-btn" onclick="triggerCamera('edit')">📷 촬영 추가</button>
+                  <button class="edit-add-btn" onclick="triggerGallery('edit')">🖼️ 사진 추가</button>
+                  <button class="edit-add-btn" onclick="openSketchModal('edit')">🎨 스케치 추가</button>
+                  <button class="edit-add-btn" onclick="triggerVideo('edit')">🎬 영상 추가</button>
+                </div>
                 <div id="edit-media-preview" class="card-media-grid"></div>
                 <div class="edit-input-wrapper">
                   <textarea id="edit-input" class="main-input" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 50px 12px 14px; min-height:180px; width:100%;" placeholder="수정할 메모를 입력하거나 마이크로 이어서 말씀하세요..."></textarea>
@@ -579,7 +611,9 @@ jobs:
               let currentCategory = '첫 생각';
               let currentAttachments = [];
               let editingThoughtId = null;
-              let activeVoiceTarget = 'main'; // 'main' 또는 'edit'
+              let editingMediaList = [];
+              let activeTargetContext = 'main';
+              let activeVoiceTarget = 'main';
 
               function selectCategory(cat) {
                 currentCategory = cat;
@@ -600,9 +634,21 @@ jobs:
                 document.getElementById('btn-plus').classList.remove('open');
               }
 
-              function triggerCamera() { closePlusMenu(); document.getElementById('camera-file').click(); }
-              function triggerGallery() { closePlusMenu(); document.getElementById('gallery-file').click(); }
-              function triggerVideo() { closePlusMenu(); document.getElementById('video-file').click(); }
+              function triggerCamera(context = 'main') {
+                activeTargetContext = context;
+                closePlusMenu();
+                document.getElementById('camera-file').click();
+              }
+              function triggerGallery(context = 'main') {
+                activeTargetContext = context;
+                closePlusMenu();
+                document.getElementById('gallery-file').click();
+              }
+              function triggerVideo(context = 'main') {
+                activeTargetContext = context;
+                closePlusMenu();
+                document.getElementById('video-file').click();
+              }
 
               /* 이미지 압축 */
               function compressImage(file, maxWidth = 800, quality = 0.65) {
@@ -660,14 +706,16 @@ jobs:
                 if (files && files.length > 0) {
                   for (let file of Array.from(files)) {
                     const compressedData = await compressImage(file);
-                    currentAttachments.push({
-                      type: type,
-                      data: compressedData,
-                      isVideo: false
-                    });
+                    const item = { type: type, data: compressedData, isVideo: false };
+                    if (activeTargetContext === 'edit') {
+                      editingMediaList.push(item);
+                      renderEditMediaPreview();
+                    } else {
+                      currentAttachments.push(item);
+                      renderAttachmentTray();
+                      updateSendButtonState();
+                    }
                   }
-                  renderAttachmentTray();
-                  updateSendButtonState();
                   input.value = '';
                 }
               }
@@ -676,13 +724,15 @@ jobs:
                 const file = input.files[0];
                 if (file) {
                   const thumb = await captureVideoThumbnail(file);
-                  currentAttachments.push({
-                    type: '동영상',
-                    data: thumb || '',
-                    isVideo: true
-                  });
-                  renderAttachmentTray();
-                  updateSendButtonState();
+                  const item = { type: '동영상', data: thumb || '', isVideo: true };
+                  if (activeTargetContext === 'edit') {
+                    editingMediaList.push(item);
+                    renderEditMediaPreview();
+                  } else {
+                    currentAttachments.push(item);
+                    renderAttachmentTray();
+                    updateSendButtonState();
+                  }
                   input.value = '';
                 }
               }
@@ -726,14 +776,13 @@ jobs:
                 }
               }
 
-              /* 생각 저장 (자동 분류 및 '첫 생각' 자동 원위치) */
+              /* 생각 저장 */
               function handleSendAction() {
                 const input = document.getElementById('prompt-input');
                 const text = input.value.trim();
                 const hasAttachments = currentAttachments.length > 0;
                 
                 if (text || hasAttachments) {
-                  // 카테고리 자동 배정 로직 (노트/사진/스케치/동영상)
                   let category = '노트';
                   if (hasAttachments) {
                     const hasVideo = currentAttachments.some(a => a.type === '동영상');
@@ -751,15 +800,13 @@ jobs:
                   currentAttachments = [];
                   renderAttachmentTray();
                   updateSendButtonState();
-
-                  // 저장 후 항상 '첫 생각'으로 자동 원위치 (깨끗한 화면 유지)
                   selectCategory('첫 생각');
                 } else {
                   triggerVoice('main');
                 }
               }
 
-              /* 음성 인식 (메인 및 수정창 통합) */
+              /* 음성 인식 */
               function triggerVoice(target) {
                 activeVoiceTarget = target;
                 closePlusMenu();
@@ -785,15 +832,18 @@ jobs:
               }
 
               function appendVoiceResult(text) {
+                if (!text || !text.trim()) return;
                 if (activeVoiceTarget === 'edit') {
                   const editArea = document.getElementById('edit-input');
                   const prev = editArea.value.trim();
-                  editArea.value = prev ? prev + ' ' + text : text;
+                  editArea.value = prev ? prev + ' ' + text.trim() : text.trim();
                 } else {
                   const input = document.getElementById('prompt-input');
                   const prev = input.value.trim();
-                  input.value = prev ? prev + ' ' + text : text;
+                  input.value = prev ? prev + ' ' + text.trim() : text.trim();
                   handleInputChange(input);
+                  selectCategory('첫 생각');
+                  input.focus();
                 }
               }
 
@@ -805,16 +855,20 @@ jobs:
                 if (text && text.trim()) appendVoiceResult(text);
               };
 
-              /* 플로팅 데이터 수신 */
-              setInterval(() => {
+              /* 플로팅 음성 텍스트 수신 (폴링 동기화) */
+              function pollFloatingVoiceText() {
                 if (window.AndroidBridge && window.AndroidBridge.getPendingVoiceText) {
-                  const text = window.AndroidBridge.getPendingVoiceText();
-                  if (text && text.trim().length > 0) {
-                    saveThought('노트', text, []);
-                    selectCategory('첫 생각');
-                  }
+                  try {
+                    const text = window.AndroidBridge.getPendingVoiceText();
+                    if (text && text.trim().length > 0) {
+                      activeVoiceTarget = 'main';
+                      appendVoiceResult(text);
+                    }
+                  } catch (e) {}
                 }
-              }, 400);
+              }
+              setInterval(pollFloatingVoiceText, 250);
+              window.addEventListener('DOMContentLoaded', pollFloatingVoiceText);
 
               /* 저장소 관리 */
               function getStorage() {
@@ -842,12 +896,10 @@ jobs:
                 setStorage(list);
               }
 
-              /* 카테고리별 피드 렌더링 */
               function renderFeed() {
                 const list = getStorage();
                 const feed = document.getElementById('feed-container');
 
-                // 1. '첫 생각' 선택 시: 무조건 깨끗한 빈 화면 표시
                 if (currentCategory === '첫 생각') {
                   feed.innerHTML = `
                     <div class="empty-canvas">
@@ -858,7 +910,6 @@ jobs:
                   return;
                 }
 
-                // 2. 나머지 카테고리 선택 시: 해당 카테고리 저장 카드 목록 표시
                 const filtered = (currentCategory === '전체') 
                   ? list 
                   : list.filter(i => (i.category || i.type || '').includes(currentCategory));
@@ -878,7 +929,7 @@ jobs:
                       <div class="card-media-grid">
                         ${item.mediaList.map(m => `
                           <div style="position:relative;">
-                            <img src="${m.data}" class="media-thumb-item" />
+                            <img src="${m.data}" class="media-thumb-item" style="background:#fff;" />
                             ${m.isVideo ? '<span style="position:absolute; bottom:6px; right:6px; background:rgba(0,0,0,0.7); color:#fff; font-size:0.65rem; padding:2px 4px; border-radius:4px;">🎬 동영상</span>' : ''}
                           </div>
                         `).join('')}
@@ -906,22 +957,34 @@ jobs:
                 }
               }
 
-              /* 수정 모달 (음성 입력 연동) */
+              /* 수정 모달 및 본문 미디어 관리 */
               function openEditModal(id) {
                 const item = getStorage().find(i => i.id === id);
                 if (item) {
                   editingThoughtId = id;
+                  editingMediaList = JSON.parse(JSON.stringify(item.mediaList || []));
                   document.getElementById('edit-input').value = item.content || '';
-                  const mediaBox = document.getElementById('edit-media-preview');
-                  mediaBox.innerHTML = (item.mediaList || []).map(m => `
-                    <img src="${m.data}" class="media-thumb-item" />
-                  `).join('');
+                  renderEditMediaPreview();
                   document.getElementById('edit-modal').classList.add('active');
                 }
+              }
+              function renderEditMediaPreview() {
+                const mediaBox = document.getElementById('edit-media-preview');
+                mediaBox.innerHTML = editingMediaList.map((m, idx) => `
+                  <div style="position:relative; width:100%; height:110px;">
+                    <img src="${m.data}" class="media-thumb-item" style="width:100%; height:100%; object-fit:cover; background:#fff;" />
+                    <button onclick="removeEditMedia(${idx})" style="position:absolute; top:4px; right:4px; width:22px; height:22px; border-radius:50%; background:var(--danger); color:#fff; border:none; font-size:0.75rem; cursor:pointer;">✕</button>
+                  </div>
+                `).join('');
+              }
+              function removeEditMedia(idx) {
+                editingMediaList.splice(idx, 1);
+                renderEditMediaPreview();
               }
               function closeEditModal() {
                 document.getElementById('edit-modal').classList.remove('active');
                 editingThoughtId = null;
+                editingMediaList = [];
               }
               function confirmEditThought() {
                 const text = document.getElementById('edit-input').value.trim();
@@ -929,6 +992,16 @@ jobs:
                 const target = list.find(i => i.id === editingThoughtId);
                 if (target) {
                   target.content = text;
+                  target.mediaList = editingMediaList;
+                  
+                  if (editingMediaList.length > 0) {
+                    if (editingMediaList.some(a => a.type === '동영상')) target.category = '동영상';
+                    else if (editingMediaList.some(a => a.type === '스케치')) target.category = '스케치';
+                    else if (editingMediaList.some(a => a.type === '사진')) target.category = '사진';
+                  } else {
+                    target.category = '노트';
+                  }
+
                   target.time = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) + ' (수정됨)';
                   setStorage(list);
                 }
@@ -948,30 +1021,38 @@ jobs:
                 ctx.strokeStyle = currentColor;
               }
 
-              function openSketchModal() {
+              function openSketchModal(context = 'main') {
+                activeTargetContext = context;
                 closePlusMenu();
                 document.getElementById('sketch-modal').classList.add('active');
                 setTimeout(() => {
                   const box = document.getElementById('canvas-wrapper');
-                  canvas.width = box.clientWidth;
-                  canvas.height = box.clientHeight;
+                  canvas.width = box.clientWidth || 300;
+                  canvas.height = box.clientHeight || 300;
+                  ctx.fillStyle = '#ffffff';
+                  ctx.fillRect(0, 0, canvas.width, canvas.height);
                   ctx.lineWidth = 4;
                   ctx.lineCap = 'round';
                   ctx.strokeStyle = currentColor;
                 }, 50);
               }
               function closeSketchModal() { document.getElementById('sketch-modal').classList.remove('active'); }
-              function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+              function clearCanvas() {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+              }
 
               function attachSketch() {
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                currentAttachments.push({
-                  type: '스케치',
-                  data: dataUrl,
-                  isVideo: false
-                });
-                renderAttachmentTray();
-                updateSendButtonState();
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                const item = { type: '스케치', data: dataUrl, isVideo: false };
+                if (activeTargetContext === 'edit') {
+                  editingMediaList.push(item);
+                  renderEditMediaPreview();
+                } else {
+                  currentAttachments.push(item);
+                  renderAttachmentTray();
+                  updateSendButtonState();
+                }
                 closeSketchModal();
               }
 
@@ -1004,7 +1085,7 @@ jobs:
                     </div>
                     ${item.mediaList && item.mediaList.length > 0 ? `
                       <div class="card-media-grid">
-                        ${item.mediaList.map(m => `<img src="${m.data}" class="media-thumb-item" />`).join('')}
+                        ${item.mediaList.map(m => `<img src="${m.data}" class="media-thumb-item" style="background:#fff;" />`).join('')}
                       </div>
                     ` : ''}
                     ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
@@ -1271,6 +1352,7 @@ jobs:
                                   ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                                   if (matches != null && !matches.isEmpty()) {
                                       String spokenText = matches.get(0);
+                                      
                                       SharedPreferences prefs = getSharedPreferences("IdeaPrefs", MODE_PRIVATE);
                                       prefs.edit().putString("PENDING_VOICE", spokenText).apply();
 
@@ -1458,7 +1540,13 @@ jobs:
               private void handleVoiceIntent(Intent intent) {
                   if (intent != null && intent.hasExtra("VOICE_RESULT")) {
                       String voiceText = intent.getStringExtra("VOICE_RESULT");
-                      new Handler(Looper.getMainLooper()).postDelayed(() -> sendTextToWebView(voiceText), 300);
+                      if (voiceText != null && !voiceText.isEmpty()) {
+                          SharedPreferences prefs = getSharedPreferences("IdeaPrefs", MODE_PRIVATE);
+                          prefs.edit().putString("PENDING_VOICE", voiceText).apply();
+                          
+                          new Handler(Looper.getMainLooper()).postDelayed(() -> sendTextToWebView(voiceText), 400);
+                          new Handler(Looper.getMainLooper()).postDelayed(() -> sendTextToWebView(voiceText), 1000);
+                      }
                   }
               }
 
