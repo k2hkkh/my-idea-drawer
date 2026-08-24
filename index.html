@@ -6,9 +6,8 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>생각서랍 - 1인 기업가를 위한 AI 아이디어 파이프라인</title>
+  <title>생각서랍 - AI 아이디어 파이프라인</title>
 
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -27,7 +26,6 @@
     }
   </script>
 
-  <!-- React 18 & Babel CDN -->
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
@@ -39,9 +37,7 @@
       -webkit-tap-highlight-color: transparent;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-    textarea {
-      resize: none;
-    }
+    textarea { resize: none; }
     .recording-pulse {
       animation: pulse 1.5s infinite;
     }
@@ -58,7 +54,6 @@
   <script type="text/babel">
     const { useState, useEffect, Component, useRef } = React;
 
-    // --- AI 자동 분류 및 다각도 검증 알고리즘 ---
     function analyzeAndClassifyAI(text) {
       if (!text) text = "";
       const clean = text.toLowerCase();
@@ -105,13 +100,13 @@
       if (execution >= 85 && cost >= 85) {
         advice = "1인 린 스타트업으로 즉시 개발 및 출시하기에 최적입니다. 최소 기능(MVP)으로 빠르게 피드백을 수집하세요.";
       } else if (patent >= 85) {
-        advice = "독창적인 구조와 기술적 차별점이 돋보입니다. 개발 전 선행기술조사 후 특허 가출원을 권장합니다.";
+        advice = "독창적인 구조와 기술적 차별점이 돋보입니다. 선행기술조사 후 특허 가출원을 권장합니다.";
       } else if (b2b >= 85) {
-        advice = "공공/기업 시장 규모가 큽니다. 시범 사업 제안서(PoC) 형태로 접근하는 것이 유리합니다.";
+        advice = "공공/기업 타깃 시장 규모가 큽니다. 시범 사업 제안서(PoC) 형태로 접근하는 것이 유리합니다.";
       } else if (execution < 65) {
-        advice = "잠재력은 높으나 초기 리소스가 많이 듭니다. 1단계 범위를 축소하여 린하게 시작하세요.";
+        advice = "잠재력은 높으나 초기 리소스가 많이 듭니다. 1단계 범위를 축소해 보세요.";
       } else {
-        advice = "핵심 가치 제안이 명확합니다. 사용자의 가장 큰 불편을 해결하는 단일 기능에 집중하세요.";
+        advice = "핵심 가치 제안이 명확합니다. 사용자의 가장 큰 불편을 해결하는 단일 핵심 기능에 집중하세요.";
       }
 
       const avg = (b2b + cost + patent + execution) / 4;
@@ -120,7 +115,6 @@
       return { category, b2b, cost, patent, execution, advice, statusBadge };
     }
 
-    // --- 전수 데이터 안전 마이그레이션 ---
     function loadAndMigrateAllData() {
       const STORAGE_KEY = "my_idea_drawer_data_v2";
       let allFoundItems = [];
@@ -147,10 +141,7 @@
         };
       };
 
-      const knownKeys = [
-        STORAGE_KEY, "my_idea_drawer_data", "ideas", "my_ideas", "idea_drawer", "my-idea-drawer", "ideaDrawer"
-      ];
-
+      const knownKeys = [STORAGE_KEY, "my_idea_drawer_data", "ideas", "my_ideas", "idea_drawer", "my-idea-drawer", "ideaDrawer"];
       knownKeys.forEach(k => {
         try {
           const raw = localStorage.getItem(k);
@@ -168,40 +159,6 @@
       return allFoundItems;
     }
 
-    // --- Error Boundary ---
-    class ErrorBoundary extends Component {
-      constructor(props) {
-        super(props);
-        this.state = { hasError: false };
-      }
-      static getDerivedStateFromError() {
-        return { hasError: true };
-      }
-      downloadBackup = () => {
-        const data = localStorage.getItem("my_idea_drawer_data_v2") || "[]";
-        const blob = new Blob([data], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `idea_drawer_backup_${new Date().toISOString().slice(0,10)}.json`;
-        a.click();
-      };
-      render() {
-        if (this.state.hasError) {
-          return (
-            <div class="p-6 max-w-md mx-auto text-center mt-12 bg-[#24201d] rounded-2xl border border-red-500/40">
-              <h2 class="text-xl font-bold text-red-400 mb-2">시스템 안전 모드</h2>
-              <button onClick={this.downloadBackup} class="w-full py-3 bg-amber-600 text-white font-bold rounded-xl text-sm mb-2">
-                긴급 데이터 백업 다운로드
-              </button>
-            </div>
-          );
-        }
-        return this.props.children;
-      }
-    }
-
-    // --- 메인 App 컴포넌트 ---
     function IdeaDrawerApp() {
       const [tab, setTab] = useState("01");
       const [inputText, setInputText] = useState("");
@@ -210,10 +167,9 @@
       const [editingId, setEditingId] = useState(null);
       const [editText, setEditText] = useState("");
       const [isRecording, setIsRecording] = useState(false);
-      const [showBackupModal, setShowBackupModal] = useState(false);
+      const [autoVoiceMode, setAutoVoiceMode] = useState(false);
 
       const fileInputRef = useRef(null);
-      const backupInputRef = useRef(null);
       const recognitionRef = useRef(null);
 
       const saveIdeas = (newIdeas) => {
@@ -221,7 +177,6 @@
         localStorage.setItem("my_idea_drawer_data_v2", JSON.stringify(newIdeas));
       };
 
-      // 음성 녹음 시작 함수
       const startListening = () => {
         if (recognitionRef.current && !isRecording) {
           try {
@@ -233,7 +188,7 @@
 
       const stopListening = () => {
         if (recognitionRef.current) {
-          recognitionRef.current.stop();
+          try { recognitionRef.current.stop(); } catch(e) {}
           setIsRecording(false);
         }
       };
@@ -242,7 +197,6 @@
         const restored = loadAndMigrateAllData();
         setIdeas(restored);
 
-        // Web Speech API 초기화
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (SpeechRecognition) {
           const rec = new SpeechRecognition();
@@ -267,43 +221,19 @@
           recognitionRef.current = rec;
         }
 
-        // --- 외부 URL 트리거 감지 (위젯/단축어 연동) ---
+        // URL 파라미터 확인 및 접속 즉시 마이크 자동 시작
         const urlParams = new URLSearchParams(window.location.search);
-        
-        // 1. 단축어 등에서 ?text=내용 으로 바로 보낸 경우
-        const incomingText = urlParams.get('text') || urlParams.get('idea');
-        if (incomingText) {
-          const analysis = analyzeAndClassifyAI(incomingText);
-          const newIdea = {
-            id: Date.now().toString(),
-            category: analysis.category,
-            text: incomingText.trim(),
-            createdAt: new Date().toISOString(),
-            pipeline: "02",
-            evaluation: analysis
-          };
-          const updated = [newIdea, ...restored];
-          saveIdeas(updated);
-          setTab("02");
-          // URL 정리
-          window.history.replaceState({}, document.title, window.location.pathname);
-        }
-        
-        // 2. ?voice=1 로 바로가기 실행 시 즉시 마이크 켜기
         if (urlParams.get('voice') === '1' || urlParams.get('mic') === '1') {
+          setAutoVoiceMode(true);
           setTimeout(() => {
             startListening();
-          }, 400);
-          window.history.replaceState({}, document.title, window.location.pathname);
+          }, 500);
         }
       }, []);
 
       const toggleVoiceRecognition = () => {
-        if (isRecording) {
-          stopListening();
-        } else {
-          startListening();
-        }
+        if (isRecording) stopListening();
+        else startListening();
       };
 
       const handleImageUpload = (e) => {
@@ -372,78 +302,19 @@
         setEditText("");
       };
 
-      const exportJSON = () => {
-        const blob = new Blob([JSON.stringify(ideas, null, 2)], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `생각서랍_전체백업_${new Date().toISOString().slice(0, 10)}.json`;
-        a.click();
-      };
-
-      const importJSON = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          try {
-            const imported = JSON.parse(event.target.result);
-            if (Array.isArray(imported)) {
-              saveIdeas(imported);
-              alert(`${imported.length}개의 아이디어가 복원되었습니다.`);
-              setShowBackupModal(false);
-            }
-          } catch (err) {
-            alert("파일 복원 실패");
-          }
-        };
-        reader.readAsText(file);
-      };
-
       return (
         <div class="max-w-md mx-auto px-4 pt-5">
-          {/* 헤더 */}
           <header class="mb-4 flex justify-between items-center">
             <div>
-              <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-                생각서랍
-              </h1>
+              <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">생각서랍</h1>
               <p class="text-xs text-stone-400">1인 기업가를 위한 AI 아이디어 파이프라인</p>
             </div>
-            <button
-              onClick={() => setShowBackupModal(true)}
-              class="px-2.5 py-1.5 bg-[#24201d] border border-stone-700 hover:border-stone-500 rounded-lg text-xs text-stone-300 flex items-center gap-1"
-            >
-              💾 <span>백업/복원</span>
-            </button>
           </header>
-
-          {/* 백업 모달 */}
-          {showBackupModal && (
-            <div class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <div class="bg-[#24201d] border border-stone-700 rounded-2xl p-5 max-w-sm w-full space-y-4">
-                <div class="flex justify-between items-center border-b border-stone-800 pb-3">
-                  <h3 class="text-sm font-bold text-stone-100">데이터 백업 및 복원</h3>
-                  <button onClick={() => setShowBackupModal(false)} class="text-stone-400 text-sm">✕</button>
-                </div>
-                <p class="text-xs text-stone-400">총 <b class="text-amber-400">{ideas.length}개</b>의 아이디어가 보관 중입니다.</p>
-                <div class="space-y-2">
-                  <button onClick={exportJSON} class="w-full py-2.5 bg-amber-600 text-white font-bold rounded-xl text-xs">
-                    📥 전체 데이터 백업 (JSON 다운로드)
-                  </button>
-                  <button onClick={() => backupInputRef.current.click()} class="w-full py-2.5 bg-stone-800 text-stone-300 font-semibold rounded-xl text-xs">
-                    📤 백업 파일 복원
-                  </button>
-                  <input type="file" ref={backupInputRef} onChange={importJSON} accept=".json" class="hidden" />
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* 탭 01: 대형 전체화면 몰입형 에디터 */}
           {tab === "01" && (
             <div class="space-y-3">
-              <div class="bg-[#24201d] border border-stone-800 rounded-2xl p-4 relative shadow-xl flex flex-col h-[68vh] justify-between">
+              <div class="bg-[#24201d] border border-stone-800 rounded-2xl p-4 relative shadow-xl flex flex-col h-[70vh] justify-between">
                 
                 {/* 상단 툴바 */}
                 <div class="flex justify-between items-center pb-2 border-b border-stone-800/80">
@@ -465,7 +336,7 @@
                       class="px-3 py-1.5 rounded-xl text-xs font-bold bg-stone-800 text-stone-300 border border-stone-700 flex items-center gap-1.5"
                     >
                       <span>📷</span>
-                      <span>사진/카메라</span>
+                      <span>사진/스케치</span>
                     </button>
                     <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" class="hidden" />
                   </div>
@@ -500,7 +371,7 @@
                 {/* 하단 바 */}
                 <div class="pt-3 border-t border-stone-800 flex justify-between items-center">
                   <span class="text-xs text-stone-500">
-                    {inputText.length}자 • <span class="text-amber-400">AI 자동분류 & 검증</span>
+                    {inputText.length}자 • <span class="text-amber-400">AI 자동분류</span>
                   </span>
                   <button
                     onClick={handleAddIdea}
@@ -670,12 +541,7 @@
       );
     }
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(
-      <ErrorBoundary>
-        <IdeaDrawerApp />
-      </ErrorBoundary>
-    );
+    ReactDOM.createRoot(document.getElementById('root')).render(<IdeaDrawerApp />);
   </script>
 </body>
 </html>
