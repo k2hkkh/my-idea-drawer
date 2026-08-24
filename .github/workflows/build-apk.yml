@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: 4. 생각서랍 플로팅 텍스트 즉시 동기화 UI 구성
+      - name: 4. 생각서랍 중복방지 및 맞춤 수정 UI 구성
         run: |
           mkdir -p www
           cat << 'EOF' > www/index.html
@@ -175,7 +175,7 @@ jobs:
                 object-fit: cover;
                 border-radius: 8px;
                 border: 1px solid var(--border);
-                background: #000;
+                background: #fff;
               }
 
               .card-content { font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap; }
@@ -397,9 +397,9 @@ jobs:
                 overflow-y: auto;
               }
 
-              /* 수정창 내 미디어 관리 툴바 */
+              /* 수정창 내 미디어 툴바 */
               .edit-media-toolbar {
-                display: flex;
+                display: none;
                 gap: 6px;
                 background: #121214;
                 padding: 8px 10px;
@@ -572,23 +572,23 @@ jobs:
               </div>
             </div>
 
-            <!-- 수정 전용 모달 -->
+            <!-- 수정 전용 모달 (카테고리별 맞춤 미디어 툴바 적용) -->
             <div id="edit-modal" class="modal-full">
               <div class="modal-top">
-                <span style="font-weight:bold; font-size:1rem;">✏️ 생각 및 본문 미디어 수정</span>
+                <span id="edit-modal-title" style="font-weight:bold; font-size:1rem;">✏️ 생각 수정</span>
                 <div style="display:flex; gap:8px;">
                   <button class="card-btn" style="background:var(--primary);" onclick="confirmEditThought()">💾 수정 완료</button>
                   <button class="card-btn" style="background:var(--danger);" onclick="closeEditModal()">취소</button>
                 </div>
               </div>
               <div class="modal-body">
-                <div class="edit-media-toolbar">
-                  <button class="edit-add-btn" onclick="triggerCamera('edit')">📷 촬영 추가</button>
-                  <button class="edit-add-btn" onclick="triggerGallery('edit')">🖼️ 사진 추가</button>
-                  <button class="edit-add-btn" onclick="openSketchModal('edit')">🎨 스케치 추가</button>
-                  <button class="edit-add-btn" onclick="triggerVideo('edit')">🎬 영상 추가</button>
-                </div>
+                <!-- 카테고리에 맞는 전용 툴바만 동적 표시 -->
+                <div id="edit-media-toolbar" class="edit-media-toolbar"></div>
+
+                <!-- 수정 대상 미디어 목록 -->
                 <div id="edit-media-preview" class="card-media-grid"></div>
+
+                <!-- 텍스트 수정 및 마이크 이어쓰기 -->
                 <div class="edit-input-wrapper">
                   <textarea id="edit-input" class="main-input" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 50px 12px 14px; min-height:180px; width:100%;" placeholder="수정할 메모를 입력하거나 마이크로 이어서 말씀하세요..."></textarea>
                   <button id="edit-mic-btn" class="edit-mic-btn" onclick="triggerVoice('edit')">
@@ -614,6 +614,10 @@ jobs:
               let editingMediaList = [];
               let activeTargetContext = 'main';
               let activeVoiceTarget = 'main';
+
+              /* 중복 입력 방지 상태값 */
+              let lastProcessedVoice = '';
+              let lastProcessedTime = 0;
 
               function selectCategory(cat) {
                 currentCategory = cat;
@@ -831,16 +835,27 @@ jobs:
                 }
               }
 
+              /* 중복 입력 방지 로직 적용 */
               function appendVoiceResult(text) {
                 if (!text || !text.trim()) return;
+                const clean = text.trim();
+                const now = Date.now();
+
+                // 2.5초 내 동일 텍스트 수신 시 중복 무시
+                if (clean === lastProcessedVoice && (now - lastProcessedTime < 2500)) {
+                  return;
+                }
+                lastProcessedVoice = clean;
+                lastProcessedTime = now;
+
                 if (activeVoiceTarget === 'edit') {
                   const editArea = document.getElementById('edit-input');
                   const prev = editArea.value.trim();
-                  editArea.value = prev ? prev + ' ' + text.trim() : text.trim();
+                  editArea.value = prev ? prev + ' ' + clean : clean;
                 } else {
                   const input = document.getElementById('prompt-input');
                   const prev = input.value.trim();
-                  input.value = prev ? prev + ' ' + text.trim() : text.trim();
+                  input.value = prev ? prev + ' ' + clean : clean;
                   handleInputChange(input);
                   selectCategory('첫 생각');
                   input.focus();
@@ -855,7 +870,7 @@ jobs:
                 if (text && text.trim()) appendVoiceResult(text);
               };
 
-              /* 플로팅 음성 텍스트 수신 (폴링 동기화) */
+              /* 플로팅 음성 데이터 1회성 안전 수신 */
               function pollFloatingVoiceText() {
                 if (window.AndroidBridge && window.AndroidBridge.getPendingVoiceText) {
                   try {
@@ -867,7 +882,7 @@ jobs:
                   } catch (e) {}
                 }
               }
-              setInterval(pollFloatingVoiceText, 250);
+              setInterval(pollFloatingVoiceText, 300);
               window.addEventListener('DOMContentLoaded', pollFloatingVoiceText);
 
               /* 저장소 관리 */
@@ -929,7 +944,7 @@ jobs:
                       <div class="card-media-grid">
                         ${item.mediaList.map(m => `
                           <div style="position:relative;">
-                            <img src="${m.data}" class="media-thumb-item" style="background:#fff;" />
+                            <img src="${m.data}" class="media-thumb-item" />
                             ${m.isVideo ? '<span style="position:absolute; bottom:6px; right:6px; background:rgba(0,0,0,0.7); color:#fff; font-size:0.65rem; padding:2px 4px; border-radius:4px;">🎬 동영상</span>' : ''}
                           </div>
                         `).join('')}
@@ -957,35 +972,69 @@ jobs:
                 }
               }
 
-              /* 수정 모달 및 본문 미디어 관리 */
+              /* 카테고리별 맞춤 수정 모달 로직 */
               function openEditModal(id) {
                 const item = getStorage().find(i => i.id === id);
                 if (item) {
                   editingThoughtId = id;
                   editingMediaList = JSON.parse(JSON.stringify(item.mediaList || []));
                   document.getElementById('edit-input').value = item.content || '';
+                  
+                  const cat = item.category || item.type || '노트';
+                  document.getElementById('edit-modal-title').innerText = `✏️ [${cat}] 수정`;
+
+                  // 카테고리 맞춤형 툴바 생성
+                  renderCustomEditToolbar(cat, editingMediaList);
                   renderEditMediaPreview();
                   document.getElementById('edit-modal').classList.add('active');
                 }
               }
+
+              function renderCustomEditToolbar(category, mediaList) {
+                const toolbar = document.getElementById('edit-media-toolbar');
+                let buttons = '';
+
+                if (category.includes('스케치') || mediaList.some(m => m.type === '스케치')) {
+                  buttons += `<button class="edit-add-btn" onclick="openSketchModal('edit')">🎨 스케치 추가</button>`;
+                } else if (category.includes('사진') || mediaList.some(m => m.type === '사진')) {
+                  buttons += `
+                    <button class="edit-add-btn" onclick="triggerCamera('edit')">📷 촬영 추가</button>
+                    <button class="edit-add-btn" onclick="triggerGallery('edit')">🖼️ 사진 추가</button>
+                  `;
+                } else if (category.includes('동영상') || mediaList.some(m => m.type === '동영상')) {
+                  buttons += `<button class="edit-add-btn" onclick="triggerVideo('edit')">🎬 영상 추가</button>`;
+                }
+
+                if (buttons) {
+                  toolbar.style.display = 'flex';
+                  toolbar.innerHTML = buttons;
+                } else {
+                  toolbar.style.display = 'none';
+                  toolbar.innerHTML = '';
+                }
+              }
+
               function renderEditMediaPreview() {
                 const mediaBox = document.getElementById('edit-media-preview');
                 mediaBox.innerHTML = editingMediaList.map((m, idx) => `
                   <div style="position:relative; width:100%; height:110px;">
-                    <img src="${m.data}" class="media-thumb-item" style="width:100%; height:100%; object-fit:cover; background:#fff;" />
+                    <img src="${m.data}" class="media-thumb-item" style="width:100%; height:100%; object-fit:cover;" />
                     <button onclick="removeEditMedia(${idx})" style="position:absolute; top:4px; right:4px; width:22px; height:22px; border-radius:50%; background:var(--danger); color:#fff; border:none; font-size:0.75rem; cursor:pointer;">✕</button>
                   </div>
                 `).join('');
               }
+
               function removeEditMedia(idx) {
                 editingMediaList.splice(idx, 1);
                 renderEditMediaPreview();
               }
+
               function closeEditModal() {
                 document.getElementById('edit-modal').classList.remove('active');
                 editingThoughtId = null;
                 editingMediaList = [];
               }
+
               function confirmEditThought() {
                 const text = document.getElementById('edit-input').value.trim();
                 const list = getStorage();
@@ -1085,7 +1134,7 @@ jobs:
                     </div>
                     ${item.mediaList && item.mediaList.length > 0 ? `
                       <div class="card-media-grid">
-                        ${item.mediaList.map(m => `<img src="${m.data}" class="media-thumb-item" style="background:#fff;" />`).join('')}
+                        ${item.mediaList.map(m => `<img src="${m.data}" class="media-thumb-item" />`).join('')}
                       </div>
                     ` : ''}
                     ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
@@ -1357,7 +1406,6 @@ jobs:
                                       prefs.edit().putString("PENDING_VOICE", spokenText).apply();
 
                                       Intent appIntent = new Intent(FloatingWidgetService.this, MainActivity.class);
-                                      appIntent.putExtra("VOICE_RESULT", spokenText);
                                       appIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                       startActivity(appIntent);
                                   }
@@ -1453,15 +1501,13 @@ jobs:
                           public String getPendingVoiceText() {
                               SharedPreferences prefs = getSharedPreferences("IdeaPrefs", MODE_PRIVATE);
                               String pending = prefs.getString("PENDING_VOICE", "");
-                              if (!pending.isEmpty()) {
+                              if (pending != null && !pending.isEmpty()) {
                                   prefs.edit().remove("PENDING_VOICE").apply();
                               }
                               return pending;
                           }
                       }, "AndroidBridge");
                   }
-
-                  handleVoiceIntent(getIntent());
               }
 
               private void requestAppPermissions() {
@@ -1528,26 +1574,6 @@ jobs:
               public void onResume() {
                   super.onResume();
                   startWidgetIfAllowed();
-              }
-
-              @Override
-              public void onNewIntent(Intent intent) {
-                  super.onNewIntent(intent);
-                  setIntent(intent);
-                  handleVoiceIntent(intent);
-              }
-
-              private void handleVoiceIntent(Intent intent) {
-                  if (intent != null && intent.hasExtra("VOICE_RESULT")) {
-                      String voiceText = intent.getStringExtra("VOICE_RESULT");
-                      if (voiceText != null && !voiceText.isEmpty()) {
-                          SharedPreferences prefs = getSharedPreferences("IdeaPrefs", MODE_PRIVATE);
-                          prefs.edit().putString("PENDING_VOICE", voiceText).apply();
-                          
-                          new Handler(Looper.getMainLooper()).postDelayed(() -> sendTextToWebView(voiceText), 400);
-                          new Handler(Looper.getMainLooper()).postDelayed(() -> sendTextToWebView(voiceText), 1000);
-                      }
-                  }
               }
 
               private void sendTextToWebView(String text) {
