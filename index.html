@@ -58,16 +58,15 @@
   <script type="text/babel">
     const { useState, useEffect, Component, useRef } = React;
 
-    // --- AI 카테고리 자동 분류 및 다각도 검증 알고리즘 ---
+    // --- AI 자동 분류 및 다각도 검증 알고리즘 ---
     function analyzeAndClassifyAI(text) {
       if (!text) text = "";
       const clean = text.toLowerCase();
       
-      // 1. 카테고리 자동 판별
       let category = "제품";
       if (/특허|기구|원천기술|메커니즘|센서|회로|장치|구조|출원|도면/.test(clean)) {
         category = "특허";
-      } else if (/앱|웹|플랫폼|sw|솔루션|api|ui|ux|알고리즘|ai|서버|프론트|소프트웨어/.test(clean)) {
+      } else if (/앱|웹|플랫폼|sw|솔루션|api|ui|ux|알고리즘|ai|서버|소프트웨어/.test(clean)) {
         category = "앱/SW";
       } else if (/비즈니스|구독|bm|수익|마케팅|영업|단가|시장|공공기관|납품|지자체|b2b/.test(clean)) {
         category = "비즈니스";
@@ -75,7 +74,6 @@
         category = "개발메모";
       }
 
-      // 2. 동적 평가 점수 계산
       let hash = 0;
       for (let i = 0; i < clean.length; i++) {
         hash = (hash << 5) - hash + clean.charCodeAt(i);
@@ -84,7 +82,7 @@
       const seed = Math.abs(hash);
 
       let b2b = 68 + (seed % 14);
-      if (/공공|기관|기업|b2b|납품|솔루션|플랫폼|단체|지자체|행정|시스템|데이터/.test(clean)) b2b += 14;
+      if (/공공|기관|기업|b2b|납품|솔루션|플랫폼|지자체|행정|시스템|데이터/.test(clean)) b2b += 14;
       if (/초간편|단순|개인|일상|취미|메모|딱지/.test(clean)) b2b -= 6;
       b2b = Math.min(98, Math.max(55, b2b));
 
@@ -103,18 +101,17 @@
       if (/공공기관|하드웨어|금형|공장|인가|인허가|법률|대규모/.test(clean)) execution -= 12;
       execution = Math.min(98, Math.max(50, execution));
 
-      // 3. 맞춤 조언 생성
       let advice = "";
       if (execution >= 85 && cost >= 85) {
-        advice = "1인 린 스타트업으로 즉시 개발 및 출시하기에 최적입니다. 최소 기능(MVP)으로 빠르게 시장 피드백을 수집하세요.";
+        advice = "1인 린 스타트업으로 즉시 개발 및 출시하기에 최적입니다. 최소 기능(MVP)으로 빠르게 피드백을 수집하세요.";
       } else if (patent >= 85) {
-        advice = "독창적인 구조와 기술적 차별점이 돋보입니다. 개발 착수 전 선행기술조사를 진행하고 특허 명세서 가출원을 권장합니다.";
+        advice = "독창적인 구조와 기술적 차별점이 돋보입니다. 개발 전 선행기술조사 후 특허 가출원을 권장합니다.";
       } else if (b2b >= 85) {
-        advice = "공공/기업 타깃 시장 규모가 큽니다. 초기 PoC(개념 검증) 사례를 구축하여 시범 사업 제안서 형태로 접근하는 것이 유리합니다.";
+        advice = "공공/기업 시장 규모가 큽니다. 시범 사업 제안서(PoC) 형태로 접근하는 것이 유리합니다.";
       } else if (execution < 65) {
-        advice = "아이디어의 잠재력은 높으나 초기 리소스가 많이 필요합니다. 공공 연계나 파트너십을 고려하여 1단계 범위를 축소해 보세요.";
+        advice = "잠재력은 높으나 초기 리소스가 많이 듭니다. 1단계 범위를 축소하여 린하게 시작하세요.";
       } else {
-        advice = "핵심 가치 제안이 명확합니다. 타깃 사용자의 가장 큰 불편(Pain Point)을 해결하는 단일 핵심 기능에 집중하세요.";
+        advice = "핵심 가치 제안이 명확합니다. 사용자의 가장 큰 불편을 해결하는 단일 기능에 집중하세요.";
       }
 
       const avg = (b2b + cost + patent + execution) / 4;
@@ -193,13 +190,9 @@
         if (this.state.hasError) {
           return (
             <div class="p-6 max-w-md mx-auto text-center mt-12 bg-[#24201d] rounded-2xl border border-red-500/40">
-              <h2 class="text-xl font-bold text-red-400 mb-2">시스템 안전 모드 가동</h2>
-              <p class="text-xs text-gray-400 mb-6">데이터는 안전합니다. 백업 다운로드 후 새로고침하세요.</p>
-              <button onClick={this.downloadBackup} class="w-full py-3 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl text-sm mb-2">
-                긴급 데이터 백업 (JSON 다운로드)
-              </button>
-              <button onClick={() => window.location.reload()} class="w-full py-3 bg-stone-800 text-stone-300 rounded-xl text-sm">
-                새로고침
+              <h2 class="text-xl font-bold text-red-400 mb-2">시스템 안전 모드</h2>
+              <button onClick={this.downloadBackup} class="w-full py-3 bg-amber-600 text-white font-bold rounded-xl text-sm mb-2">
+                긴급 데이터 백업 다운로드
               </button>
             </div>
           );
@@ -210,7 +203,7 @@
 
     // --- 메인 App 컴포넌트 ---
     function IdeaDrawerApp() {
-      const [tab, setTab] = useState("01"); // 01:생각, 02:검증, 03:보류, 04:실행
+      const [tab, setTab] = useState("01");
       const [inputText, setInputText] = useState("");
       const [attachedImage, setAttachedImage] = useState(null);
       const [ideas, setIdeas] = useState([]);
@@ -222,6 +215,28 @@
       const fileInputRef = useRef(null);
       const backupInputRef = useRef(null);
       const recognitionRef = useRef(null);
+
+      const saveIdeas = (newIdeas) => {
+        setIdeas(newIdeas);
+        localStorage.setItem("my_idea_drawer_data_v2", JSON.stringify(newIdeas));
+      };
+
+      // 음성 녹음 시작 함수
+      const startListening = () => {
+        if (recognitionRef.current && !isRecording) {
+          try {
+            recognitionRef.current.start();
+            setIsRecording(true);
+          } catch(e) {}
+        }
+      };
+
+      const stopListening = () => {
+        if (recognitionRef.current) {
+          recognitionRef.current.stop();
+          setIsRecording(false);
+        }
+      };
 
       useEffect(() => {
         const restored = loadAndMigrateAllData();
@@ -247,68 +262,69 @@
             }
           };
 
-          rec.onerror = (event) => {
-            console.warn("Speech recognition error:", event.error);
-            setIsRecording(false);
-          };
-
-          rec.onend = () => {
-            setIsRecording(false);
-          };
-
+          rec.onerror = () => setIsRecording(false);
+          rec.onend = () => setIsRecording(false);
           recognitionRef.current = rec;
+        }
+
+        // --- 외부 URL 트리거 감지 (위젯/단축어 연동) ---
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // 1. 단축어 등에서 ?text=내용 으로 바로 보낸 경우
+        const incomingText = urlParams.get('text') || urlParams.get('idea');
+        if (incomingText) {
+          const analysis = analyzeAndClassifyAI(incomingText);
+          const newIdea = {
+            id: Date.now().toString(),
+            category: analysis.category,
+            text: incomingText.trim(),
+            createdAt: new Date().toISOString(),
+            pipeline: "02",
+            evaluation: analysis
+          };
+          const updated = [newIdea, ...restored];
+          saveIdeas(updated);
+          setTab("02");
+          // URL 정리
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        
+        // 2. ?voice=1 로 바로가기 실행 시 즉시 마이크 켜기
+        if (urlParams.get('voice') === '1' || urlParams.get('mic') === '1') {
+          setTimeout(() => {
+            startListening();
+          }, 400);
+          window.history.replaceState({}, document.title, window.location.pathname);
         }
       }, []);
 
-      const saveIdeas = (newIdeas) => {
-        setIdeas(newIdeas);
-        localStorage.setItem("my_idea_drawer_data_v2", JSON.stringify(newIdeas));
-      };
-
-      // 음성 녹음 토글
       const toggleVoiceRecognition = () => {
-        if (!recognitionRef.current) {
-          alert("현재 브라우저에서 마이크 음성 인식을 지원하지 않습니다. (Chrome 또는 모바일 브라우저 권장)");
-          return;
-        }
         if (isRecording) {
-          recognitionRef.current.stop();
-          setIsRecording(false);
+          stopListening();
         } else {
-          try {
-            recognitionRef.current.start();
-            setIsRecording(true);
-          } catch (e) {
-            recognitionRef.current.stop();
-            setIsRecording(false);
-          }
+          startListening();
         }
       };
 
-      // 사진/카메라 이미지 첨부
       const handleImageUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
-        reader.onload = (event) => {
-          setAttachedImage(event.target.result);
-        };
+        reader.onload = (event) => setAttachedImage(event.target.result);
         reader.readAsDataURL(file);
       };
 
-      // 새 생각 등록 (AI 자동 분류 및 검증 실행)
       const handleAddIdea = () => {
         if (!inputText.trim() && !attachedImage) return;
         
         const analysis = analyzeAndClassifyAI(inputText);
         const newIdea = {
           id: Date.now().toString(),
-          category: analysis.category, // AI 자동 판별 결과
+          category: analysis.category,
           text: inputText.trim(),
           image: attachedImage,
           createdAt: new Date().toISOString(),
-          pipeline: "02", // 검증 탭으로 등록
+          pipeline: "02",
           evaluation: analysis
         };
 
@@ -316,33 +332,26 @@
         saveIdeas(updated);
         setInputText("");
         setAttachedImage(null);
-        if (isRecording && recognitionRef.current) {
-          recognitionRef.current.stop();
-          setIsRecording(false);
-        }
+        stopListening();
         setTab("02");
       };
 
-      // 파이프라인 이동
       const movePipeline = (id, targetPipeline) => {
         const updated = ideas.map(item => item.id === id ? { ...item, pipeline: targetPipeline } : item);
         saveIdeas(updated);
       };
 
-      // 삭제
       const deleteIdea = (id) => {
         if (confirm("이 아이디어를 삭제하시겠습니까?")) {
           saveIdeas(ideas.filter(item => item.id !== id));
         }
       };
 
-      // 수정 시작
       const startEditing = (item) => {
         setEditingId(item.id);
         setEditText(item.text);
       };
 
-      // 수정 저장 (텍스트 변경 시 AI 카테고리/점수 자동 재계산)
       const saveEdit = (id) => {
         if (!editText.trim()) return;
         const updated = ideas.map(item => {
@@ -363,7 +372,6 @@
         setEditText("");
       };
 
-      // JSON 백업/복원
       const exportJSON = () => {
         const blob = new Blob([JSON.stringify(ideas, null, 2)], { type: "application/json" });
         const url = URL.createObjectURL(blob);
@@ -386,7 +394,7 @@
               setShowBackupModal(false);
             }
           } catch (err) {
-            alert("파일을 읽는 도중 오류가 발생했습니다.");
+            alert("파일 복원 실패");
           }
         };
         reader.readAsText(file);
@@ -394,7 +402,7 @@
 
       return (
         <div class="max-w-md mx-auto px-4 pt-5">
-          {/* 상단 헤더 */}
+          {/* 헤더 */}
           <header class="mb-4 flex justify-between items-center">
             <div>
               <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
@@ -415,16 +423,16 @@
             <div class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
               <div class="bg-[#24201d] border border-stone-700 rounded-2xl p-5 max-w-sm w-full space-y-4">
                 <div class="flex justify-between items-center border-b border-stone-800 pb-3">
-                  <h3 class="text-sm font-bold text-stone-100">데이터 안전 백업 및 복원</h3>
-                  <button onClick={() => setShowBackupModal(false)} class="text-stone-400 hover:text-white text-sm">✕</button>
+                  <h3 class="text-sm font-bold text-stone-100">데이터 백업 및 복원</h3>
+                  <button onClick={() => setShowBackupModal(false)} class="text-stone-400 text-sm">✕</button>
                 </div>
-                <p class="text-xs text-stone-400">총 <b class="text-amber-400">{ideas.length}개</b>의 아이디어가 로컬에 보관되어 있습니다.</p>
+                <p class="text-xs text-stone-400">총 <b class="text-amber-400">{ideas.length}개</b>의 아이디어가 보관 중입니다.</p>
                 <div class="space-y-2">
-                  <button onClick={exportJSON} class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl text-xs">
+                  <button onClick={exportJSON} class="w-full py-2.5 bg-amber-600 text-white font-bold rounded-xl text-xs">
                     📥 전체 데이터 백업 (JSON 다운로드)
                   </button>
-                  <button onClick={() => backupInputRef.current.click()} class="w-full py-2.5 bg-stone-800 hover:bg-stone-700 text-stone-300 font-semibold rounded-xl text-xs">
-                    📤 백업 파일(JSON) 복원
+                  <button onClick={() => backupInputRef.current.click()} class="w-full py-2.5 bg-stone-800 text-stone-300 font-semibold rounded-xl text-xs">
+                    📤 백업 파일 복원
                   </button>
                   <input type="file" ref={backupInputRef} onChange={importJSON} accept=".json" class="hidden" />
                 </div>
@@ -437,39 +445,29 @@
             <div class="space-y-3">
               <div class="bg-[#24201d] border border-stone-800 rounded-2xl p-4 relative shadow-xl flex flex-col h-[68vh] justify-between">
                 
-                {/* 상단 툴바: 마이크, 카메라, 지움 버튼 */}
+                {/* 상단 툴바 */}
                 <div class="flex justify-between items-center pb-2 border-b border-stone-800/80">
                   <div class="flex items-center gap-2">
-                    {/* 마이크 음성 입력 버튼 */}
                     <button
                       onClick={toggleVoiceRecognition}
                       class={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
                         isRecording 
                           ? "bg-red-600 text-white recording-pulse" 
-                          : "bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-700"
+                          : "bg-stone-800 text-stone-300 border border-stone-700"
                       }`}
-                      title="음성으로 기록하기"
                     >
                       <span>🎤</span>
-                      <span>{isRecording ? "듣는 중..." : "음성입력"}</span>
+                      <span>{isRecording ? "음성 인식 중..." : "음성입력"}</span>
                     </button>
 
-                    {/* 카메라 / 사진 첨부 버튼 */}
                     <button
                       onClick={() => fileInputRef.current.click()}
-                      class="px-3 py-1.5 rounded-xl text-xs font-bold bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-700 flex items-center gap-1.5 transition-all"
-                      title="사진 또는 스케치 첨부"
+                      class="px-3 py-1.5 rounded-xl text-xs font-bold bg-stone-800 text-stone-300 border border-stone-700 flex items-center gap-1.5"
                     >
                       <span>📷</span>
                       <span>사진/카메라</span>
                     </button>
-                    <input 
-                      type="file" 
-                      ref={fileInputRef} 
-                      onChange={handleImageUpload} 
-                      accept="image/*" 
-                      class="hidden" 
-                    />
+                    <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" class="hidden" />
                   </div>
 
                   {inputText && (
@@ -482,30 +480,24 @@
                   )}
                 </div>
 
-                {/* 중앙 텍스트 입력창 (대형 캔버스) */}
+                {/* 입력창 */}
                 <div class="flex-1 py-3 flex flex-col">
                   <textarea
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
-                    placeholder="떠오른 비즈니스, 발명 특허 구조, 개발 아이디어를 자유롭게 적거나 마이크로 말씀해보세요... (작성 시 AI가 카테고리를 자동 분류합니다)"
+                    placeholder="떠오른 비즈니스, 발명 특허 구조, 개발 아이디어를 자유롭게 적거나 마이크로 말씀해보세요..."
                     class="w-full flex-1 bg-transparent text-gray-100 placeholder-stone-600 text-base focus:outline-none leading-relaxed"
                   />
 
-                  {/* 첨부된 사진 미리보기 */}
                   {attachedImage && (
                     <div class="relative mt-2 inline-block max-w-[120px]">
-                      <img src={attachedImage} alt="첨부 미리보기" class="w-24 h-24 object-cover rounded-xl border border-stone-700 shadow-md" />
-                      <button
-                        onClick={() => setAttachedImage(null)}
-                        class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center shadow"
-                      >
-                        ✕
-                      </button>
+                      <img src={attachedImage} alt="첨부" class="w-24 h-24 object-cover rounded-xl border border-stone-700 shadow-md" />
+                      <button onClick={() => setAttachedImage(null)} class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">✕</button>
                     </div>
                   )}
                 </div>
 
-                {/* 하단 전송 및 상태바 */}
+                {/* 하단 바 */}
                 <div class="pt-3 border-t border-stone-800 flex justify-between items-center">
                   <span class="text-xs text-stone-500">
                     {inputText.length}자 • <span class="text-amber-400">AI 자동분류 & 검증</span>
@@ -526,7 +518,7 @@
             </div>
           )}
 
-          {/* 탭 02, 03, 04 공통 리스트 화면 */}
+          {/* 탭 02, 03, 04 리스트 화면 */}
           {tab !== "01" && (
             <div class="space-y-4">
               {ideas.filter(item => item.pipeline === tab).length === 0 ? (
@@ -544,8 +536,7 @@
                     const isEditing = editingId === item.id;
 
                     return (
-                      <div key={item.id} class="bg-[#24201d] border border-stone-800 rounded-2xl p-4 shadow-md transition-all">
-                        {/* 헤더: AI 자동 분류 카테고리 + 승인 배지 + 수정/삭제 */}
+                      <div key={item.id} class="bg-[#24201d] border border-stone-800 rounded-2xl p-4 shadow-md">
                         <div class="flex justify-between items-center mb-3">
                           <div class="flex items-center gap-2">
                             <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[11px] font-semibold border border-amber-500/30">
@@ -558,23 +549,16 @@
 
                           <div class="flex items-center gap-1.5">
                             {!isEditing && (
-                              <button 
-                                onClick={() => startEditing(item)}
-                                class="text-xs text-stone-300 hover:text-white px-2.5 py-1 bg-stone-800 hover:bg-stone-700 rounded-lg transition-all"
-                              >
+                              <button onClick={() => startEditing(item)} class="text-xs text-stone-300 px-2.5 py-1 bg-stone-800 rounded-lg">
                                 ✏️ 수정
                               </button>
                             )}
-                            <button 
-                              onClick={() => deleteIdea(item.id)}
-                              class="text-xs text-stone-500 hover:text-red-400 p-1"
-                            >
+                            <button onClick={() => deleteIdea(item.id)} class="text-xs text-stone-500 hover:text-red-400 p-1">
                               ✕
                             </button>
                           </div>
                         </div>
 
-                        {/* 본문 (수정 모드 vs 일반 모드) */}
                         {isEditing ? (
                           <div class="space-y-2 mb-3">
                             <textarea
@@ -584,16 +568,10 @@
                               class="w-full p-3 bg-stone-900 border border-amber-500/50 rounded-xl text-sm text-gray-100 focus:outline-none"
                             />
                             <div class="flex justify-end gap-2">
-                              <button
-                                onClick={() => setEditingId(null)}
-                                class="px-3 py-1.5 bg-stone-800 text-stone-400 text-xs rounded-lg"
-                              >
+                              <button onClick={() => setEditingId(null)} class="px-3 py-1.5 bg-stone-800 text-stone-400 text-xs rounded-lg">
                                 취소
                               </button>
-                              <button
-                                onClick={() => saveEdit(item.id)}
-                                class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg"
-                              >
+                              <button onClick={() => saveEdit(item.id)} class="px-3 py-1.5 bg-emerald-700 text-white text-xs font-bold rounded-lg">
                                 저장 & AI 재검증
                               </button>
                             </div>
@@ -605,13 +583,12 @@
                             </p>
                             {item.image && (
                               <div class="mb-3">
-                                <img src={item.image} alt="첨부 이미지" class="max-h-48 rounded-xl object-cover border border-stone-800" />
+                                <img src={item.image} alt="첨부" class="max-h-48 rounded-xl object-cover border border-stone-800" />
                               </div>
                             )}
                           </div>
                         )}
 
-                        {/* 점수 바 */}
                         <div class="space-y-2 mb-3 text-xs">
                           <ScoreBar label="B2B 확장성" score={evalData.b2b} />
                           <ScoreBar label="시간/비용 절감" score={evalData.cost} />
@@ -619,46 +596,28 @@
                           <ScoreBar label="1인 실행력" score={evalData.execution} />
                         </div>
 
-                        {/* AI 조언 */}
                         <div class="p-3 bg-[#1c1815] rounded-xl border border-stone-800/80 mb-3">
-                          <div class="text-[11px] font-bold text-amber-400 mb-1 flex items-center gap-1">
-                            <span>✨</span> AI 맞춤 조언
-                          </div>
-                          <p class="text-xs text-stone-300 leading-relaxed">
-                            {evalData.advice}
-                          </p>
+                          <div class="text-[11px] font-bold text-amber-400 mb-1">✨ AI 맞춤 조언</div>
+                          <p class="text-xs text-stone-300 leading-relaxed">{evalData.advice}</p>
                         </div>
 
-                        {/* 액션 버튼 */}
                         <div class="grid grid-cols-2 gap-2 pt-1">
                           {tab === "02" && (
                             <>
-                              <button onClick={() => movePipeline(item.id, "04")} class="py-2.5 bg-emerald-800/80 hover:bg-emerald-700 text-emerald-100 font-semibold text-xs rounded-xl transition-all">
-                                실행으로 이동
-                              </button>
-                              <button onClick={() => movePipeline(item.id, "03")} class="py-2.5 bg-stone-800 hover:bg-stone-700 text-stone-300 font-semibold text-xs rounded-xl transition-all">
-                                보류함으로 이동
-                              </button>
+                              <button onClick={() => movePipeline(item.id, "04")} class="py-2.5 bg-emerald-800/80 text-emerald-100 font-semibold text-xs rounded-xl">실행으로 이동</button>
+                              <button onClick={() => movePipeline(item.id, "03")} class="py-2.5 bg-stone-800 text-stone-300 font-semibold text-xs rounded-xl">보류함으로 이동</button>
                             </>
                           )}
                           {tab === "03" && (
                             <>
-                              <button onClick={() => movePipeline(item.id, "02")} class="py-2.5 bg-amber-800/70 hover:bg-amber-700 text-amber-100 font-semibold text-xs rounded-xl transition-all">
-                                검증으로 복원
-                              </button>
-                              <button onClick={() => movePipeline(item.id, "04")} class="py-2.5 bg-emerald-800/80 hover:bg-emerald-700 text-emerald-100 font-semibold text-xs rounded-xl transition-all">
-                                실행으로 이동
-                              </button>
+                              <button onClick={() => movePipeline(item.id, "02")} class="py-2.5 bg-amber-800/70 text-amber-100 font-semibold text-xs rounded-xl">검증으로 복원</button>
+                              <button onClick={() => movePipeline(item.id, "04")} class="py-2.5 bg-emerald-800/80 text-emerald-100 font-semibold text-xs rounded-xl">실행으로 이동</button>
                             </>
                           )}
                           {tab === "04" && (
                             <>
-                              <button onClick={() => movePipeline(item.id, "02")} class="py-2.5 bg-stone-800 hover:bg-stone-700 text-stone-300 font-semibold text-xs rounded-xl transition-all">
-                                검증단계로 복귀
-                              </button>
-                              <button onClick={() => movePipeline(item.id, "03")} class="py-2.5 bg-stone-800 hover:bg-stone-700 text-stone-300 font-semibold text-xs rounded-xl transition-all">
-                                보류함으로 이동
-                              </button>
+                              <button onClick={() => movePipeline(item.id, "02")} class="py-2.5 bg-stone-800 text-stone-300 font-semibold text-xs rounded-xl">검증단계로 복귀</button>
+                              <button onClick={() => movePipeline(item.id, "03")} class="py-2.5 bg-stone-800 text-stone-300 font-semibold text-xs rounded-xl">보류함으로 이동</button>
                             </>
                           )}
                         </div>
@@ -669,35 +628,12 @@
             </div>
           )}
 
-          {/* 하단 고정 4단 내비게이션 바 */}
+          {/* 하단 내비게이션 바 */}
           <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#1a1715]/95 backdrop-blur-md border-t border-stone-800 px-2 py-2.5 flex justify-around items-center z-40">
-            <NavTabButton 
-              active={tab === "01"} 
-              onClick={() => setTab("01")} 
-              icon="✏️" 
-              label="01 생각" 
-            />
-            <NavTabButton 
-              active={tab === "02"} 
-              onClick={() => setTab("02")} 
-              icon="📋" 
-              label="02 검증" 
-              count={ideas.filter(i => i.pipeline === "02").length}
-            />
-            <NavTabButton 
-              active={tab === "03"} 
-              onClick={() => setTab("03")} 
-              icon="📥" 
-              label="03 보류" 
-              count={ideas.filter(i => i.pipeline === "03").length}
-            />
-            <NavTabButton 
-              active={tab === "04"} 
-              onClick={() => setTab("04")} 
-              icon="🚀" 
-              label="04 실행" 
-              count={ideas.filter(i => i.pipeline === "04").length}
-            />
+            <NavTabButton active={tab === "01"} onClick={() => setTab("01")} icon="✏️" label="01 생각" />
+            <NavTabButton active={tab === "02"} onClick={() => setTab("02")} icon="📋" label="02 검증" count={ideas.filter(i => i.pipeline === "02").length} />
+            <NavTabButton active={tab === "03"} onClick={() => setTab("03")} icon="📥" label="03 보류" count={ideas.filter(i => i.pipeline === "03").length} />
+            <NavTabButton active={tab === "04"} onClick={() => setTab("04")} icon="🚀" label="04 실행" count={ideas.filter(i => i.pipeline === "04").length} />
           </nav>
         </div>
       );
@@ -708,7 +644,7 @@
         <div class="flex items-center justify-between gap-3 text-stone-300">
           <span class="w-24 text-stone-400 font-medium">{label}</span>
           <div class="flex-1 bg-stone-800 h-2 rounded-full overflow-hidden">
-            <div class="bg-emerald-600/80 h-full rounded-full transition-all duration-500" style={{ width: `${score}%` }} />
+            <div class="bg-emerald-600/80 h-full rounded-full" style={{ width: `${score}%` }} />
           </div>
           <span class="w-6 text-right font-semibold text-stone-200">{score}</span>
         </div>
