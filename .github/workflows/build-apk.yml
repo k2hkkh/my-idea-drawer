@@ -24,11 +24,401 @@ jobs:
         with:
           node-version: 20
 
-      - name: 4. 앱 구성 및 플로팅 샤잠 서비스 파일 생성
+      - name: 4. 생각서랍 4대 탭 웹 화면(HTML) 생성
         run: |
           mkdir -p www
-          cp index.html www/index.html
-          
+          cat << 'EOF' > www/index.html
+          <!DOCTYPE html>
+          <html lang="ko">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <title>생각서랍</title>
+            <style>
+              :root {
+                --bg: #0f172a;
+                --card: #1e293b;
+                --primary: #4f46e5;
+                --accent: #38bdf8;
+                --text: #f8fafc;
+                --muted: #94a3b8;
+              }
+              * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+                background-color: var(--bg);
+                color: var(--text);
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+              }
+              header {
+                padding: 16px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: var(--card);
+                border-bottom: 1px solid #334155;
+              }
+              header h1 { font-size: 1.2rem; font-weight: 700; color: var(--accent); }
+              nav {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                background: var(--card);
+                padding: 8px;
+                gap: 6px;
+                border-bottom: 1px solid #334155;
+              }
+              .tab-btn {
+                padding: 10px 2px;
+                background: none;
+                border: none;
+                color: var(--muted);
+                font-size: 0.85rem;
+                font-weight: 600;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.2s;
+              }
+              .tab-btn.active {
+                background: var(--primary);
+                color: #ffffff;
+              }
+              .container {
+                flex: 1;
+                padding: 16px;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+              }
+              .tab-content { display: none; flex: 1; flex-direction: column; gap: 14px; }
+              .tab-content.active { display: flex; }
+
+              /* 제미나이 스타일 음성 버튼 */
+              .voice-container {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 20px;
+              }
+              .gemini-btn {
+                width: 90px;
+                height: 90px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #4f46e5, #38bdf8);
+                border: none;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+                transition: transform 0.2s;
+              }
+              .gemini-btn.listening {
+                animation: pulse 1.3s infinite;
+                background: linear-gradient(135deg, #ef4444, #f97316);
+                box-shadow: 0 0 30px rgba(239, 68, 68, 0.6);
+              }
+              @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.08); }
+                100% { transform: scale(1); }
+              }
+              .wave-container {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                height: 32px;
+              }
+              .wave-bar {
+                width: 4px;
+                height: 14px;
+                background: #ffffff;
+                border-radius: 4px;
+              }
+              .gemini-btn.listening .wave-bar {
+                animation: wave 0.7s infinite alternate ease-in-out;
+              }
+              .gemini-btn.listening .wave-bar:nth-child(2) { animation-delay: 0.15s; }
+              .gemini-btn.listening .wave-bar:nth-child(3) { animation-delay: 0.3s; }
+              .gemini-btn.listening .wave-bar:nth-child(4) { animation-delay: 0.45s; }
+              @keyframes wave {
+                0% { height: 8px; }
+                100% { height: 32px; }
+              }
+
+              .text-area {
+                width: 100%;
+                min-height: 110px;
+                background: var(--card);
+                border: 1px solid #334155;
+                border-radius: 12px;
+                padding: 12px;
+                color: #ffffff;
+                font-size: 1rem;
+                resize: none;
+              }
+
+              /* 스케치 캔버스 */
+              .canvas-box {
+                flex: 1;
+                min-height: 260px;
+                background: #ffffff;
+                border-radius: 12px;
+                touch-action: none;
+                position: relative;
+              }
+              canvas { width: 100%; height: 100%; display: block; border-radius: 12px; }
+              .tools {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: var(--card);
+                padding: 8px 12px;
+                border-radius: 10px;
+              }
+
+              /* 미디어 박스 */
+              .media-panel {
+                flex: 1;
+                border: 2px dashed #475569;
+                border-radius: 12px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+                background: var(--card);
+                padding: 16px;
+                text-align: center;
+              }
+              .btn-action {
+                background: var(--primary);
+                color: #fff;
+                padding: 12px 20px;
+                border-radius: 10px;
+                border: none;
+                font-weight: bold;
+                font-size: 0.95rem;
+                cursor: pointer;
+              }
+              .save-btn {
+                width: 100%;
+                background: #10b981;
+                color: #ffffff;
+                padding: 14px;
+                border: none;
+                border-radius: 12px;
+                font-size: 1rem;
+                font-weight: bold;
+                cursor: pointer;
+              }
+              .card {
+                background: var(--card);
+                padding: 12px;
+                border-radius: 10px;
+                border-left: 4px solid var(--accent);
+                margin-top: 10px;
+              }
+            </style>
+          </head>
+          <body>
+
+            <header>
+              <h1>💡 생각서랍</h1>
+              <span id="storage-count" style="font-size:0.8rem; color:var(--muted);">기록 0건</span>
+            </header>
+
+            <nav>
+              <button class="tab-btn active" onclick="switchTab('voice')">✨ 음성</button>
+              <button class="tab-btn" onclick="switchTab('photo')">📷 사진</button>
+              <button class="tab-btn" onclick="switchTab('sketch')">🎨 스케치</button>
+              <button class="tab-btn" onclick="switchTab('video')">🎬 동영상</button>
+            </nav>
+
+            <div class="container">
+              <!-- 1. 음성 탭 -->
+              <div id="tab-voice" class="tab-content active">
+                <div class="voice-container">
+                  <button id="gemini-mic" class="gemini-btn" onclick="triggerNativeVoice()">
+                    <div class="wave-container">
+                      <div class="wave-bar"></div>
+                      <div class="wave-bar"></div>
+                      <div class="wave-bar"></div>
+                      <div class="wave-bar"></div>
+                    </div>
+                  </button>
+                  <p id="voice-status" style="color:var(--muted); font-size:0.9rem;">버튼을 누르고 생각을 말씀하세요</p>
+                  <textarea id="voice-input-text" class="text-area" placeholder="음성인식 결과가 여기에 자동으로 작성됩니다..."></textarea>
+                </div>
+                <button class="save-btn" onclick="saveIdea('음성', document.getElementById('voice-input-text').value)">서랍에 저장하기</button>
+              </div>
+
+              <!-- 2. 사진 탭 -->
+              <div id="tab-photo" class="tab-content">
+                <div class="media-panel">
+                  <p style="color:var(--muted); font-size:0.9rem;">카메라로 현장이나 문서를 즉시 촬영합니다.</p>
+                  <input type="file" accept="image/*" capture="environment" id="photo-input" style="display:none;" onchange="previewMedia(this, 'photo-view')" />
+                  <button class="btn-action" onclick="document.getElementById('photo-input').click()">📷 카메라 촬영 / 사진 선택</button>
+                  <img id="photo-view" style="max-width:100%; max-height:180px; border-radius:8px; display:none;" />
+                </div>
+                <button class="save-btn" onclick="saveIdea('사진', '사진 메모가 저장되었습니다.')">사진 저장하기</button>
+              </div>
+
+              <!-- 3. 스케치 탭 -->
+              <div id="tab-sketch" class="tab-content">
+                <div class="tools">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:0.85rem; color:var(--muted);">색상:</span>
+                    <input type="color" id="draw-color" value="#000000" style="width:36px; height:36px; border:none; border-radius:6px; cursor:pointer;" />
+                  </div>
+                  <button class="btn-action" style="padding:6px 14px; background:#ef4444;" onclick="clearCanvas()">지우기</button>
+                </div>
+                <div class="canvas-box" id="canvas-wrapper">
+                  <canvas id="sketch-board"></canvas>
+                </div>
+                <button class="save-btn" onclick="saveIdea('스케치', '스케치 드로잉이 저장되었습니다.')">스케치 저장하기</button>
+              </div>
+
+              <!-- 4. 동영상 탭 -->
+              <div id="tab-video" class="tab-content">
+                <div class="media-panel">
+                  <p style="color:var(--muted); font-size:0.9rem;">동영상을 촬영하여 생생한 상황을 남깁니다.</p>
+                  <input type="file" accept="video/*" capture="environment" id="video-input" style="display:none;" onchange="previewMedia(this, 'video-view')" />
+                  <button class="btn-action" onclick="document.getElementById('video-input').click()">🎬 비디오 녹화 / 영상 선택</button>
+                  <video id="video-view" controls style="max-width:100%; max-height:180px; border-radius:8px; display:none;"></video>
+                </div>
+                <button class="save-btn" onclick="saveIdea('동영상', '동영상 메모가 저장되었습니다.')">동영상 저장하기</button>
+              </div>
+
+              <!-- 보관함 목록 -->
+              <div id="idea-list" style="margin-top:10px;"></div>
+            </div>
+
+            <script>
+              function switchTab(tabId) {
+                const tabs = ['voice', 'photo', 'sketch', 'video'];
+                document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+                  btn.classList.toggle('active', tabs[idx] === tabId);
+                });
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById('tab-' + tabId).classList.add('active');
+                if (tabId === 'sketch') initCanvasSize();
+              }
+
+              /* 네이티브 음성인식 호출 */
+              function triggerNativeVoice() {
+                const btn = document.getElementById('gemini-mic');
+                const status = document.getElementById('voice-status');
+                
+                if (window.AndroidBridge && window.AndroidBridge.startSpeechRecognition) {
+                  btn.classList.add('listening');
+                  status.innerText = '듣고 있습니다... 말씀해 주세요.';
+                  window.AndroidBridge.startSpeechRecognition();
+                } else {
+                  // 브라우저 웹 음성인식 fallback
+                  const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+                  if (!Speech) {
+                    alert('음성인식 기능을 지원하지 않는 기기입니다.');
+                    return;
+                  }
+                  const rec = new Speech();
+                  rec.lang = 'ko-KR';
+                  rec.onstart = () => {
+                    btn.classList.add('listening');
+                    status.innerText = '듣고 있습니다... 말씀해 주세요.';
+                  };
+                  rec.onresult = (e) => {
+                    document.getElementById('voice-input-text').value = e.results[0][0].transcript;
+                  };
+                  rec.onend = () => {
+                    btn.classList.remove('listening');
+                    status.innerText = '음성 입력 완료. 확인 후 저장하세요.';
+                  };
+                  rec.start();
+                }
+              }
+
+              /* 안드로이드 네이티브에서 음성 텍스트 수신 */
+              window.receiveVoiceResult = function(text) {
+                switchTab('voice');
+                document.getElementById('gemini-mic').classList.remove('listening');
+                document.getElementById('voice-input-text').value = text;
+                document.getElementById('voice-status').innerText = '✨ 음성 입력이 완료되었습니다.';
+              };
+
+              /* 스케치 캔버스 */
+              const canvas = document.getElementById('sketch-board');
+              const ctx = canvas.getContext('2d');
+              let isDrawing = false;
+
+              function initCanvasSize() {
+                const box = document.getElementById('canvas-wrapper');
+                canvas.width = box.clientWidth;
+                canvas.height = box.clientHeight;
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = document.getElementById('draw-color').value;
+              }
+              window.addEventListener('resize', initCanvasSize);
+
+              function getPos(e) {
+                const r = canvas.getBoundingClientRect();
+                const t = e.touches ? e.touches[0] : e;
+                return { x: t.clientX - r.left, y: t.clientY - r.top };
+              }
+              canvas.addEventListener('mousedown', (e) => { isDrawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
+              canvas.addEventListener('mousemove', (e) => { if (!isDrawing) return; ctx.strokeStyle = document.getElementById('draw-color').value; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
+              canvas.addEventListener('mouseup', () => { isDrawing = false; });
+              canvas.addEventListener('touchstart', (e) => { e.preventDefault(); isDrawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); }, { passive: false });
+              canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (!isDrawing) return; ctx.strokeStyle = document.getElementById('draw-color').value; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }, { passive: false });
+              canvas.addEventListener('touchend', () => { isDrawing = false; });
+              function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+              /* 사진/영상 미리보기 */
+              function previewMedia(input, viewId) {
+                const file = input.files[0];
+                if (file) {
+                  const el = document.getElementById(viewId);
+                  el.src = URL.createObjectURL(file);
+                  el.style.display = 'block';
+                }
+              }
+
+              /* 저장 및 목록 표시 */
+              function saveIdea(type, text) {
+                if (!text || text.trim() === '') {
+                  alert('저장할 내용이 없습니다.');
+                  return;
+                }
+                const list = JSON.parse(localStorage.getItem('user_ideas') || '[]');
+                list.unshift({ type, content: text, time: new Date().toLocaleTimeString('ko-KR') });
+                localStorage.setItem('user_ideas', JSON.stringify(list));
+                renderStorage();
+                alert(type + ' 아이디어가 생각서랍에 저장되었습니다!');
+              }
+
+              function renderStorage() {
+                const list = JSON.parse(localStorage.getItem('user_ideas') || '[]');
+                document.getElementById('storage-count').innerText = `기록 ${list.length}건`;
+                const box = document.getElementById('idea-list');
+                box.innerHTML = list.map(item => `
+                  <div class="card">
+                    <strong style="color:var(--accent);">[${item.type}]</strong> <span style="font-size:0.8rem; color:#64748b;">${item.time}</span>
+                    <p style="margin-top:4px;">${item.content}</p>
+                  </div>
+                `).join('');
+              }
+              renderStorage();
+            </script>
+          </body>
+          </html>
+          EOF
+
+      - name: 5. 안드로이드 프로젝트 빌드 및 네이티브 음성 연동
+        run: |
           cat << 'EOF' > package.json
           {
             "name": "my-idea-drawer",
@@ -53,7 +443,7 @@ jobs:
           npm install
           npx cap add android
 
-          # 권한 및 플로팅 서비스 안전 주입
+          # 권한 및 플로팅 서비스 주입
           node -e '
           const fs = require("fs");
           const p = "android/app/src/main/AndroidManifest.xml";
@@ -67,7 +457,7 @@ jobs:
 
           mkdir -p android/app/src/main/java/com/k2hkkh/ideadrawer
 
-          # 플로팅 위젯 소스코드 생성
+          # 플로팅 위젯 소스코드 (화면 전환 없이 그 자리에서 음성인식 후 앱 호출)
           cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/FloatingWidgetService.java
           package com.k2hkkh.ideadrawer;
 
@@ -105,9 +495,7 @@ jobs:
               private GradientDrawable normalBg, activeBg;
 
               @Override
-              public IBinder onBind(Intent intent) {
-                  return null;
-              }
+              public IBinder onBind(Intent intent) { return null; }
 
               @Override
               public void onCreate() {
@@ -122,9 +510,7 @@ jobs:
                               .setPriority(NotificationCompat.PRIORITY_LOW)
                               .build();
                       startForeground(1001, notification);
-                  } catch (Exception e) {
-                      e.printStackTrace();
-                  }
+                  } catch (Exception ignored) {}
 
                   windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 
@@ -192,66 +578,61 @@ jobs:
               }
 
               private void toggleFloatingSpeech() {
-                  new Handler(Looper.getMainLooper()).post(new Runnable() {
-                      @Override
-                      public void run() {
-                          if (isListening) {
-                              if (speechRecognizer != null) {
-                                  speechRecognizer.stopListening();
+                  new Handler(Looper.getMainLooper()).post(() -> {
+                      if (isListening) {
+                          if (speechRecognizer != null) speechRecognizer.stopListening();
+                          return;
+                      }
+
+                      try {
+                          speechRecognizer = SpeechRecognizer.createSpeechRecognizer(FloatingWidgetService.this);
+                          Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                          intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                          intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
+
+                          speechRecognizer.setRecognitionListener(new RecognitionListener() {
+                              @Override
+                              public void onReadyForSpeech(Bundle params) {
+                                  isListening = true;
+                                  floatingView.setBackground(activeBg);
+                                  floatingView.setText("🎙️");
+                                  Toast.makeText(FloatingWidgetService.this, "💡 말씀해 주세요 (듣는 중...)", Toast.LENGTH_SHORT).show();
                               }
-                              return;
-                          }
 
-                          try {
-                              speechRecognizer = SpeechRecognizer.createSpeechRecognizer(FloatingWidgetService.this);
-                              Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-                              intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-                              intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
+                              @Override public void onBeginningOfSpeech() {}
+                              @Override public void onRmsChanged(float rmsdB) {}
+                              @Override public void onBufferReceived(byte[] buffer) {}
+                              @Override public void onEndOfSpeech() {}
 
-                              speechRecognizer.setRecognitionListener(new RecognitionListener() {
-                                  @Override
-                                  public void onReadyForSpeech(Bundle params) {
-                                      isListening = true;
-                                      floatingView.setBackground(activeBg);
-                                      floatingView.setText("🎙️");
-                                      Toast.makeText(FloatingWidgetService.this, "💡 말씀해 주세요 (듣는 중...)", Toast.LENGTH_SHORT).show();
+                              @Override
+                              public void onError(int error) {
+                                  resetFloatingButton();
+                                  Toast.makeText(FloatingWidgetService.this, "음성 인식이 취소되었습니다.", Toast.LENGTH_SHORT).show();
+                              }
+
+                              @Override
+                              public void onResults(Bundle results) {
+                                  resetFloatingButton();
+                                  ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                                  if (matches != null && !matches.isEmpty()) {
+                                      String spokenText = matches.get(0);
+                                      Intent appIntent = new Intent(FloatingWidgetService.this, MainActivity.class);
+                                      appIntent.putExtra("VOICE_RESULT", spokenText);
+                                      appIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                      startActivity(appIntent);
                                   }
+                              }
 
-                                  @Override public void onBeginningOfSpeech() {}
-                                  @Override public void onRmsChanged(float rmsdB) {}
-                                  @Override public void onBufferReceived(byte[] buffer) {}
-                                  @Override public void onEndOfSpeech() {}
+                              @Override public void onPartialResults(Bundle partialResults) {}
+                              @Override public void onEvent(int eventType, Bundle params) {}
+                          });
 
-                                  @Override
-                                  public void onError(int error) {
-                                      resetFloatingButton();
-                                      Toast.makeText(FloatingWidgetService.this, "음성 인식이 취소되었습니다.", Toast.LENGTH_SHORT).show();
-                                  }
-
-                                  @Override
-                                  public void onResults(Bundle results) {
-                                      resetFloatingButton();
-                                      ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-                                      if (matches != null && !matches.isEmpty()) {
-                                          String spokenText = matches.get(0);
-                                          Intent appIntent = new Intent(FloatingWidgetService.this, MainActivity.class);
-                                          appIntent.putExtra("VOICE_RESULT", spokenText);
-                                          appIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                                          startActivity(appIntent);
-                                      }
-                                  }
-
-                                  @Override public void onPartialResults(Bundle partialResults) {}
-                                  @Override public void onEvent(int eventType, Bundle params) {}
-                              });
-
-                              speechRecognizer.startListening(intent);
-                          } catch (Exception e) {
-                              resetFloatingButton();
-                              Intent appIntent = new Intent(FloatingWidgetService.this, MainActivity.class);
-                              appIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                              startActivity(appIntent);
-                          }
+                          speechRecognizer.startListening(intent);
+                      } catch (Exception e) {
+                          resetFloatingButton();
+                          Intent appIntent = new Intent(FloatingWidgetService.this, MainActivity.class);
+                          appIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                          startActivity(appIntent);
                       }
                   });
               }
@@ -272,9 +653,7 @@ jobs:
                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                       NotificationChannel channel = new NotificationChannel("floating_channel", "생각서랍 플로팅", NotificationManager.IMPORTANCE_LOW);
                       NotificationManager manager = getSystemService(NotificationManager.class);
-                      if (manager != null) {
-                          manager.createNotificationChannel(channel);
-                      }
+                      if (manager != null) manager.createNotificationChannel(channel);
                   }
               }
 
@@ -283,30 +662,101 @@ jobs:
                   super.onDestroy();
                   resetFloatingButton();
                   if (floatingView != null && windowManager != null) {
-                      try {
-                          windowManager.removeView(floatingView);
-                      } catch (Exception ignored) {}
+                      try { windowManager.removeView(floatingView); } catch (Exception ignored) {}
                   }
               }
           }
           EOF
 
-          # 메인 액티비티 소스코드 생성 (Public 접근 권한 적용)
+          # 메인 액티비티 소스코드 (웹뷰 음성 브릿지 + 권한 요청 + 인텐트 처리)
           cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/MainActivity.java
           package com.k2hkkh.ideadrawer;
 
+          import android.Manifest;
           import android.content.Intent;
+          import android.content.pm.PackageManager;
           import android.os.Build;
           import android.os.Bundle;
+          import android.os.Handler;
+          import android.os.Looper;
           import android.provider.Settings;
+          import android.speech.RecognitionListener;
+          import android.speech.RecognizerIntent;
+          import android.speech.SpeechRecognizer;
+          import android.webkit.JavascriptInterface;
+          import android.widget.Toast;
+          import androidx.core.app.ActivityCompat;
+          import androidx.core.content.ContextCompat;
           import com.getcapacitor.BridgeActivity;
+          import java.util.ArrayList;
 
           public class MainActivity extends BridgeActivity {
+              private SpeechRecognizer inAppRecognizer;
+
               @Override
               public void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
+                  requestAppPermissions();
                   startWidgetIfAllowed();
+
+                  if (getBridge() != null && getBridge().getWebView() != null) {
+                      getBridge().getWebView().addJavascriptInterface(new Object() {
+                          @JavascriptInterface
+                          public void startSpeechRecognition() {
+                              new Handler(Looper.getMainLooper()).post(() -> startInAppVoice());
+                          }
+                      }, "AndroidBridge");
+                  }
+
                   handleVoiceIntent(getIntent());
+              }
+
+              private void requestAppPermissions() {
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                      if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED ||
+                          ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                          ActivityCompat.requestPermissions(this, new String[]{
+                                  Manifest.permission.RECORD_AUDIO,
+                                  Manifest.permission.CAMERA
+                          }, 200);
+                      }
+                  }
+              }
+
+              private void startInAppVoice() {
+                  try {
+                      if (inAppRecognizer != null) inAppRecognizer.destroy();
+                      inAppRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
+                      Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                      intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                      intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
+
+                      inAppRecognizer.setRecognitionListener(new RecognitionListener() {
+                          @Override public void onReadyForSpeech(Bundle params) {
+                              Toast.makeText(MainActivity.this, "💡 말씀하세요...", Toast.LENGTH_SHORT).show();
+                          }
+                          @Override public void onBeginningOfSpeech() {}
+                          @Override public void onRmsChanged(float rmsdB) {}
+                          @Override public void onBufferReceived(byte[] buffer) {}
+                          @Override public void onEndOfSpeech() {}
+                          @Override public void onError(int error) {
+                              Toast.makeText(MainActivity.this, "음성 인식이 취소되었습니다.", Toast.LENGTH_SHORT).show();
+                          }
+                          @Override
+                          public void onResults(Bundle results) {
+                              ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                              if (matches != null && !matches.isEmpty()) {
+                                  sendTextToWebView(matches.get(0));
+                              }
+                          }
+                          @Override public void onPartialResults(Bundle partialResults) {}
+                          @Override public void onEvent(int eventType, Bundle params) {}
+                      });
+
+                      inAppRecognizer.startListening(intent);
+                  } catch (Exception e) {
+                      Toast.makeText(this, "음성 인식기를 실행할 수 없습니다.", Toast.LENGTH_SHORT).show();
+                  }
               }
 
               @Override
@@ -325,11 +775,15 @@ jobs:
               private void handleVoiceIntent(Intent intent) {
                   if (intent != null && intent.hasExtra("VOICE_RESULT")) {
                       String voiceText = intent.getStringExtra("VOICE_RESULT");
-                      if (voiceText != null && getBridge() != null && getBridge().getWebView() != null) {
-                          String cleanText = voiceText.replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ");
-                          String script = "if (window.receiveNativeVoiceText) { window.receiveNativeVoiceText('" + cleanText + "'); }";
-                          getBridge().getWebView().post(() -> getBridge().getWebView().evaluateJavascript(script, null));
-                      }
+                      sendTextToWebView(voiceText);
+                  }
+              }
+
+              private void sendTextToWebView(String text) {
+                  if (text != null && getBridge() != null && getBridge().getWebView() != null) {
+                      String cleanText = text.replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ");
+                      String script = "if (window.receiveVoiceResult) { window.receiveVoiceResult('" + cleanText + "'); }";
+                      getBridge().getWebView().post(() -> getBridge().getWebView().evaluateJavascript(script, null));
                   }
               }
 
@@ -343,9 +797,7 @@ jobs:
                               } else {
                                   startService(intent);
                               }
-                          } catch (Exception e) {
-                              e.printStackTrace();
-                          }
+                          } catch (Exception ignored) {}
                       }
                   } else {
                       Intent intent = new Intent(this, FloatingWidgetService.class);
@@ -357,13 +809,13 @@ jobs:
 
           npx cap sync android
 
-      - name: 5. APK 파일 빌드
+      - name: 6. APK 파일 빌드
         run: |
           cd android
           chmod +x ./gradlew
           ./gradlew assembleDebug --no-daemon
 
-      - name: 6. 완성된 APK 업로드
+      - name: 7. 완성된 APK 업로드
         uses: actions/upload-artifact@v4
         with:
           name: 생각서랍-설치파일-APK
