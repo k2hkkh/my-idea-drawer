@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: 4. 생각서랍 전체 UI 및 전 탭 음성/분리삭제 구성
+      - name: 4. 생각서랍 전체 UI 및 4단계 실행방안 웹 화면 구성
         run: |
           mkdir -p www
           cat << 'EOF' > www/index.html
@@ -49,12 +49,13 @@ jobs:
                 font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
                 background-color: var(--bg);
                 color: var(--text);
-                min-height: 100vh;
+                height: 100vh;
                 display: flex;
                 flex-direction: column;
+                overflow: hidden;
               }
               header {
-                padding: 14px 16px;
+                padding: 12px 16px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
@@ -62,6 +63,16 @@ jobs:
                 border-bottom: 1px solid #334155;
               }
               header h1 { font-size: 1.15rem; font-weight: 700; color: var(--accent); }
+              .btn-archive {
+                background: #334155;
+                border: 1px solid #475569;
+                color: var(--accent);
+                padding: 6px 12px;
+                border-radius: 8px;
+                font-size: 0.85rem;
+                font-weight: bold;
+                cursor: pointer;
+              }
               nav {
                 display: grid;
                 grid-template-columns: repeat(4, 1fr);
@@ -71,11 +82,11 @@ jobs:
                 border-bottom: 1px solid #334155;
               }
               .tab-btn {
-                padding: 10px 2px;
+                padding: 8px 2px;
                 background: none;
                 border: none;
                 color: var(--muted);
-                font-size: 0.85rem;
+                font-size: 0.82rem;
                 font-weight: 600;
                 border-radius: 8px;
                 cursor: pointer;
@@ -85,29 +96,94 @@ jobs:
                 background: var(--primary);
                 color: #ffffff;
               }
+              .stage-bar {
+                display: flex;
+                background: #1e293b;
+                padding: 6px 12px;
+                gap: 6px;
+                border-bottom: 1px solid #334155;
+                overflow-x: auto;
+              }
+              .stage-tag {
+                font-size: 0.75rem;
+                padding: 4px 8px;
+                border-radius: 6px;
+                background: #0f172a;
+                color: var(--muted);
+                cursor: pointer;
+                white-space: nowrap;
+                border: 1px solid #334155;
+              }
+              .stage-tag.active {
+                background: var(--accent);
+                color: #0f172a;
+                font-weight: bold;
+              }
               .container {
                 flex: 1;
-                padding: 14px;
+                padding: 12px;
                 display: flex;
                 flex-direction: column;
-                gap: 12px;
-                overflow-y: auto;
+                gap: 10px;
+                overflow: hidden;
               }
-              .tab-content { display: none; flex-direction: column; gap: 12px; }
+              .tab-content { display: none; flex: 1; flex-direction: column; gap: 10px; height: 100%; }
               .tab-content.active { display: flex; }
 
-              /* 제미나이 스타일 음성 버튼 */
-              .voice-container {
+              /* 화면 1/2 분할 레이아웃 */
+              .split-container {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                height: 100%;
+              }
+              .half-box-top {
+                flex: 1;
+                background: var(--card);
+                border: 2px dashed #475569;
+                border-radius: 12px;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                gap: 14px;
-                padding: 10px 0;
+                position: relative;
+                overflow: hidden;
               }
-              .gemini-btn {
-                width: 84px;
-                height: 84px;
+              .half-box-bottom {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                position: relative;
+              }
+
+              /* 텍스트 입력창 & 제미나이 마이크 */
+              .memo-wrapper {
+                flex: 1;
+                position: relative;
+                display: flex;
+                width: 100%;
+                height: 100%;
+              }
+              .text-area {
+                flex: 1;
+                width: 100%;
+                height: 100%;
+                background: var(--card);
+                border: 1px solid #334155;
+                border-radius: 12px;
+                padding: 12px 50px 12px 14px;
+                color: #ffffff;
+                font-size: 1rem;
+                line-height: 1.5;
+                resize: none;
+              }
+              .gemini-mini-btn {
+                position: absolute;
+                right: 12px;
+                bottom: 12px;
+                width: 36px;
+                height: 36px;
                 border-radius: 50%;
                 background: linear-gradient(135deg, #4f46e5, #38bdf8);
                 border: none;
@@ -115,151 +191,128 @@ jobs:
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
-                transition: transform 0.2s;
+                box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
               }
-              .gemini-btn.listening {
-                animation: pulse 1.3s infinite;
+              .gemini-mini-btn.listening {
+                animation: pulse 1.2s infinite;
                 background: linear-gradient(135deg, #ef4444, #f97316);
-                box-shadow: 0 0 30px rgba(239, 68, 68, 0.6);
               }
-              @keyframes pulse {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.08); }
-                100% { transform: scale(1); }
-              }
-              .wave-container {
-                display: flex;
-                align-items: center;
-                gap: 4px;
-                height: 32px;
-              }
-              .wave-bar {
-                width: 4px;
-                height: 14px;
+              .wave-bar-mini {
+                width: 3px;
+                height: 10px;
                 background: #ffffff;
-                border-radius: 4px;
+                border-radius: 2px;
+                margin: 0 1px;
               }
-              .gemini-btn.listening .wave-bar {
-                animation: wave 0.7s infinite alternate ease-in-out;
+              .gemini-mini-btn.listening .wave-bar-mini {
+                animation: soundWave 0.6s infinite alternate ease-in-out;
               }
-              .gemini-btn.listening .wave-bar:nth-child(2) { animation-delay: 0.15s; }
-              .gemini-btn.listening .wave-bar:nth-child(3) { animation-delay: 0.3s; }
-              .gemini-btn.listening .wave-bar:nth-child(4) { animation-delay: 0.45s; }
-              @keyframes wave {
-                0% { height: 8px; }
-                100% { height: 32px; }
-              }
+              .gemini-mini-btn.listening .wave-bar-mini:nth-child(2) { animation-delay: 0.15s; }
+              .gemini-mini-btn.listening .wave-bar-mini:nth-child(3) { animation-delay: 0.3s; }
+              @keyframes soundWave { 0% { height: 6px; } 100% { height: 18px; } }
+              @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
-              /* 텍스트 입력창 및 미니 마이크 */
-              .memo-wrapper {
-                position: relative;
+              /* 스케치 캔버스 */
+              .canvas-holder {
                 width: 100%;
-              }
-              .text-area {
-                width: 100%;
-                min-height: 85px;
-                background: var(--card);
-                border: 1px solid #334155;
-                border-radius: 12px;
-                padding: 10px 42px 10px 12px;
-                color: #ffffff;
-                font-size: 0.95rem;
-                resize: none;
-              }
-              .mini-mic-btn {
-                position: absolute;
-                right: 10px;
-                bottom: 12px;
-                background: #334155;
-                border: 1px solid #475569;
-                color: #38bdf8;
-                width: 32px;
-                height: 32px;
-                border-radius: 50%;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 1rem;
-              }
-
-              /* 캔버스 드로잉 */
-              .canvas-box {
-                width: 100%;
-                height: 220px;
+                height: 100%;
                 background: #ffffff;
-                border-radius: 12px;
+                border-radius: 10px;
                 touch-action: none;
-                position: relative;
               }
-              canvas { width: 100%; height: 100%; display: block; border-radius: 12px; }
-              .tools {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                background: var(--card);
-                padding: 6px 12px;
-                border-radius: 10px;
-              }
+              canvas { width: 100%; height: 100%; display: block; border-radius: 10px; }
 
-              /* 미디어 박스 */
-              .media-panel {
-                border: 2px dashed #475569;
-                border-radius: 12px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                gap: 10px;
-                background: var(--card);
-                padding: 12px;
-                text-align: center;
-              }
-              .btn-action {
-                background: var(--primary);
-                color: #fff;
-                padding: 10px 18px;
-                border-radius: 10px;
-                border: none;
-                font-weight: bold;
-                font-size: 0.9rem;
-                cursor: pointer;
-              }
-              .btn-group {
-                display: flex;
+              /* 일괄 통일 하단 액션바 */
+              .btn-group-unified {
+                display: grid;
+                grid-template-columns: 1fr 1fr 1.5fr;
                 gap: 6px;
                 width: 100%;
+                padding-top: 4px;
               }
-              .btn-delete {
-                flex: 1;
+              .btn-del-main {
                 background: #334155;
-                color: #ffffff;
+                color: #f8fafc;
                 padding: 10px;
                 border: 1px solid #475569;
+                border-radius: 10px;
+                font-size: 0.8rem;
+                font-weight: bold;
+                cursor: pointer;
+              }
+              .btn-del-memo {
+                background: #334155;
+                color: #f8fafc;
+                padding: 10px;
+                border: 1px solid #475569;
+                border-radius: 10px;
+                font-size: 0.8rem;
+                font-weight: bold;
+                cursor: pointer;
+              }
+              .btn-save-unified {
+                background: #10b981;
+                color: #ffffff;
+                padding: 10px;
+                border: none;
                 border-radius: 10px;
                 font-size: 0.85rem;
                 font-weight: bold;
                 cursor: pointer;
               }
-              .btn-delete:active { background: var(--danger); }
-              .save-btn {
-                flex: 1.5;
-                background: #10b981;
-                color: #ffffff;
-                padding: 12px;
-                border: none;
-                border-radius: 10px;
-                font-size: 0.9rem;
-                font-weight: bold;
-                cursor: pointer;
+
+              /* 보관함 모달 */
+              .archive-modal {
+                display: none;
+                position: fixed;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: var(--bg);
+                z-index: 100;
+                flex-direction: column;
               }
-              .card {
+              .archive-modal.active { display: flex; }
+              .archive-header {
+                padding: 14px 16px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: var(--card);
+                border-bottom: 1px solid #334155;
+              }
+              .archive-filters {
+                display: flex;
+                gap: 6px;
+                padding: 10px 14px;
+                background: var(--card);
+                overflow-x: auto;
+              }
+              .filter-pill {
+                padding: 4px 10px;
+                border-radius: 16px;
+                background: #0f172a;
+                border: 1px solid #334155;
+                font-size: 0.78rem;
+                color: var(--muted);
+                cursor: pointer;
+                white-space: nowrap;
+              }
+              .filter-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+              .archive-list {
+                flex: 1;
+                overflow-y: auto;
+                padding: 14px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+              }
+              .archive-card {
                 background: var(--card);
                 padding: 12px;
                 border-radius: 10px;
                 border-left: 4px solid var(--accent);
-                margin-top: 8px;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
               }
             </style>
           </head>
@@ -267,8 +320,17 @@ jobs:
 
             <header>
               <h1>💡 생각서랍</h1>
-              <span id="storage-count" style="font-size:0.8rem; color:var(--muted);">기록 0건</span>
+              <button class="btn-archive" onclick="openArchive()">📂 생각보관함</button>
             </header>
+
+            <!-- 생각의 4단계 실행방안 태그 바 -->
+            <div class="stage-bar">
+              <span style="font-size:0.75rem; color:var(--muted); line-height:22px;">실행단계:</span>
+              <div class="stage-tag active" onclick="setStage(this, '1.발상')">💡 1.발상</div>
+              <div class="stage-tag" onclick="setStage(this, '2.구체화')">📐 2.구체화</div>
+              <div class="stage-tag" onclick="setStage(this, '3.검증')">🧪 3.검증</div>
+              <div class="stage-tag" onclick="setStage(this, '4.실행')">🚀 4.실행</div>
+            </div>
 
             <nav>
               <button class="tab-btn active" onclick="switchTab('voice')">✨ 음성</button>
@@ -278,92 +340,133 @@ jobs:
             </nav>
 
             <div class="container">
-              <!-- 1. 음성 탭 -->
+              <!-- 1. 음성 탭 (화면 꽉 찬 구성) -->
               <div id="tab-voice" class="tab-content active">
-                <div class="voice-container">
-                  <button id="gemini-mic" class="gemini-btn" onclick="triggerNativeVoice('voice-input-text')">
-                    <div class="wave-container">
-                      <div class="wave-bar"></div>
-                      <div class="wave-bar"></div>
-                      <div class="wave-bar"></div>
-                      <div class="wave-bar"></div>
-                    </div>
+                <div class="memo-wrapper">
+                  <textarea id="voice-input-text" class="text-area" placeholder="음성인식 결과가 여기에 자동으로 이어집니다..."></textarea>
+                  <button id="mic-voice" class="gemini-mini-btn" onclick="triggerNativeVoice('voice-input-text', 'mic-voice')">
+                    <div class="wave-bar-mini"></div>
+                    <div class="wave-bar-mini"></div>
+                    <div class="wave-bar-mini"></div>
                   </button>
-                  <p id="voice-status" style="color:var(--muted); font-size:0.85rem;">버튼을 누르고 말씀하세요 (이어서 작성됨)</p>
                 </div>
-                <div class="memo-wrapper">
-                  <textarea id="voice-input-text" class="text-area" style="min-height:100px;" placeholder="음성인식 결과가 여기에 이어집니다..."></textarea>
-                </div>
-                <div class="btn-group">
-                  <button class="btn-delete" onclick="clearSpecificText('voice-input-text')">🗑️ 텍스트 지우기</button>
-                  <button class="save-btn" onclick="saveIdea('음성', document.getElementById('voice-input-text').value)">서랍에 저장</button>
+                <div class="btn-group-unified" style="grid-template-columns: 1fr 2fr;">
+                  <button class="btn-del-memo" onclick="clearMemo('voice-input-text')">🗑️ 내용 지우기</button>
+                  <button class="btn-save-unified" onclick="saveIdea('음성', document.getElementById('voice-input-text').value)">💾 서랍에 저장</button>
                 </div>
               </div>
 
-              <!-- 2. 사진 탭 -->
+              <!-- 2. 사진 탭 (1:1 50:50 분할) -->
               <div id="tab-photo" class="tab-content">
-                <div class="media-panel">
-                  <input type="file" accept="image/*" capture="environment" id="photo-input" style="display:none;" onchange="handleMediaSelected(this, 'photo-view')" />
-                  <button class="btn-action" onclick="document.getElementById('photo-input').click()">📷 카메라 촬영 / 사진 선택</button>
-                  <img id="photo-view" style="max-width:100%; max-height:160px; border-radius:8px; display:none;" />
-                </div>
-                <div class="memo-wrapper">
-                  <textarea id="photo-memo" class="text-area" placeholder="사진에 대한 생각/메모를 적거나 마이크로 말하세요..."></textarea>
-                  <button class="mini-mic-btn" onclick="triggerNativeVoice('photo-memo')">🎙️</button>
-                </div>
-                <div class="btn-group">
-                  <button class="btn-delete" onclick="clearMediaOnly('photo-input', 'photo-view')">📷 사진만 삭제</button>
-                  <button class="btn-delete" onclick="clearSpecificText('photo-memo')">📝 메모만 지우기</button>
-                  <button class="save-btn" onclick="saveMediaIdea('사진', 'photo-memo', 'photo-view')">사진 저장</button>
-                </div>
-              </div>
-
-              <!-- 3. 스케치 탭 -->
-              <div id="tab-sketch" class="tab-content">
-                <div class="tools">
-                  <div style="display:flex; align-items:center; gap:6px;">
-                    <span style="font-size:0.8rem; color:var(--muted);">펜 색상:</span>
-                    <input type="color" id="draw-color" value="#000000" style="width:32px; height:32px; border:none; border-radius:4px; cursor:pointer;" />
+                <div class="split-container">
+                  <div class="half-box-top" onclick="document.getElementById('photo-input').click()">
+                    <input type="file" accept="image/*" capture="environment" id="photo-input" style="display:none;" onchange="handleMediaSelect(this, 'photo-view')" />
+                    <p id="photo-prompt" style="color:var(--muted); font-size:0.85rem;">📷 터치하여 촬영 또는 사진 선택</p>
+                    <img id="photo-view" style="max-width:100%; max-height:100%; border-radius:8px; display:none;" />
                   </div>
-                  <button class="btn-delete" style="padding:4px 10px; flex:none; font-size:0.8rem;" onclick="clearCanvas()">🎨 그림만 지우기</button>
+                  <div class="half-box-bottom">
+                    <div class="memo-wrapper">
+                      <textarea id="photo-memo" class="text-area" placeholder="사진에 대한 생각을 적거나 마이크를 누르세요..."></textarea>
+                      <button id="mic-photo" class="gemini-mini-btn" onclick="triggerNativeVoice('photo-memo', 'mic-photo')">
+                        <div class="wave-bar-mini"></div>
+                        <div class="wave-bar-mini"></div>
+                        <div class="wave-bar-mini"></div>
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div class="canvas-box" id="canvas-wrapper">
-                  <canvas id="sketch-board"></canvas>
-                </div>
-                <div class="memo-wrapper">
-                  <textarea id="sketch-memo" class="text-area" placeholder="스케치에 대한 설명/생각을 적거나 마이크로 말하세요..."></textarea>
-                  <button class="mini-mic-btn" onclick="triggerNativeVoice('sketch-memo')">🎙️</button>
-                </div>
-                <div class="btn-group">
-                  <button class="btn-delete" onclick="clearSpecificText('sketch-memo')">📝 메모만 지우기</button>
-                  <button class="save-btn" onclick="saveSketchIdea()">스케치 저장</button>
+                <div class="btn-group-unified">
+                  <button class="btn-del-main" onclick="clearMedia('photo-input', 'photo-view', 'photo-prompt')">📷 사진 삭제</button>
+                  <button class="btn-del-memo" onclick="clearMemo('photo-memo')">📝 메모 삭제</button>
+                  <button class="btn-save-unified" onclick="saveMediaIdea('사진', 'photo-memo', 'photo-view')">💾 서랍에 저장</button>
                 </div>
               </div>
 
-              <!-- 4. 동영상 탭 -->
+              <!-- 3. 스케치 탭 (1:1 50:50 분할 & 그림 보존) -->
+              <div id="tab-sketch" class="tab-content">
+                <div class="split-container">
+                  <div class="half-box-top" style="border-style:solid; border-color:#334155;" id="sketch-container">
+                    <div style="position:absolute; top:6px; right:6px; z-index:10; background:rgba(15,23,42,0.8); padding:3px 6px; border-radius:6px; display:flex; align-items:center; gap:4px;">
+                      <span style="font-size:0.75rem; color:var(--muted);">색:</span>
+                      <input type="color" id="sketch-color" value="#000000" style="width:24px; height:24px; border:none; border-radius:4px; cursor:pointer;" />
+                    </div>
+                    <div class="canvas-holder" id="canvas-wrapper">
+                      <canvas id="sketch-board"></canvas>
+                    </div>
+                  </div>
+                  <div class="half-box-bottom">
+                    <div class="memo-wrapper">
+                      <textarea id="sketch-memo" class="text-area" placeholder="스케치에 대한 설명을 적거나 마이크를 누르세요..."></textarea>
+                      <button id="mic-sketch" class="gemini-mini-btn" onclick="triggerNativeVoice('sketch-memo', 'mic-sketch')">
+                        <div class="wave-bar-mini"></div>
+                        <div class="wave-bar-mini"></div>
+                        <div class="wave-bar-mini"></div>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="btn-group-unified">
+                  <button class="btn-del-main" onclick="clearSketchCanvas()">🎨 스케치 삭제</button>
+                  <button class="btn-del-memo" onclick="clearMemo('sketch-memo')">📝 메모 삭제</button>
+                  <button class="btn-save-unified" onclick="saveIdea('스케치', document.getElementById('sketch-memo').value || '스케치 드로잉')">💾 서랍에 저장</button>
+                </div>
+              </div>
+
+              <!-- 4. 동영상 탭 (1:1 50:50 분할) -->
               <div id="tab-video" class="tab-content">
-                <div class="media-panel">
-                  <input type="file" accept="video/*" capture="environment" id="video-input" style="display:none;" onchange="handleMediaSelected(this, 'video-view')" />
-                  <button class="btn-action" onclick="document.getElementById('video-input').click()">🎬 영상 촬영 / 비디오 선택</button>
-                  <video id="video-view" controls style="max-width:100%; max-height:160px; border-radius:8px; display:none;"></video>
+                <div class="split-container">
+                  <div class="half-box-top" onclick="document.getElementById('video-input').click()">
+                    <input type="file" accept="video/*" capture="environment" id="video-input" style="display:none;" onchange="handleMediaSelect(this, 'video-view')" />
+                    <p id="video-prompt" style="color:var(--muted); font-size:0.85rem;">🎬 터치하여 영상 촬영 또는 비디오 선택</p>
+                    <video id="video-view" controls style="max-width:100%; max-height:100%; border-radius:8px; display:none;"></video>
+                  </div>
+                  <div class="half-box-bottom">
+                    <div class="memo-wrapper">
+                      <textarea id="video-memo" class="text-area" placeholder="동영상에 대한 생각을 적거나 마이크를 누르세요..."></textarea>
+                      <button id="mic-video" class="gemini-mini-btn" onclick="triggerNativeVoice('video-memo', 'mic-video')">
+                        <div class="wave-bar-mini"></div>
+                        <div class="wave-bar-mini"></div>
+                        <div class="wave-bar-mini"></div>
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div class="memo-wrapper">
-                  <textarea id="video-memo" class="text-area" placeholder="영상에 대한 생각/메모를 적거나 마이크로 말하세요..."></textarea>
-                  <button class="mini-mic-btn" onclick="triggerNativeVoice('video-memo')">🎙️</button>
-                </div>
-                <div class="btn-group">
-                  <button class="btn-delete" onclick="clearMediaOnly('video-input', 'video-view')">🎬 영상만 삭제</button>
-                  <button class="btn-delete" onclick="clearSpecificText('video-memo')">📝 메모만 지우기</button>
-                  <button class="save-btn" onclick="saveMediaIdea('동영상', 'video-memo', 'video-view')">영상 저장</button>
+                <div class="btn-group-unified">
+                  <button class="btn-del-main" onclick="clearMedia('video-input', 'video-view', 'video-prompt')">🎬 영상 삭제</button>
+                  <button class="btn-del-memo" onclick="clearMemo('video-memo')">📝 메모 삭제</button>
+                  <button class="btn-save-unified" onclick="saveMediaIdea('동영상', 'video-memo', 'video-view')">💾 서랍에 저장</button>
                 </div>
               </div>
+            </div>
 
-              <!-- 저장 목록 -->
-              <div id="idea-list" style="margin-top:8px;"></div>
+            <!-- 독립형 생각보관함 모달 창 -->
+            <div id="archive-modal" class="archive-modal">
+              <div class="archive-header">
+                <h2 style="font-size:1.1rem; color:var(--accent);">📂 저장된 생각서랍</h2>
+                <button class="btn-archive" style="background:#ef4444; color:#fff;" onclick="closeArchive()">닫기</button>
+              </div>
+              <div class="archive-filters">
+                <div class="filter-pill active" onclick="filterArchive('전체', this)">전체</div>
+                <div class="filter-pill" onclick="filterArchive('음성', this)">✨ 음성</div>
+                <div class="filter-pill" onclick="filterArchive('사진', this)">📷 사진</div>
+                <div class="filter-pill" onclick="filterArchive('스케치', this)">🎨 스케치</div>
+                <div class="filter-pill" onclick="filterArchive('동영상', this)">🎬 동영상</div>
+              </div>
+              <div class="archive-list" id="archive-item-list"></div>
             </div>
 
             <script>
+              let currentStage = '1.발상';
               let activeTargetInputId = 'voice-input-text';
+              let activeMicButtonId = 'mic-voice';
+              let currentFilter = '전체';
+              let editingIndex = -1;
+
+              function setStage(el, stage) {
+                document.querySelectorAll('.stage-tag').forEach(t => t.classList.remove('active'));
+                el.classList.add('active');
+                currentStage = stage;
+              }
 
               function switchTab(tabId) {
                 const tabs = ['voice', 'photo', 'sketch', 'video'];
@@ -372,127 +475,140 @@ jobs:
                 });
                 document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                 document.getElementById('tab-' + tabId).classList.add('active');
-                if (tabId === 'sketch') setTimeout(initCanvasSize, 50);
+                if (tabId === 'sketch') setTimeout(initCanvas, 50);
               }
 
-              /* 분리 삭제 함수들 */
-              function clearSpecificText(elementId) {
-                document.getElementById(elementId).value = '';
-              }
-
-              function clearMediaOnly(inputId, viewId) {
+              /* 미디어 및 메모 지우기 */
+              function clearMemo(id) { document.getElementById(id).value = ''; }
+              function clearMedia(inputId, viewId, promptId) {
                 document.getElementById(inputId).value = '';
-                const view = document.getElementById(viewId);
-                view.src = '';
-                view.style.display = 'none';
+                const v = document.getElementById(viewId);
+                v.src = '';
+                v.style.display = 'none';
+                document.getElementById(promptId).style.display = 'block';
               }
-
-              function handleMediaSelected(input, viewId) {
+              function handleMediaSelect(input, viewId) {
                 const file = input.files[0];
                 if (file) {
                   const el = document.getElementById(viewId);
                   el.src = URL.createObjectURL(file);
                   el.style.display = 'block';
+                  const prompt = el.previousElementSibling;
+                  if (prompt) prompt.style.display = 'none';
                 }
               }
 
               /* 음성 인식 호출 */
-              function triggerNativeVoice(targetId) {
-                activeTargetInputId = targetId || 'voice-input-text';
-                const btn = document.getElementById('gemini-mic');
-                const status = document.getElementById('voice-status');
-                
+              function triggerNativeVoice(targetId, micBtnId) {
+                activeTargetInputId = targetId;
+                activeMicButtonId = micBtnId;
+                const btn = document.getElementById(micBtnId);
+                if (btn) btn.classList.add('listening');
+
                 if (window.AndroidBridge && window.AndroidBridge.startSpeechRecognition) {
-                  if (activeTargetInputId === 'voice-input-text' && btn) btn.classList.add('listening');
-                  if (status) status.innerText = '듣고 있습니다... 말씀해 주세요.';
                   window.AndroidBridge.startSpeechRecognition();
                 } else {
                   const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
                   if (!Speech) {
                     alert('음성인식 기능을 지원하지 않는 기기입니다.');
+                    if (btn) btn.classList.remove('listening');
                     return;
                   }
                   const rec = new Speech();
                   rec.lang = 'ko-KR';
-                  rec.onstart = () => {
-                    if (activeTargetInputId === 'voice-input-text' && btn) btn.classList.add('listening');
-                    if (status) status.innerText = '듣고 있습니다... 말씀해 주세요.';
-                  };
-                  rec.onresult = (e) => {
-                    appendVoiceText(activeTargetInputId, e.results[0][0].transcript);
-                  };
-                  rec.onend = () => {
-                    if (btn) btn.classList.remove('listening');
-                    if (status) status.innerText = '음성 입력 완료. 확인 후 저장하세요.';
-                  };
+                  rec.onresult = (e) => appendVoiceText(e.results[0][0].transcript);
+                  rec.onend = () => { if (btn) btn.classList.remove('listening'); };
                   rec.start();
                 }
               }
 
-              function appendVoiceText(targetId, newText) {
-                const area = document.getElementById(targetId);
+              function appendVoiceText(newText) {
+                const area = document.getElementById(activeTargetInputId);
                 if (!area) return;
                 const prev = area.value.trim();
                 area.value = prev ? prev + ' ' + newText : newText;
               }
 
               window.receiveVoiceResult = function(text) {
-                const btn = document.getElementById('gemini-mic');
+                const btn = document.getElementById(activeMicButtonId);
                 if (btn) btn.classList.remove('listening');
-                appendVoiceText(activeTargetInputId, text);
-                const status = document.getElementById('voice-status');
-                if (status) status.innerText = '✨ 음성이 추가되었습니다.';
+                appendVoiceText(text);
               };
 
-              /* 스케치 캔버스 (키보드 팝업 시 그림 보존 처리) */
+              /* 플로팅 서비스 데이터 주기적 점검 */
+              setInterval(() => {
+                if (window.AndroidBridge && window.AndroidBridge.getPendingVoiceText) {
+                  const text = window.AndroidBridge.getPendingVoiceText();
+                  if (text && text.trim().length > 0) {
+                    switchTab('voice');
+                    appendVoiceText(text);
+                  }
+                }
+              }, 400);
+
+              /* 스케치 캔버스 고정 */
               const canvas = document.getElementById('sketch-board');
               const ctx = canvas.getContext('2d');
               let isDrawing = false;
-              let isCanvasInitialized = false;
+              let isInit = false;
 
-              function initCanvasSize() {
-                if (isCanvasInitialized) return; // 이미 초기화된 경우 키보드 팝업 리사이즈로 인한 지워짐 차단
-                const box = document.getElementById('canvas-wrapper');
-                if (box.clientWidth > 0 && box.clientHeight > 0) {
-                  canvas.width = box.clientWidth;
-                  canvas.height = box.clientHeight;
+              function initCanvas() {
+                if (isInit) return;
+                const holder = document.getElementById('canvas-wrapper');
+                if (holder.clientWidth > 0 && holder.clientHeight > 0) {
+                  canvas.width = holder.clientWidth;
+                  canvas.height = holder.clientHeight;
                   ctx.lineWidth = 4;
                   ctx.lineCap = 'round';
-                  ctx.strokeStyle = document.getElementById('draw-color').value;
-                  isCanvasInitialized = true;
+                  ctx.strokeStyle = document.getElementById('sketch-color').value;
+                  isInit = true;
                 }
               }
-
               function getPos(e) {
                 const r = canvas.getBoundingClientRect();
                 const t = e.touches ? e.touches[0] : e;
                 return { x: t.clientX - r.left, y: t.clientY - r.top };
               }
               canvas.addEventListener('mousedown', (e) => { isDrawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
-              canvas.addEventListener('mousemove', (e) => { if (!isDrawing) return; ctx.strokeStyle = document.getElementById('draw-color').value; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
+              canvas.addEventListener('mousemove', (e) => { if (!isDrawing) return; ctx.strokeStyle = document.getElementById('sketch-color').value; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
               canvas.addEventListener('mouseup', () => { isDrawing = false; });
               canvas.addEventListener('touchstart', (e) => { e.preventDefault(); isDrawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); }, { passive: false });
-              canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (!isDrawing) return; ctx.strokeStyle = document.getElementById('draw-color').value; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }, { passive: false });
+              canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (!isDrawing) return; ctx.strokeStyle = document.getElementById('sketch-color').value; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }, { passive: false });
               canvas.addEventListener('touchend', () => { isDrawing = false; });
-              function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+              function clearSketchCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-              /* 보관함 */
-              function saveIdea(type, text) {
-                if (!text || text.trim() === '') {
+              /* 생각서랍 저장 및 보관함 관리 */
+              function getStorage() {
+                // 이전 레거시 데이터 통합 복원
+                const saved = localStorage.getItem('idea_drawer_storage') || localStorage.getItem('user_ideas') || localStorage.getItem('my_ideas') || '[]';
+                try { return JSON.parse(saved); } catch(e) { return []; }
+              }
+              function setStorage(arr) {
+                localStorage.setItem('idea_drawer_storage', JSON.stringify(arr));
+              }
+
+              function saveIdea(type, content) {
+                if (!content || content.trim() === '') {
                   alert('저장할 내용이 없습니다.');
                   return;
                 }
-                const list = JSON.parse(localStorage.getItem('user_ideas') || '[]');
-                list.unshift({ type, content: text, time: new Date().toLocaleTimeString('ko-KR') });
-                localStorage.setItem('user_ideas', JSON.stringify(list));
-                renderStorage();
-                alert(type + ' 저장이 완료되었습니다!');
-              }
-
-              function saveSketchIdea() {
-                const memo = document.getElementById('sketch-memo').value.trim();
-                const content = memo ? memo : '스케치 드로잉이 저장되었습니다.';
-                saveIdea('스케치', content);
+                const list = getStorage();
+                if (editingIndex >= 0) {
+                  list[editingIndex].content = content;
+                  list[editingIndex].stage = currentStage;
+                  list[editingIndex].time = new Date().toLocaleTimeString('ko-KR') + ' (수정됨)';
+                  editingIndex = -1;
+                  alert('아이디어가 성공적으로 수정되었습니다.');
+                } else {
+                  list.unshift({
+                    type,
+                    stage: currentStage,
+                    content,
+                    time: new Date().toLocaleTimeString('ko-KR')
+                  });
+                  alert(`[${type}] 아이디어가 생각서랍에 보관되었습니다.`);
+                }
+                setStorage(list);
               }
 
               function saveMediaIdea(type, memoId, viewId) {
@@ -502,28 +618,87 @@ jobs:
                   alert('촬영된 미디어나 메모를 입력해 주세요.');
                   return;
                 }
-                const content = memo ? memo : `[${type} 파일 저장됨]`;
-                saveIdea(type, content);
+                saveIdea(type, memo || `[${type} 파일 저장됨]`);
               }
 
-              function renderStorage() {
-                const list = JSON.parse(localStorage.getItem('user_ideas') || '[]');
-                document.getElementById('storage-count').innerText = `기록 ${list.length}건`;
-                const box = document.getElementById('idea-list');
-                box.innerHTML = list.map(item => `
-                  <div class="card">
-                    <strong style="color:var(--accent);">[${item.type}]</strong> <span style="font-size:0.8rem; color:#64748b;">${item.time}</span>
-                    <p style="margin-top:4px;">${item.content}</p>
+              function openArchive() {
+                document.getElementById('archive-modal').classList.add('active');
+                renderArchive();
+              }
+              function closeArchive() {
+                document.getElementById('archive-modal').classList.remove('active');
+              }
+
+              function filterArchive(cat, el) {
+                currentFilter = cat;
+                document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+                el.classList.add('active');
+                renderArchive();
+              }
+
+              function renderArchive() {
+                const list = getStorage();
+                const container = document.getElementById('archive-item-list');
+                const filtered = currentFilter === '전체' ? list : list.filter(i => i.type === currentFilter);
+
+                if (filtered.length === 0) {
+                  container.innerHTML = '<p style="color:var(--muted); text-align:center; margin-top:40px;">저장된 생각이 없습니다.</p>';
+                  return;
+                }
+
+                container.innerHTML = filtered.map((item, idx) => `
+                  <div class="archive-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <div>
+                        <strong style="color:var(--accent);">[${item.type}]</strong>
+                        <span style="font-size:0.75rem; background:#334155; padding:2px 6px; border-radius:4px; margin-left:4px;">${item.stage || '1.발상'}</span>
+                      </div>
+                      <span style="font-size:0.75rem; color:#64748b;">${item.time}</span>
+                    </div>
+                    <p style="font-size:0.95rem; margin:4px 0; white-space:pre-wrap;">${item.content}</p>
+                    <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:4px;">
+                      <button style="background:#4f46e5; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:0.75rem; cursor:pointer;" onclick="editIdea(${idx})">✏️ 수정</button>
+                      <button style="background:#ef4444; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:0.75rem; cursor:pointer;" onclick="deleteIdea(${idx})">🗑️ 삭제</button>
+                    </div>
                   </div>
                 `).join('');
               }
-              renderStorage();
+
+              function editIdea(idx) {
+                const list = getStorage();
+                const item = list[idx];
+                editingIndex = idx;
+                closeArchive();
+
+                if (item.type === '음성') {
+                  switchTab('voice');
+                  document.getElementById('voice-input-text').value = item.content;
+                } else if (item.type === '사진') {
+                  switchTab('photo');
+                  document.getElementById('photo-memo').value = item.content;
+                } else if (item.type === '스케치') {
+                  switchTab('sketch');
+                  document.getElementById('sketch-memo').value = item.content;
+                } else if (item.type === '동영상') {
+                  switchTab('video');
+                  document.getElementById('video-memo').value = item.content;
+                }
+              }
+
+              function deleteIdea(idx) {
+                if (confirm('이 생각을 서랍에서 삭제하시겠습니까?')) {
+                  const list = getStorage();
+                  list.splice(idx, 1);
+                  setStorage(list);
+                  renderArchive();
+                }
+              }
             </script>
           </body>
           </html>
           EOF
 
-      - name: 5. 최신 안드로이드 대응 플로팅 백그라운드 음성엔진 주입
+      - name: 5. 플로팅 텍스트 2중 전달 및 네이티브 엔진 주입
         run: |
           cat << 'EOF' > package.json
           {
@@ -554,7 +729,7 @@ jobs:
           sed -i "s/versionCode 1/versionCode $BUILD_NUM/g" android/app/build.gradle
           sed -i "s/versionName \"1.0\"/versionName \"1.0.$BUILD_NUM\"/g" android/app/build.gradle
 
-          # 권한 및 플로팅 서비스 주입
+          # 권한 및 서비스 주입
           node -e '
           const fs = require("fs");
           const p = "android/app/src/main/AndroidManifest.xml";
@@ -568,7 +743,7 @@ jobs:
 
           mkdir -p android/app/src/main/java/com/k2hkkh/ideadrawer
 
-          # 플로팅 위젯 소스코드
+          # 플로팅 위젯 소스코드 (SharedPreferences 2중 안전 저장)
           cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/FloatingWidgetService.java
           package com.k2hkkh.ideadrawer;
 
@@ -578,6 +753,7 @@ jobs:
           import android.app.Service;
           import android.content.Context;
           import android.content.Intent;
+          import android.content.SharedPreferences;
           import android.graphics.Color;
           import android.graphics.PixelFormat;
           import android.graphics.drawable.GradientDrawable;
@@ -618,7 +794,7 @@ jobs:
                   try {
                       Notification notification = new NotificationCompat.Builder(this, "floating_channel")
                               .setContentTitle("생각서랍 플로팅 실행 중")
-                              .setContentText("버튼을 터치하여 바로 음성으로 기록하세요.")
+                              .setContentText("터치하여 바로 음성으로 기록하세요.")
                               .setSmallIcon(android.R.drawable.ic_btn_speak_now)
                               .setPriority(NotificationCompat.PRIORITY_LOW)
                               .build();
@@ -717,7 +893,7 @@ jobs:
                                   isListening = true;
                                   floatingView.setBackground(activeBg);
                                   floatingView.setText("🎙️");
-                                  Toast.makeText(getApplicationContext(), "💡 말씀해 주세요 (듣는 중...)", Toast.LENGTH_SHORT).show();
+                                  Toast.makeText(getApplicationContext(), "💡 말씀하세요 (듣는 중...)", Toast.LENGTH_SHORT).show();
                               }
 
                               @Override public void onBeginningOfSpeech() {}
@@ -728,7 +904,6 @@ jobs:
                               @Override
                               public void onError(int error) {
                                   resetFloatingButton();
-                                  // 백그라운드 단독 녹음 제한 기기 대응: 앱 화면 전환 트리거
                                   Intent appIntent = new Intent(FloatingWidgetService.this, MainActivity.class);
                                   appIntent.putExtra("TRIGGER_VOICE", true);
                                   appIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -742,6 +917,11 @@ jobs:
                                   ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                                   if (matches != null && !matches.isEmpty()) {
                                       String spokenText = matches.get(0);
+                                      
+                                      // SharedPreferences에 2중 백업 저장
+                                      SharedPreferences prefs = getSharedPreferences("IdeaPrefs", MODE_PRIVATE);
+                                      prefs.edit().putString("PENDING_VOICE", spokenText).apply();
+
                                       Intent appIntent = new Intent(FloatingWidgetService.this, MainActivity.class);
                                       appIntent.putExtra("VOICE_RESULT", spokenText);
                                       appIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -806,6 +986,7 @@ jobs:
 
           import android.Manifest;
           import android.content.Intent;
+          import android.content.SharedPreferences;
           import android.content.pm.PackageManager;
           import android.os.Build;
           import android.os.Bundle;
@@ -836,6 +1017,16 @@ jobs:
                           @JavascriptInterface
                           public void startSpeechRecognition() {
                               new Handler(Looper.getMainLooper()).post(() -> startInAppVoice());
+                          }
+
+                          @JavascriptInterface
+                          public String getPendingVoiceText() {
+                              SharedPreferences prefs = getSharedPreferences("IdeaPrefs", MODE_PRIVATE);
+                              String pending = prefs.getString("PENDING_VOICE", "");
+                              if (!pending.isEmpty()) {
+                                  prefs.edit().remove("PENDING_VOICE").apply();
+                              }
+                              return pending;
                           }
                       }, "AndroidBridge");
                   }
@@ -878,7 +1069,7 @@ jobs:
                           @Override public void onEndOfSpeech() {}
                           @Override public void onError(int error) {
                               Toast.makeText(MainActivity.this, "음성 인식이 취소되었습니다.", Toast.LENGTH_SHORT).show();
-                              evalJS("if (document.getElementById('gemini-mic')) document.getElementById('gemini-mic').classList.remove('listening');");
+                              evalJS("if (window.receiveVoiceResult) window.receiveVoiceResult('');");
                           }
                           @Override
                           public void onResults(Bundle results) {
@@ -891,7 +1082,6 @@ jobs:
                           @Override public void onEvent(int eventType, Bundle params) {}
                       });
 
-                      evalJS("if (document.getElementById('gemini-mic')) document.getElementById('gemini-mic').classList.add('listening');");
                       inAppRecognizer.startListening(intent);
                   } catch (Exception e) {
                       Toast.makeText(this, "음성 인식기를 구동할 수 없습니다.", Toast.LENGTH_SHORT).show();
@@ -921,7 +1111,7 @@ jobs:
                   if (intent != null) {
                       if (intent.hasExtra("VOICE_RESULT")) {
                           String voiceText = intent.getStringExtra("VOICE_RESULT");
-                          new Handler(Looper.getMainLooper()).postDelayed(() -> sendTextToWebView(voiceText), 350);
+                          new Handler(Looper.getMainLooper()).postDelayed(() -> sendTextToWebView(voiceText), 300);
                       } else if (intent.getBooleanExtra("TRIGGER_VOICE", false)) {
                           new Handler(Looper.getMainLooper()).postDelayed(() -> startInAppVoice(), 400);
                       }
@@ -929,10 +1119,10 @@ jobs:
               }
 
               private void sendTextToWebView(String text) {
-                  if (text != null) {
-                      String cleanText = text.replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ");
-                      evalJS("if (window.receiveVoiceResult) window.receiveVoiceResult('" + cleanText + "');");
-                  }
+                if (text != null) {
+                    String cleanText = text.replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ");
+                    evalJS("if (window.receiveVoiceResult) window.receiveVoiceResult('" + cleanText + "');");
+                }
               }
 
               private void startWidgetIfAllowed() {
