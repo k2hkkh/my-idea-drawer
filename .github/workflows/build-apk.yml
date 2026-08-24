@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: 4. 생각서랍 전체 UI 및 4단계 실행방안 웹 화면 구성
+      - name: 4. 생각서랍 제미나이 UI 및 반응형 웹 구성
         run: |
           mkdir -p www
           cat << 'EOF' > www/index.html
@@ -36,10 +36,11 @@ jobs:
             <title>생각서랍</title>
             <style>
               :root {
-                --bg: #0f172a;
-                --card: #1e293b;
-                --primary: #4f46e5;
+                --bg: #0b0f19;
+                --card: #151e2e;
+                --primary: #2563eb;
                 --accent: #38bdf8;
+                --pill-bg: #1e293b;
                 --danger: #ef4444;
                 --text: #f8fafc;
                 --muted: #94a3b8;
@@ -55,31 +56,56 @@ jobs:
                 overflow: hidden;
               }
               header {
-                padding: 12px 16px;
+                padding: 10px 16px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
                 background: var(--card);
-                border-bottom: 1px solid #334155;
+                border-bottom: 1px solid #1e293b;
+                flex-shrink: 0;
               }
-              header h1 { font-size: 1.15rem; font-weight: 700; color: var(--accent); }
+              header h1 { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
               .btn-archive {
-                background: #334155;
-                border: 1px solid #475569;
+                background: #1e293b;
+                border: 1px solid #334155;
                 color: var(--accent);
                 padding: 6px 12px;
                 border-radius: 8px;
-                font-size: 0.85rem;
+                font-size: 0.8rem;
                 font-weight: bold;
                 cursor: pointer;
+              }
+              .stage-bar {
+                display: flex;
+                background: #0f172a;
+                padding: 6px 12px;
+                gap: 6px;
+                border-bottom: 1px solid #1e293b;
+                overflow-x: auto;
+                flex-shrink: 0;
+              }
+              .stage-tag {
+                font-size: 0.75rem;
+                padding: 3px 8px;
+                border-radius: 6px;
+                background: #1e293b;
+                color: var(--muted);
+                cursor: pointer;
+                white-space: nowrap;
+              }
+              .stage-tag.active {
+                background: var(--accent);
+                color: #0b0f19;
+                font-weight: bold;
               }
               nav {
                 display: grid;
                 grid-template-columns: repeat(4, 1fr);
                 background: var(--card);
                 padding: 6px;
-                gap: 6px;
-                border-bottom: 1px solid #334155;
+                gap: 4px;
+                border-bottom: 1px solid #1e293b;
+                flex-shrink: 0;
               }
               .tab-btn {
                 padding: 8px 2px;
@@ -90,130 +116,137 @@ jobs:
                 font-weight: 600;
                 border-radius: 8px;
                 cursor: pointer;
-                transition: all 0.2s;
               }
               .tab-btn.active {
                 background: var(--primary);
                 color: #ffffff;
               }
-              .stage-bar {
-                display: flex;
-                background: #1e293b;
-                padding: 6px 12px;
-                gap: 6px;
-                border-bottom: 1px solid #334155;
-                overflow-x: auto;
-              }
-              .stage-tag {
-                font-size: 0.75rem;
-                padding: 4px 8px;
-                border-radius: 6px;
-                background: #0f172a;
-                color: var(--muted);
-                cursor: pointer;
-                white-space: nowrap;
-                border: 1px solid #334155;
-              }
-              .stage-tag.active {
-                background: var(--accent);
-                color: #0f172a;
-                font-weight: bold;
-              }
               .container {
                 flex: 1;
+                min-height: 0;
                 padding: 12px;
                 display: flex;
                 flex-direction: column;
-                gap: 10px;
+                gap: 8px;
                 overflow: hidden;
               }
-              .tab-content { display: none; flex: 1; flex-direction: column; gap: 10px; height: 100%; }
+              .tab-content { display: none; flex: 1; min-height: 0; flex-direction: column; gap: 8px; height: 100%; }
               .tab-content.active { display: flex; }
 
-              /* 화면 1/2 분할 레이아웃 */
-              .split-container {
-                flex: 1;
+              /* 제미나이 캡슐 알약형 입력바 (Gemini Bar) */
+              .gemini-pill-box {
+                background: var(--pill-bg);
+                border: 1px solid #334155;
+                border-radius: 28px;
+                padding: 6px 12px;
                 display: flex;
-                flex-direction: column;
-                gap: 10px;
-                height: 100%;
+                align-items: center;
+                gap: 8px;
+                width: 100%;
+                flex-shrink: 0;
               }
-              .half-box-top {
-                flex: 1;
-                background: var(--card);
-                border: 2px dashed #475569;
-                border-radius: 12px;
+              .gemini-plus-btn {
+                background: none;
+                border: none;
+                color: var(--muted);
+                font-size: 1.25rem;
+                cursor: pointer;
                 display: flex;
-                flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                position: relative;
-                overflow: hidden;
+                width: 28px;
+                height: 28px;
               }
-              .half-box-bottom {
+              .gemini-input {
                 flex: 1;
-                display: flex;
-                flex-direction: column;
-                position: relative;
-              }
-
-              /* 텍스트 입력창 & 제미나이 마이크 */
-              .memo-wrapper {
-                flex: 1;
-                position: relative;
-                display: flex;
-                width: 100%;
-                height: 100%;
-              }
-              .text-area {
-                flex: 1;
-                width: 100%;
-                height: 100%;
-                background: var(--card);
-                border: 1px solid #334155;
-                border-radius: 12px;
-                padding: 12px 50px 12px 14px;
+                background: transparent;
+                border: none;
                 color: #ffffff;
-                font-size: 1rem;
-                line-height: 1.5;
-                resize: none;
+                font-size: 0.95rem;
+                outline: none;
               }
-              .gemini-mini-btn {
-                position: absolute;
-                right: 12px;
-                bottom: 12px;
-                width: 36px;
-                height: 36px;
+              .gemini-input::placeholder { color: #64748b; }
+              .gemini-mic-icon {
+                background: none;
+                border: none;
+                color: var(--muted);
+                font-size: 1.1rem;
+                cursor: pointer;
+                padding: 4px;
+              }
+              .gemini-wave-circle {
+                width: 34px;
+                height: 34px;
                 border-radius: 50%;
-                background: linear-gradient(135deg, #4f46e5, #38bdf8);
+                background: #2563eb;
                 border: none;
                 cursor: pointer;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+                gap: 2px;
+                flex-shrink: 0;
               }
-              .gemini-mini-btn.listening {
-                animation: pulse 1.2s infinite;
-                background: linear-gradient(135deg, #ef4444, #f97316);
-              }
-              .wave-bar-mini {
+              .wave-bar {
                 width: 3px;
-                height: 10px;
+                height: 12px;
                 background: #ffffff;
                 border-radius: 2px;
-                margin: 0 1px;
               }
-              .gemini-mini-btn.listening .wave-bar-mini {
-                animation: soundWave 0.6s infinite alternate ease-in-out;
+              .gemini-wave-circle.listening {
+                background: var(--danger);
+                animation: pulse 1.2s infinite;
               }
-              .gemini-mini-btn.listening .wave-bar-mini:nth-child(2) { animation-delay: 0.15s; }
-              .gemini-mini-btn.listening .wave-bar-mini:nth-child(3) { animation-delay: 0.3s; }
-              @keyframes soundWave { 0% { height: 6px; } 100% { height: 18px; } }
-              @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+              .gemini-wave-circle.listening .wave-bar {
+                animation: waveAnim 0.6s infinite alternate ease-in-out;
+              }
+              .gemini-wave-circle.listening .wave-bar:nth-child(2) { animation-delay: 0.15s; }
+              .gemini-wave-circle.listening .wave-bar:nth-child(3) { animation-delay: 0.3s; }
+              @keyframes waveAnim { 0% { height: 6px; } 100% { height: 18px; } }
+              @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+
+              /* 화면 분할 및 미디어 영역 */
+              .split-view {
+                flex: 1;
+                min-height: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+              }
+              .media-half-top {
+                flex: 1;
+                min-height: 0;
+                background: var(--card);
+                border: 2px dashed #334155;
+                border-radius: 12px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+                position: relative;
+              }
+              .media-half-bottom {
+                flex: 1;
+                min-height: 0;
+                display: flex;
+                flex-direction: column;
+              }
+              .text-area-box {
+                flex: 1;
+                width: 100%;
+                background: var(--card);
+                border: 1px solid #1e293b;
+                border-radius: 12px;
+                padding: 10px 12px;
+                color: #ffffff;
+                font-size: 0.95rem;
+                resize: none;
+                line-height: 1.4;
+              }
 
               /* 스케치 캔버스 */
-              .canvas-holder {
+              .canvas-box {
                 width: 100%;
                 height: 100%;
                 background: #ffffff;
@@ -222,35 +255,25 @@ jobs:
               }
               canvas { width: 100%; height: 100%; display: block; border-radius: 10px; }
 
-              /* 일괄 통일 하단 액션바 */
-              .btn-group-unified {
+              /* 하단 일괄 버튼 그룹 */
+              .action-buttons {
                 display: grid;
-                grid-template-columns: 1fr 1fr 1.5fr;
+                grid-template-columns: 1fr 1fr 1.4fr;
                 gap: 6px;
-                width: 100%;
-                padding-top: 4px;
+                flex-shrink: 0;
+                padding-top: 2px;
               }
-              .btn-del-main {
-                background: #334155;
+              .btn-action-del {
+                background: #1e293b;
                 color: #f8fafc;
                 padding: 10px;
-                border: 1px solid #475569;
+                border: 1px solid #334155;
                 border-radius: 10px;
                 font-size: 0.8rem;
                 font-weight: bold;
                 cursor: pointer;
               }
-              .btn-del-memo {
-                background: #334155;
-                color: #f8fafc;
-                padding: 10px;
-                border: 1px solid #475569;
-                border-radius: 10px;
-                font-size: 0.8rem;
-                font-weight: bold;
-                cursor: pointer;
-              }
-              .btn-save-unified {
+              .btn-action-save {
                 background: #10b981;
                 color: #ffffff;
                 padding: 10px;
@@ -261,8 +284,8 @@ jobs:
                 cursor: pointer;
               }
 
-              /* 보관함 모달 */
-              .archive-modal {
+              /* 생각보관함 모달 */
+              .modal-overlay {
                 display: none;
                 position: fixed;
                 top: 0; left: 0; right: 0; bottom: 0;
@@ -270,40 +293,22 @@ jobs:
                 z-index: 100;
                 flex-direction: column;
               }
-              .archive-modal.active { display: flex; }
-              .archive-header {
-                padding: 14px 16px;
+              .modal-overlay.active { display: flex; }
+              .modal-header {
+                padding: 12px 16px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
                 background: var(--card);
-                border-bottom: 1px solid #334155;
+                border-bottom: 1px solid #1e293b;
               }
-              .archive-filters {
-                display: flex;
-                gap: 6px;
-                padding: 10px 14px;
-                background: var(--card);
-                overflow-x: auto;
-              }
-              .filter-pill {
-                padding: 4px 10px;
-                border-radius: 16px;
-                background: #0f172a;
-                border: 1px solid #334155;
-                font-size: 0.78rem;
-                color: var(--muted);
-                cursor: pointer;
-                white-space: nowrap;
-              }
-              .filter-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
               .archive-list {
                 flex: 1;
                 overflow-y: auto;
-                padding: 14px;
+                padding: 12px;
                 display: flex;
                 flex-direction: column;
-                gap: 10px;
+                gap: 8px;
               }
               .archive-card {
                 background: var(--card);
@@ -323,9 +328,8 @@ jobs:
               <button class="btn-archive" onclick="openArchive()">📂 생각보관함</button>
             </header>
 
-            <!-- 생각의 4단계 실행방안 태그 바 -->
             <div class="stage-bar">
-              <span style="font-size:0.75rem; color:var(--muted); line-height:22px;">실행단계:</span>
+              <span style="font-size:0.75rem; color:var(--muted); line-height:22px;">단계:</span>
               <div class="stage-tag active" onclick="setStage(this, '1.발상')">💡 1.발상</div>
               <div class="stage-tag" onclick="setStage(this, '2.구체화')">📐 2.구체화</div>
               <div class="stage-tag" onclick="setStage(this, '3.검증')">🧪 3.검증</div>
@@ -340,126 +344,130 @@ jobs:
             </nav>
 
             <div class="container">
-              <!-- 1. 음성 탭 (화면 꽉 찬 구성) -->
+              <!-- 1. 음성 탭 -->
               <div id="tab-voice" class="tab-content active">
-                <div class="memo-wrapper">
-                  <textarea id="voice-input-text" class="text-area" placeholder="음성인식 결과가 여기에 자동으로 이어집니다..."></textarea>
-                  <button id="mic-voice" class="gemini-mini-btn" onclick="triggerNativeVoice('voice-input-text', 'mic-voice')">
-                    <div class="wave-bar-mini"></div>
-                    <div class="wave-bar-mini"></div>
-                    <div class="wave-bar-mini"></div>
+                <textarea id="voice-input-text" class="text-area-box" placeholder="음성인식 결과 및 생각을 입력하세요..."></textarea>
+                <div class="gemini-pill-box">
+                  <button class="gemini-plus-btn" onclick="clearSpecific('voice-input-text')">＋</button>
+                  <input type="text" id="voice-quick-input" class="gemini-input" placeholder="생각을 적거나 말씀하세요..." onkeydown="if(event.key==='Enter') appendQuickText('voice-input-text', this)" />
+                  <button class="gemini-mic-icon" onclick="triggerVoice('voice-input-text', 'wave-voice')">🎙️</button>
+                  <button id="wave-voice" class="gemini-wave-circle" onclick="triggerVoice('voice-input-text', 'wave-voice')">
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
                   </button>
                 </div>
-                <div class="btn-group-unified" style="grid-template-columns: 1fr 2fr;">
-                  <button class="btn-del-memo" onclick="clearMemo('voice-input-text')">🗑️ 내용 지우기</button>
-                  <button class="btn-save-unified" onclick="saveIdea('음성', document.getElementById('voice-input-text').value)">💾 서랍에 저장</button>
+                <div class="action-buttons" style="grid-template-columns: 1fr 2fr;">
+                  <button class="btn-action-del" onclick="clearSpecific('voice-input-text')">🗑️ 내용 지우기</button>
+                  <button class="btn-action-save" onclick="saveIdea('음성', document.getElementById('voice-input-text').value)">💾 서랍에 저장</button>
                 </div>
               </div>
 
-              <!-- 2. 사진 탭 (1:1 50:50 분할) -->
+              <!-- 2. 사진 탭 -->
               <div id="tab-photo" class="tab-content">
-                <div class="split-container">
-                  <div class="half-box-top" onclick="document.getElementById('photo-input').click()">
-                    <input type="file" accept="image/*" capture="environment" id="photo-input" style="display:none;" onchange="handleMediaSelect(this, 'photo-view')" />
+                <div class="split-view">
+                  <div class="media-half-top" onclick="document.getElementById('photo-input').click()">
+                    <input type="file" accept="image/*" capture="environment" id="photo-input" style="display:none;" onchange="previewMediaFile(this, 'photo-view', 'photo-prompt')" />
                     <p id="photo-prompt" style="color:var(--muted); font-size:0.85rem;">📷 터치하여 촬영 또는 사진 선택</p>
                     <img id="photo-view" style="max-width:100%; max-height:100%; border-radius:8px; display:none;" />
                   </div>
-                  <div class="half-box-bottom">
-                    <div class="memo-wrapper">
-                      <textarea id="photo-memo" class="text-area" placeholder="사진에 대한 생각을 적거나 마이크를 누르세요..."></textarea>
-                      <button id="mic-photo" class="gemini-mini-btn" onclick="triggerNativeVoice('photo-memo', 'mic-photo')">
-                        <div class="wave-bar-mini"></div>
-                        <div class="wave-bar-mini"></div>
-                        <div class="wave-bar-mini"></div>
-                      </button>
-                    </div>
+                  <div class="media-half-bottom">
+                    <textarea id="photo-memo" class="text-area-box" placeholder="사진에 대한 생각과 메모를 적어주세요..."></textarea>
                   </div>
                 </div>
-                <div class="btn-group-unified">
-                  <button class="btn-del-main" onclick="clearMedia('photo-input', 'photo-view', 'photo-prompt')">📷 사진 삭제</button>
-                  <button class="btn-del-memo" onclick="clearMemo('photo-memo')">📝 메모 삭제</button>
-                  <button class="btn-save-unified" onclick="saveMediaIdea('사진', 'photo-memo', 'photo-view')">💾 서랍에 저장</button>
+                <div class="gemini-pill-box">
+                  <button class="gemini-plus-btn" onclick="document.getElementById('photo-input').click()">＋</button>
+                  <input type="text" class="gemini-input" placeholder="사진에 대한 음성 메모..." onkeydown="if(event.key==='Enter') appendQuickText('photo-memo', this)" />
+                  <button class="gemini-mic-icon" onclick="triggerVoice('photo-memo', 'wave-photo')">🎙️</button>
+                  <button id="wave-photo" class="gemini-wave-circle" onclick="triggerVoice('photo-memo', 'wave-photo')">
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                  </button>
+                </div>
+                <div class="action-buttons">
+                  <button class="btn-action-del" onclick="clearMedia('photo-input', 'photo-view', 'photo-prompt')">📷 사진 삭제</button>
+                  <button class="btn-action-del" onclick="clearSpecific('photo-memo')">📝 메모 삭제</button>
+                  <button class="btn-action-save" onclick="saveMediaIdea('사진', 'photo-memo', 'photo-view')">💾 서랍에 저장</button>
                 </div>
               </div>
 
-              <!-- 3. 스케치 탭 (1:1 50:50 분할 & 그림 보존) -->
+              <!-- 3. 스케치 탭 -->
               <div id="tab-sketch" class="tab-content">
-                <div class="split-container">
-                  <div class="half-box-top" style="border-style:solid; border-color:#334155;" id="sketch-container">
+                <div class="split-view">
+                  <div class="media-half-top" style="border-style:solid; border-color:#1e293b;">
                     <div style="position:absolute; top:6px; right:6px; z-index:10; background:rgba(15,23,42,0.8); padding:3px 6px; border-radius:6px; display:flex; align-items:center; gap:4px;">
-                      <span style="font-size:0.75rem; color:var(--muted);">색:</span>
+                      <span style="font-size:0.75rem; color:var(--muted);">펜:</span>
                       <input type="color" id="sketch-color" value="#000000" style="width:24px; height:24px; border:none; border-radius:4px; cursor:pointer;" />
                     </div>
-                    <div class="canvas-holder" id="canvas-wrapper">
+                    <div class="canvas-box" id="canvas-wrapper">
                       <canvas id="sketch-board"></canvas>
                     </div>
                   </div>
-                  <div class="half-box-bottom">
-                    <div class="memo-wrapper">
-                      <textarea id="sketch-memo" class="text-area" placeholder="스케치에 대한 설명을 적거나 마이크를 누르세요..."></textarea>
-                      <button id="mic-sketch" class="gemini-mini-btn" onclick="triggerNativeVoice('sketch-memo', 'mic-sketch')">
-                        <div class="wave-bar-mini"></div>
-                        <div class="wave-bar-mini"></div>
-                        <div class="wave-bar-mini"></div>
-                      </button>
-                    </div>
+                  <div class="media-half-bottom">
+                    <textarea id="sketch-memo" class="text-area-box" placeholder="스케치에 대한 설명과 메모를 적어주세요..."></textarea>
                   </div>
                 </div>
-                <div class="btn-group-unified">
-                  <button class="btn-del-main" onclick="clearSketchCanvas()">🎨 스케치 삭제</button>
-                  <button class="btn-del-memo" onclick="clearMemo('sketch-memo')">📝 메모 삭제</button>
-                  <button class="btn-save-unified" onclick="saveIdea('스케치', document.getElementById('sketch-memo').value || '스케치 드로잉')">💾 서랍에 저장</button>
+                <div class="gemini-pill-box">
+                  <button class="gemini-plus-btn" onclick="clearCanvas()">＋</button>
+                  <input type="text" class="gemini-input" placeholder="스케치에 대한 음성 메모..." onkeydown="if(event.key==='Enter') appendQuickText('sketch-memo', this)" />
+                  <button class="gemini-mic-icon" onclick="triggerVoice('sketch-memo', 'wave-sketch')">🎙️</button>
+                  <button id="wave-sketch" class="gemini-wave-circle" onclick="triggerVoice('sketch-memo', 'wave-sketch')">
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                  </button>
+                </div>
+                <div class="action-buttons">
+                  <button class="btn-action-del" onclick="clearCanvas()">🎨 그림 삭제</button>
+                  <button class="btn-action-del" onclick="clearSpecific('sketch-memo')">📝 메모 삭제</button>
+                  <button class="btn-action-save" onclick="saveIdea('스케치', document.getElementById('sketch-memo').value || '스케치 드로잉')">💾 서랍에 저장</button>
                 </div>
               </div>
 
-              <!-- 4. 동영상 탭 (1:1 50:50 분할) -->
+              <!-- 4. 동영상 탭 -->
               <div id="tab-video" class="tab-content">
-                <div class="split-container">
-                  <div class="half-box-top" onclick="document.getElementById('video-input').click()">
-                    <input type="file" accept="video/*" capture="environment" id="video-input" style="display:none;" onchange="handleMediaSelect(this, 'video-view')" />
+                <div class="split-view">
+                  <div class="media-half-top" onclick="document.getElementById('video-input').click()">
+                    <input type="file" accept="video/*" capture="environment" id="video-input" style="display:none;" onchange="previewMediaFile(this, 'video-view', 'video-prompt')" />
                     <p id="video-prompt" style="color:var(--muted); font-size:0.85rem;">🎬 터치하여 영상 촬영 또는 비디오 선택</p>
                     <video id="video-view" controls style="max-width:100%; max-height:100%; border-radius:8px; display:none;"></video>
                   </div>
-                  <div class="half-box-bottom">
-                    <div class="memo-wrapper">
-                      <textarea id="video-memo" class="text-area" placeholder="동영상에 대한 생각을 적거나 마이크를 누르세요..."></textarea>
-                      <button id="mic-video" class="gemini-mini-btn" onclick="triggerNativeVoice('video-memo', 'mic-video')">
-                        <div class="wave-bar-mini"></div>
-                        <div class="wave-bar-mini"></div>
-                        <div class="wave-bar-mini"></div>
-                      </button>
-                    </div>
+                  <div class="media-half-bottom">
+                    <textarea id="video-memo" class="text-area-box" placeholder="영상에 대한 생각과 메모를 적어주세요..."></textarea>
                   </div>
                 </div>
-                <div class="btn-group-unified">
-                  <button class="btn-del-main" onclick="clearMedia('video-input', 'video-view', 'video-prompt')">🎬 영상 삭제</button>
-                  <button class="btn-del-memo" onclick="clearMemo('video-memo')">📝 메모 삭제</button>
-                  <button class="btn-save-unified" onclick="saveMediaIdea('동영상', 'video-memo', 'video-view')">💾 서랍에 저장</button>
+                <div class="gemini-pill-box">
+                  <button class="gemini-plus-btn" onclick="document.getElementById('video-input').click()">＋</button>
+                  <input type="text" class="gemini-input" placeholder="영상에 대한 음성 메모..." onkeydown="if(event.key==='Enter') appendQuickText('video-memo', this)" />
+                  <button class="gemini-mic-icon" onclick="triggerVoice('video-memo', 'wave-video')">🎙️</button>
+                  <button id="wave-video" class="gemini-wave-circle" onclick="triggerVoice('video-memo', 'wave-video')">
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                  </button>
+                </div>
+                <div class="action-buttons">
+                  <button class="btn-action-del" onclick="clearMedia('video-input', 'video-view', 'video-prompt')">🎬 영상 삭제</button>
+                  <button class="btn-action-del" onclick="clearSpecific('video-memo')">📝 메모 삭제</button>
+                  <button class="btn-action-save" onclick="saveMediaIdea('동영상', 'video-memo', 'video-view')">💾 서랍에 저장</button>
                 </div>
               </div>
             </div>
 
-            <!-- 독립형 생각보관함 모달 창 -->
-            <div id="archive-modal" class="archive-modal">
-              <div class="archive-header">
-                <h2 style="font-size:1.1rem; color:var(--accent);">📂 저장된 생각서랍</h2>
+            <!-- 생각보관함 모달 -->
+            <div id="archive-modal" class="modal-overlay">
+              <div class="modal-header">
+                <h2 style="font-size:1.05rem; color:var(--accent);">📂 저장된 생각서랍</h2>
                 <button class="btn-archive" style="background:#ef4444; color:#fff;" onclick="closeArchive()">닫기</button>
-              </div>
-              <div class="archive-filters">
-                <div class="filter-pill active" onclick="filterArchive('전체', this)">전체</div>
-                <div class="filter-pill" onclick="filterArchive('음성', this)">✨ 음성</div>
-                <div class="filter-pill" onclick="filterArchive('사진', this)">📷 사진</div>
-                <div class="filter-pill" onclick="filterArchive('스케치', this)">🎨 스케치</div>
-                <div class="filter-pill" onclick="filterArchive('동영상', this)">🎬 동영상</div>
               </div>
               <div class="archive-list" id="archive-item-list"></div>
             </div>
 
             <script>
               let currentStage = '1.발상';
-              let activeTargetInputId = 'voice-input-text';
-              let activeMicButtonId = 'mic-voice';
-              let currentFilter = '전체';
+              let activeInputId = 'voice-input-text';
+              let activeWaveBtnId = 'wave-voice';
               let editingIndex = -1;
 
               function setStage(el, stage) {
@@ -478,8 +486,7 @@ jobs:
                 if (tabId === 'sketch') setTimeout(initCanvas, 50);
               }
 
-              /* 미디어 및 메모 지우기 */
-              function clearMemo(id) { document.getElementById(id).value = ''; }
+              function clearSpecific(id) { document.getElementById(id).value = ''; }
               function clearMedia(inputId, viewId, promptId) {
                 document.getElementById(inputId).value = '';
                 const v = document.getElementById(viewId);
@@ -487,22 +494,29 @@ jobs:
                 v.style.display = 'none';
                 document.getElementById(promptId).style.display = 'block';
               }
-              function handleMediaSelect(input, viewId) {
+              function previewMediaFile(input, viewId, promptId) {
                 const file = input.files[0];
                 if (file) {
                   const el = document.getElementById(viewId);
                   el.src = URL.createObjectURL(file);
                   el.style.display = 'block';
-                  const prompt = el.previousElementSibling;
-                  if (prompt) prompt.style.display = 'none';
+                  document.getElementById(promptId).style.display = 'none';
                 }
               }
 
-              /* 음성 인식 호출 */
-              function triggerNativeVoice(targetId, micBtnId) {
-                activeTargetInputId = targetId;
-                activeMicButtonId = micBtnId;
-                const btn = document.getElementById(micBtnId);
+              function appendQuickText(targetId, inputEl) {
+                const val = inputEl.value.trim();
+                if (val) {
+                  appendVoiceText(targetId, val);
+                  inputEl.value = '';
+                }
+              }
+
+              /* 음성 인식 */
+              function triggerVoice(targetId, waveId) {
+                activeInputId = targetId;
+                activeWaveBtnId = waveId;
+                const btn = document.getElementById(waveId);
                 if (btn) btn.classList.add('listening');
 
                 if (window.AndroidBridge && window.AndroidBridge.startSpeechRecognition) {
@@ -516,44 +530,44 @@ jobs:
                   }
                   const rec = new Speech();
                   rec.lang = 'ko-KR';
-                  rec.onresult = (e) => appendVoiceText(e.results[0][0].transcript);
+                  rec.onresult = (e) => appendVoiceText(activeInputId, e.results[0][0].transcript);
                   rec.onend = () => { if (btn) btn.classList.remove('listening'); };
                   rec.start();
                 }
               }
 
-              function appendVoiceText(newText) {
-                const area = document.getElementById(activeTargetInputId);
+              function appendVoiceText(targetId, newText) {
+                const area = document.getElementById(targetId);
                 if (!area) return;
                 const prev = area.value.trim();
                 area.value = prev ? prev + ' ' + newText : newText;
               }
 
               window.receiveVoiceResult = function(text) {
-                const btn = document.getElementById(activeMicButtonId);
+                const btn = document.getElementById(activeWaveBtnId);
                 if (btn) btn.classList.remove('listening');
-                appendVoiceText(text);
+                appendVoiceText(activeInputId, text);
               };
 
-              /* 플로팅 서비스 데이터 주기적 점검 */
+              /* 플로팅 데이터 수신 검사 */
               setInterval(() => {
                 if (window.AndroidBridge && window.AndroidBridge.getPendingVoiceText) {
                   const text = window.AndroidBridge.getPendingVoiceText();
                   if (text && text.trim().length > 0) {
                     switchTab('voice');
-                    appendVoiceText(text);
+                    appendVoiceText('voice-input-text', text);
                   }
                 }
               }, 400);
 
-              /* 스케치 캔버스 고정 */
+              /* 캔버스 고정 */
               const canvas = document.getElementById('sketch-board');
               const ctx = canvas.getContext('2d');
               let isDrawing = false;
-              let isInit = false;
+              let isCanvasSet = false;
 
               function initCanvas() {
-                if (isInit) return;
+                if (isCanvasSet) return;
                 const holder = document.getElementById('canvas-wrapper');
                 if (holder.clientWidth > 0 && holder.clientHeight > 0) {
                   canvas.width = holder.clientWidth;
@@ -561,7 +575,7 @@ jobs:
                   ctx.lineWidth = 4;
                   ctx.lineCap = 'round';
                   ctx.strokeStyle = document.getElementById('sketch-color').value;
-                  isInit = true;
+                  isCanvasSet = true;
                 }
               }
               function getPos(e) {
@@ -575,17 +589,14 @@ jobs:
               canvas.addEventListener('touchstart', (e) => { e.preventDefault(); isDrawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); }, { passive: false });
               canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (!isDrawing) return; ctx.strokeStyle = document.getElementById('sketch-color').value; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }, { passive: false });
               canvas.addEventListener('touchend', () => { isDrawing = false; });
-              function clearSketchCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+              function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-              /* 생각서랍 저장 및 보관함 관리 */
+              /* 보관함 관리 */
               function getStorage() {
-                // 이전 레거시 데이터 통합 복원
-                const saved = localStorage.getItem('idea_drawer_storage') || localStorage.getItem('user_ideas') || localStorage.getItem('my_ideas') || '[]';
+                const saved = localStorage.getItem('idea_drawer_storage') || '[]';
                 try { return JSON.parse(saved); } catch(e) { return []; }
               }
-              function setStorage(arr) {
-                localStorage.setItem('idea_drawer_storage', JSON.stringify(arr));
-              }
+              function setStorage(arr) { localStorage.setItem('idea_drawer_storage', JSON.stringify(arr)); }
 
               function saveIdea(type, content) {
                 if (!content || content.trim() === '') {
@@ -598,15 +609,10 @@ jobs:
                   list[editingIndex].stage = currentStage;
                   list[editingIndex].time = new Date().toLocaleTimeString('ko-KR') + ' (수정됨)';
                   editingIndex = -1;
-                  alert('아이디어가 성공적으로 수정되었습니다.');
+                  alert('성공적으로 수정되었습니다.');
                 } else {
-                  list.unshift({
-                    type,
-                    stage: currentStage,
-                    content,
-                    time: new Date().toLocaleTimeString('ko-KR')
-                  });
-                  alert(`[${type}] 아이디어가 생각서랍에 보관되었습니다.`);
+                  list.unshift({ type, stage: currentStage, content, time: new Date().toLocaleTimeString('ko-KR') });
+                  alert(`[${type}] 생각이 보관되었습니다.`);
                 }
                 setStorage(list);
               }
@@ -625,28 +631,16 @@ jobs:
                 document.getElementById('archive-modal').classList.add('active');
                 renderArchive();
               }
-              function closeArchive() {
-                document.getElementById('archive-modal').classList.remove('active');
-              }
-
-              function filterArchive(cat, el) {
-                currentFilter = cat;
-                document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-                el.classList.add('active');
-                renderArchive();
-              }
+              function closeArchive() { document.getElementById('archive-modal').classList.remove('active'); }
 
               function renderArchive() {
                 const list = getStorage();
                 const container = document.getElementById('archive-item-list');
-                const filtered = currentFilter === '전체' ? list : list.filter(i => i.type === currentFilter);
-
-                if (filtered.length === 0) {
+                if (list.length === 0) {
                   container.innerHTML = '<p style="color:var(--muted); text-align:center; margin-top:40px;">저장된 생각이 없습니다.</p>';
                   return;
                 }
-
-                container.innerHTML = filtered.map((item, idx) => `
+                container.innerHTML = list.map((item, idx) => `
                   <div class="archive-card">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                       <div>
@@ -657,7 +651,7 @@ jobs:
                     </div>
                     <p style="font-size:0.95rem; margin:4px 0; white-space:pre-wrap;">${item.content}</p>
                     <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:4px;">
-                      <button style="background:#4f46e5; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:0.75rem; cursor:pointer;" onclick="editIdea(${idx})">✏️ 수정</button>
+                      <button style="background:#2563eb; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:0.75rem; cursor:pointer;" onclick="editIdea(${idx})">✏️ 수정</button>
                       <button style="background:#ef4444; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:0.75rem; cursor:pointer;" onclick="deleteIdea(${idx})">🗑️ 삭제</button>
                     </div>
                   </div>
@@ -669,20 +663,10 @@ jobs:
                 const item = list[idx];
                 editingIndex = idx;
                 closeArchive();
-
-                if (item.type === '음성') {
-                  switchTab('voice');
-                  document.getElementById('voice-input-text').value = item.content;
-                } else if (item.type === '사진') {
-                  switchTab('photo');
-                  document.getElementById('photo-memo').value = item.content;
-                } else if (item.type === '스케치') {
-                  switchTab('sketch');
-                  document.getElementById('sketch-memo').value = item.content;
-                } else if (item.type === '동영상') {
-                  switchTab('video');
-                  document.getElementById('video-memo').value = item.content;
-                }
+                if (item.type === '음성') { switchTab('voice'); document.getElementById('voice-input-text').value = item.content; }
+                else if (item.type === '사진') { switchTab('photo'); document.getElementById('photo-memo').value = item.content; }
+                else if (item.type === '스케치') { switchTab('sketch'); document.getElementById('sketch-memo').value = item.content; }
+                else if (item.type === '동영상') { switchTab('video'); document.getElementById('video-memo').value = item.content; }
               }
 
               function deleteIdea(idx) {
@@ -698,7 +682,7 @@ jobs:
           </html>
           EOF
 
-      - name: 5. 플로팅 텍스트 2중 전달 및 네이티브 엔진 주입
+      - name: 5. 영구 서명키 및 투명 오버레이 음성 시스템 주입
         run: |
           cat << 'EOF' > package.json
           {
@@ -724,26 +708,49 @@ jobs:
           npm install
           npx cap add android
 
+          # 1. 영구 고정 Keystore 생성 (동일 서명키로 덮어쓰기 영구 보장)
+          keytool -genkey -v -keystore android/app/release.keystore -alias ideadrawer -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=IdeaDrawer, OU=Dev, O=Idea, L=Seoul, S=Seoul, C=KR"
+
+          # 2. build.gradle에 고정 서명키 주입
+          node -e '
+          const fs = require("fs");
+          const p = "android/app/build.gradle";
+          let gradle = fs.readFileSync(p, "utf8");
+          const signBlock = `
+              signingConfigs {
+                  release {
+                      storeFile file("release.keystore")
+                      storePassword "android"
+                      keyAlias "ideadrawer"
+                      keyPassword "android"
+                  }
+              }
+          `;
+          gradle = gradle.replace("android {", "android {" + signBlock);
+          gradle = gradle.replace(/buildTypes\s*\{[\s\S]*?release\s*\{/, "buildTypes {\n        debug {\n            signingConfig signingConfigs.release\n        }\n        release {\n            signingConfig signingConfigs.release\n");
+          fs.writeFileSync(p, gradle, "utf8");
+          '
+
           # 자동 버전 증가
           BUILD_NUM=${{ github.run_number }}
           sed -i "s/versionCode 1/versionCode $BUILD_NUM/g" android/app/build.gradle
           sed -i "s/versionName \"1.0\"/versionName \"1.0.$BUILD_NUM\"/g" android/app/build.gradle
 
-          # 권한 및 서비스 주입
+          # 권한 및 투명 오버레이 액티비티 주입
           node -e '
           const fs = require("fs");
           const p = "android/app/src/main/AndroidManifest.xml";
           let xml = fs.readFileSync(p, "utf8");
           const perms = "\n    <uses-permission android:name=\"android.permission.SYSTEM_ALERT_WINDOW\" />\n    <uses-permission android:name=\"android.permission.RECORD_AUDIO\" />\n    <uses-permission android:name=\"android.permission.CAMERA\" />\n    <uses-permission android:name=\"android.permission.VIBRATE\" />\n    <uses-permission android:name=\"android.permission.FOREGROUND_SERVICE\" />\n    <uses-permission android:name=\"android.permission.FOREGROUND_SERVICE_MICROPHONE\" />\n";
-          const srv = "\n    <service android:name=\"com.k2hkkh.ideadrawer.FloatingWidgetService\" android:enabled=\"true\" android:exported=\"false\" android:foregroundServiceType=\"microphone\" />\n";
+          const act = "\n    <activity android:name=\"com.k2hkkh.ideadrawer.TransparentVoiceActivity\" android:theme=\"@android:style/Theme.Translucent.NoTitleBar\" android:exported=\"false\" />\n    <service android:name=\"com.k2hkkh.ideadrawer.FloatingWidgetService\" android:enabled=\"true\" android:exported=\"false\" android:foregroundServiceType=\"microphone\" />\n";
           xml = xml.replace("<application", perms + "    <application");
-          xml = xml.replace("</application>", srv + "    </application>");
+          xml = xml.replace("</application>", act + "    </application>");
           fs.writeFileSync(p, xml, "utf8");
           '
 
           mkdir -p android/app/src/main/java/com/k2hkkh/ideadrawer
 
-          # 플로팅 위젯 소스코드 (SharedPreferences 2중 안전 저장)
+          # 플로팅 위젯 소스코드 (원터치 시 즉시 투명 음성 인식 오버레이 실행)
           cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/FloatingWidgetService.java
           package com.k2hkkh.ideadrawer;
 
@@ -751,37 +758,23 @@ jobs:
           import android.app.NotificationChannel;
           import android.app.NotificationManager;
           import android.app.Service;
-          import android.content.Context;
           import android.content.Intent;
-          import android.content.SharedPreferences;
           import android.graphics.Color;
           import android.graphics.PixelFormat;
           import android.graphics.drawable.GradientDrawable;
           import android.os.Build;
-          import android.os.Bundle;
-          import android.os.Handler;
           import android.os.IBinder;
-          import android.os.Looper;
-          import android.os.Vibrator;
-          import android.speech.RecognitionListener;
-          import android.speech.RecognizerIntent;
-          import android.speech.SpeechRecognizer;
           import android.util.TypedValue;
           import android.view.Gravity;
           import android.view.MotionEvent;
           import android.view.View;
           import android.view.WindowManager;
           import android.widget.TextView;
-          import android.widget.Toast;
           import androidx.core.app.NotificationCompat;
-          import java.util.ArrayList;
 
           public class FloatingWidgetService extends Service {
               private WindowManager windowManager;
               private TextView floatingView;
-              private SpeechRecognizer speechRecognizer;
-              private boolean isListening = false;
-              private GradientDrawable normalBg, activeBg;
 
               @Override
               public IBinder onBind(Intent intent) { return null; }
@@ -794,7 +787,7 @@ jobs:
                   try {
                       Notification notification = new NotificationCompat.Builder(this, "floating_channel")
                               .setContentTitle("생각서랍 플로팅 실행 중")
-                              .setContentText("터치하여 바로 음성으로 기록하세요.")
+                              .setContentText("버튼을 터치하여 바로 음성으로 기록하세요.")
                               .setSmallIcon(android.R.drawable.ic_btn_speak_now)
                               .setPriority(NotificationCompat.PRIORITY_LOW)
                               .build();
@@ -808,22 +801,17 @@ jobs:
                   floatingView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 26);
                   floatingView.setGravity(Gravity.CENTER);
 
-                  normalBg = new GradientDrawable();
-                  normalBg.setShape(GradientDrawable.OVAL);
-                  normalBg.setColor(Color.parseColor("#4F46E5"));
-
-                  activeBg = new GradientDrawable();
-                  activeBg.setShape(GradientDrawable.OVAL);
-                  activeBg.setColor(Color.parseColor("#EF4444"));
-
-                  floatingView.setBackground(normalBg);
+                  GradientDrawable bg = new GradientDrawable();
+                  bg.setShape(GradientDrawable.OVAL);
+                  bg.setColor(Color.parseColor("#2563EB"));
+                  floatingView.setBackground(bg);
 
                   int layoutType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ?
                           WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY :
                           WindowManager.LayoutParams.TYPE_PHONE;
 
                   final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                          160, 160,
+                          150, 150,
                           layoutType,
                           WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                           PixelFormat.TRANSLUCENT
@@ -855,7 +843,9 @@ jobs:
                                   float diffX = Math.abs(event.getRawX() - initialTouchX);
                                   float diffY = Math.abs(event.getRawY() - initialTouchY);
                                   if (diffX < 15 && diffY < 15) {
-                                      startFloatingVoice();
+                                      Intent voiceIntent = new Intent(FloatingWidgetService.this, TransparentVoiceActivity.class);
+                                      voiceIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                      startActivity(voiceIntent);
                                   }
                                   return true;
                           }
@@ -864,101 +854,6 @@ jobs:
                   });
 
                   windowManager.addView(floatingView, params);
-              }
-
-              private void startFloatingVoice() {
-                  new Handler(Looper.getMainLooper()).post(() -> {
-                      if (isListening) {
-                          if (speechRecognizer != null) speechRecognizer.stopListening();
-                          return;
-                      }
-
-                      vibrateDevice();
-
-                      try {
-                          if (speechRecognizer != null) {
-                              speechRecognizer.destroy();
-                              speechRecognizer = null;
-                          }
-
-                          speechRecognizer = SpeechRecognizer.createSpeechRecognizer(getApplicationContext());
-                          Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-                          intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-                          intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
-                          intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
-
-                          speechRecognizer.setRecognitionListener(new RecognitionListener() {
-                              @Override
-                              public void onReadyForSpeech(Bundle params) {
-                                  isListening = true;
-                                  floatingView.setBackground(activeBg);
-                                  floatingView.setText("🎙️");
-                                  Toast.makeText(getApplicationContext(), "💡 말씀하세요 (듣는 중...)", Toast.LENGTH_SHORT).show();
-                              }
-
-                              @Override public void onBeginningOfSpeech() {}
-                              @Override public void onRmsChanged(float rmsdB) {}
-                              @Override public void onBufferReceived(byte[] buffer) {}
-                              @Override public void onEndOfSpeech() {}
-
-                              @Override
-                              public void onError(int error) {
-                                  resetFloatingButton();
-                                  Intent appIntent = new Intent(FloatingWidgetService.this, MainActivity.class);
-                                  appIntent.putExtra("TRIGGER_VOICE", true);
-                                  appIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                  startActivity(appIntent);
-                              }
-
-                              @Override
-                              public void onResults(Bundle results) {
-                                  resetFloatingButton();
-                                  vibrateDevice();
-                                  ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-                                  if (matches != null && !matches.isEmpty()) {
-                                      String spokenText = matches.get(0);
-                                      
-                                      // SharedPreferences에 2중 백업 저장
-                                      SharedPreferences prefs = getSharedPreferences("IdeaPrefs", MODE_PRIVATE);
-                                      prefs.edit().putString("PENDING_VOICE", spokenText).apply();
-
-                                      Intent appIntent = new Intent(FloatingWidgetService.this, MainActivity.class);
-                                      appIntent.putExtra("VOICE_RESULT", spokenText);
-                                      appIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                      startActivity(appIntent);
-                                  }
-                              }
-
-                              @Override public void onPartialResults(Bundle partialResults) {}
-                              @Override public void onEvent(int eventType, Bundle params) {}
-                          });
-
-                          speechRecognizer.startListening(intent);
-                      } catch (Exception e) {
-                          resetFloatingButton();
-                          Intent appIntent = new Intent(FloatingWidgetService.this, MainActivity.class);
-                          appIntent.putExtra("TRIGGER_VOICE", true);
-                          appIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                          startActivity(appIntent);
-                      }
-                  });
-              }
-
-              private void vibrateDevice() {
-                  try {
-                      Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-                      if (v != null) v.vibrate(60);
-                  } catch (Exception ignored) {}
-              }
-
-              private void resetFloatingButton() {
-                  isListening = false;
-                  floatingView.setBackground(normalBg);
-                  floatingView.setText("✨");
-                  if (speechRecognizer != null) {
-                      try { speechRecognizer.destroy(); } catch (Exception ignored) {}
-                      speechRecognizer = null;
-                  }
               }
 
               private void createNotificationChannel() {
@@ -972,9 +867,128 @@ jobs:
               @Override
               public void onDestroy() {
                   super.onDestroy();
-                  resetFloatingButton();
                   if (floatingView != null && windowManager != null) {
                       try { windowManager.removeView(floatingView); } catch (Exception ignored) {}
+                  }
+              }
+          }
+          EOF
+
+          # 투명 오버레이 음성인식 액티비티 (다른 앱 화면 위에서 100% 음성 캡처 보장)
+          cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/TransparentVoiceActivity.java
+          package com.k2hkkh.ideadrawer;
+
+          import android.app.Activity;
+          import android.content.Intent;
+          import android.content.SharedPreferences;
+          import android.graphics.Color;
+          import android.graphics.drawable.GradientDrawable;
+          import android.os.Bundle;
+          import android.speech.RecognitionListener;
+          import android.speech.RecognizerIntent;
+          import android.speech.SpeechRecognizer;
+          import android.util.TypedValue;
+          import android.view.Gravity;
+          import android.view.ViewGroup;
+          import android.widget.LinearLayout;
+          import android.widget.TextView;
+          import android.widget.Toast;
+          import java.util.ArrayList;
+
+          public class TransparentVoiceActivity extends Activity {
+              private SpeechRecognizer recognizer;
+
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+
+                  LinearLayout layout = new LinearLayout(this);
+                  layout.setOrientation(LinearLayout.VERTICAL);
+                  layout.setGravity(Gravity.CENTER);
+                  layout.setBackgroundColor(Color.parseColor("#80000000")); // 반투명 배경
+
+                  LinearLayout box = new LinearLayout(this);
+                  box.setOrientation(LinearLayout.VERTICAL);
+                  box.setGravity(Gravity.CENTER);
+                  box.setPadding(60, 40, 60, 40);
+
+                  GradientDrawable bg = new GradientDrawable();
+                  bg.setColor(Color.parseColor("#1E293B"));
+                  bg.setCornerRadius(30);
+                  box.setBackground(bg);
+
+                  TextView micView = new TextView(this);
+                  micView.setText("🎙️");
+                  micView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 36);
+                  micView.setGravity(Gravity.CENTER);
+
+                  TextView statusView = new TextView(this);
+                  statusView.setText("💡 생각을 말씀해 주세요...");
+                  statusView.setTextColor(Color.WHITE);
+                  statusView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+                  statusView.setPadding(0, 20, 0, 0);
+
+                  box.addView(micView);
+                  box.addView(statusView);
+                  layout.addView(box, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+                  setContentView(layout);
+
+                  startListening();
+              }
+
+              private void startListening() {
+                  try {
+                      recognizer = SpeechRecognizer.createSpeechRecognizer(this);
+                      Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                      intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                      intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
+
+                      recognizer.setRecognitionListener(new RecognitionListener() {
+                          @Override public void onReadyForSpeech(Bundle params) {}
+                          @Override public void onBeginningOfSpeech() {}
+                          @Override public void onRmsChanged(float rmsdB) {}
+                          @Override public void onBufferReceived(byte[] buffer) {}
+                          @Override public void onEndOfSpeech() {}
+
+                          @Override
+                          public void onError(int error) {
+                              Toast.makeText(TransparentVoiceActivity.this, "음성 인식이 취소되었습니다.", Toast.LENGTH_SHORT).show();
+                              finish();
+                          }
+
+                          @Override
+                          public void onResults(Bundle results) {
+                              ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                              if (matches != null && !matches.isEmpty()) {
+                                  String text = matches.get(0);
+                                  SharedPreferences prefs = getSharedPreferences("IdeaPrefs", MODE_PRIVATE);
+                                  prefs.edit().putString("PENDING_VOICE", text).apply();
+
+                                  Intent mainIntent = new Intent(TransparentVoiceActivity.this, MainActivity.class);
+                                  mainIntent.putExtra("VOICE_RESULT", text);
+                                  mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                  startActivity(mainIntent);
+                              }
+                              finish();
+                          }
+
+                          @Override public void onPartialResults(Bundle partialResults) {}
+                          @Override public void onEvent(int eventType, Bundle params) {}
+                      });
+
+                      recognizer.startListening(intent);
+                  } catch (Exception e) {
+                      finish();
+                  }
+              }
+
+              @Override
+              protected void onDestroy() {
+                  super.onDestroy();
+                  if (recognizer != null) {
+                      recognizer.destroy();
+                      recognizer = null;
                   }
               }
           }
@@ -1031,7 +1045,7 @@ jobs:
                       }, "AndroidBridge");
                   }
 
-                  handleIntents(getIntent());
+                  handleVoiceIntent(getIntent());
               }
 
               private void requestAppPermissions() {
@@ -1104,25 +1118,21 @@ jobs:
               public void onNewIntent(Intent intent) {
                   super.onNewIntent(intent);
                   setIntent(intent);
-                  handleIntents(intent);
+                  handleVoiceIntent(intent);
               }
 
-              private void handleIntents(Intent intent) {
-                  if (intent != null) {
-                      if (intent.hasExtra("VOICE_RESULT")) {
-                          String voiceText = intent.getStringExtra("VOICE_RESULT");
-                          new Handler(Looper.getMainLooper()).postDelayed(() -> sendTextToWebView(voiceText), 300);
-                      } else if (intent.getBooleanExtra("TRIGGER_VOICE", false)) {
-                          new Handler(Looper.getMainLooper()).postDelayed(() -> startInAppVoice(), 400);
-                      }
+              private void handleVoiceIntent(Intent intent) {
+                  if (intent != null && intent.hasExtra("VOICE_RESULT")) {
+                      String voiceText = intent.getStringExtra("VOICE_RESULT");
+                      new Handler(Looper.getMainLooper()).postDelayed(() -> sendTextToWebView(voiceText), 300);
                   }
               }
 
               private void sendTextToWebView(String text) {
-                if (text != null) {
-                    String cleanText = text.replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ");
-                    evalJS("if (window.receiveVoiceResult) window.receiveVoiceResult('" + cleanText + "');");
-                }
+                  if (text != null) {
+                      String cleanText = text.replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ");
+                      evalJS("if (window.receiveVoiceResult) window.receiveVoiceResult('" + cleanText + "');");
+                  }
               }
 
               private void startWidgetIfAllowed() {
