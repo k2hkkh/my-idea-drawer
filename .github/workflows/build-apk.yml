@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: 4. 생각서랍 4대 탭 UI 및 기능 구성 (HTML/JS)
+      - name: 4. 생각서랍 4대 탭 UI 파일 구성
         run: |
           mkdir -p www
           cat << 'EOF' > www/index.html
@@ -150,10 +150,6 @@ jobs:
                 100% { height: 32px; }
               }
 
-              .text-area-box {
-                width: 100%;
-                position: relative;
-              }
               .text-area {
                 width: 100%;
                 min-height: 110px;
@@ -166,7 +162,7 @@ jobs:
                 resize: none;
               }
 
-              /* 캔버스 드로잉 */
+              /* 캔버스 */
               .canvas-box {
                 flex: 1;
                 min-height: 240px;
@@ -185,7 +181,7 @@ jobs:
                 border-radius: 10px;
               }
 
-              /* 미디어 박스 */
+              /* 미디어 */
               .media-panel {
                 flex: 1;
                 border: 2px dashed #475569;
@@ -261,7 +257,7 @@ jobs:
             </nav>
 
             <div class="container">
-              <!-- 1. 음성 탭 -->
+              <!-- 1. 음성 -->
               <div id="tab-voice" class="tab-content active">
                 <div class="voice-container">
                   <button id="gemini-mic" class="gemini-btn" onclick="triggerNativeVoice()">
@@ -273,9 +269,7 @@ jobs:
                     </div>
                   </button>
                   <p id="voice-status" style="color:var(--muted); font-size:0.9rem;">버튼을 누르고 생각을 말씀하세요</p>
-                  <div class="text-area-box">
-                    <textarea id="voice-input-text" class="text-area" placeholder="음성인식 결과가 여기에 작성됩니다..."></textarea>
-                  </div>
+                  <textarea id="voice-input-text" class="text-area" placeholder="음성인식 결과가 여기에 작성됩니다..."></textarea>
                 </div>
                 <div class="btn-group">
                   <button class="btn-delete" onclick="clearVoiceText()">🗑️ 지우기</button>
@@ -283,7 +277,7 @@ jobs:
                 </div>
               </div>
 
-              <!-- 2. 사진 탭 -->
+              <!-- 2. 사진 -->
               <div id="tab-photo" class="tab-content">
                 <div class="media-panel">
                   <p style="color:var(--muted); font-size:0.9rem;">카메라로 즉시 촬영하거나 사진을 불러옵니다.</p>
@@ -297,7 +291,7 @@ jobs:
                 </div>
               </div>
 
-              <!-- 3. 스케치 탭 -->
+              <!-- 3. 스케치 -->
               <div id="tab-sketch" class="tab-content">
                 <div class="tools">
                   <div style="display:flex; align-items:center; gap:8px;">
@@ -312,7 +306,7 @@ jobs:
                 <button class="save-btn" style="width:100%;" onclick="saveIdea('스케치', '스케치 드로잉이 저장되었습니다.')">스케치 저장</button>
               </div>
 
-              <!-- 4. 동영상 탭 -->
+              <!-- 4. 동영상 -->
               <div id="tab-video" class="tab-content">
                 <div class="media-panel">
                   <p style="color:var(--muted); font-size:0.9rem;">동영상을 촬영하여 상황을 생생하게 남깁니다.</p>
@@ -326,7 +320,7 @@ jobs:
                 </div>
               </div>
 
-              <!-- 저장 목록 -->
+              <!-- 보관 목록 -->
               <div id="idea-list" style="margin-top:10px;"></div>
             </div>
 
@@ -458,7 +452,7 @@ jobs:
           </html>
           EOF
 
-      - name: 5. 백그라운드 단독 음성인식 플로팅 샤잠 서비스 구축
+      - name: 5. 무설치 업데이트 및 자동 버전 증가 네이티브 시스템 주입
         run: |
           cat << 'EOF' > package.json
           {
@@ -477,14 +471,22 @@ jobs:
           {
             "appId": "com.k2hkkh.ideadrawer",
             "appName": "생각서랍",
-            "webDir": "www"
+            "webDir": "www",
+            "server": {
+              "cleartext": true
+            }
           }
           EOF
 
           npm install
           npx cap add android
 
-          # 최신 권한 및 서비스 주입
+          # 자동 버전 증가 (덮어쓰기 업데이트 지원)
+          BUILD_NUM=${{ github.run_number }}
+          sed -i "s/versionCode 1/versionCode $BUILD_NUM/g" android/app/build.gradle
+          sed -i "s/versionName \"1.0\"/versionName \"1.0.$BUILD_NUM\"/g" android/app/build.gradle
+
+          # 권한 및 서비스 주입
           node -e '
           const fs = require("fs");
           const p = "android/app/src/main/AndroidManifest.xml";
@@ -498,7 +500,7 @@ jobs:
 
           mkdir -p android/app/src/main/java/com/k2hkkh/ideadrawer
 
-          # 플로팅 위젯 소스코드 (앱 실행 없이 백그라운드에서 직접 음성인식 -> 완료 시 생각서랍 자동 호출)
+          # 플로팅 위젯 소스코드 (단독 백그라운드 음성인식 엔진)
           cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/FloatingWidgetService.java
           package com.k2hkkh.ideadrawer;
 
@@ -706,7 +708,7 @@ jobs:
           }
           EOF
 
-          # 메인 액티비티 소스코드 (인텐트 수신 및 앱 내 음성 인식)
+          # 메인 액티비티 소스코드 (화면 복귀 및 웹뷰 브릿지)
           cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/MainActivity.java
           package com.k2hkkh.ideadrawer;
 
