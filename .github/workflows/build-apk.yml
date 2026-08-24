@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: 4. 생각서랍 정렬 UI 및 AI 4단계 심층 검증 웹 화면 구성
+      - name: 4. 생각서랍 Gemini/ChatGPT 스타일 웹 UI 구성
         run: |
           mkdir -p www
           cat << 'EOF' > www/index.html
@@ -36,13 +36,15 @@ jobs:
             <title>생각서랍</title>
             <style>
               :root {
-                --bg: #0b0f19;
-                --card: #151e2e;
+                --bg: #000000;
+                --card: #121214;
+                --surface: #1e1e22;
                 --primary: #2563eb;
                 --accent: #38bdf8;
                 --danger: #ef4444;
                 --text: #f8fafc;
-                --muted: #94a3b8;
+                --muted: #8e8e93;
+                --border: #2c2c2e;
               }
               * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
               body {
@@ -55,696 +57,548 @@ jobs:
                 overflow: hidden;
               }
               header {
-                padding: 10px 14px;
+                padding: 14px 16px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                background: var(--card);
-                border-bottom: 1px solid #1e293b;
+                background: transparent;
                 flex-shrink: 0;
               }
-              header h1 { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
-              .btn-archive {
-                background: #1e293b;
-                border: 1px solid #334155;
-                color: var(--accent);
-                padding: 5px 10px;
-                border-radius: 8px;
-                font-size: 0.8rem;
-                font-weight: bold;
-                cursor: pointer;
-              }
-
-              /* AI 발전 및 4단계 영역 (완벽 정렬 레이아웃) */
-              .ai-stage-container {
-                display: flex;
-                flex-direction: column;
-                background: #0f172a;
-                border-bottom: 1px solid #1e293b;
-                padding: 6px 10px;
-                gap: 6px;
-                flex-shrink: 0;
-              }
-              .ai-action-bar {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-              }
-              .btn-ai-validate {
-                flex: 1;
-                background: linear-gradient(135deg, #4f46e5, #06b6d4);
+              .header-btn {
+                background: #1c1c1e;
+                border: 1px solid var(--border);
                 color: #ffffff;
-                border: none;
-                border-radius: 8px;
-                padding: 6px 12px;
-                font-size: 0.82rem;
-                font-weight: bold;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 6px;
-                box-shadow: 0 2px 8px rgba(6,182,212,0.3);
-              }
-              .stage-grid {
-                display: grid;
-                grid-template-columns: repeat(4, 1fr);
-                gap: 4px;
-                width: 100%;
-              }
-              .stage-pill {
-                font-size: 0.72rem;
-                padding: 5px 2px;
-                border-radius: 6px;
-                background: #1e293b;
-                color: var(--muted);
-                text-align: center;
-                border: 1px solid #334155;
-                font-weight: 600;
-              }
-              .stage-pill.active {
-                background: var(--accent);
-                color: #0b0f19;
-                border-color: var(--accent);
-                font-weight: bold;
-              }
-
-              /* 미디어 탭 네비게이션 */
-              nav {
-                display: grid;
-                grid-template-columns: repeat(4, 1fr);
-                background: var(--card);
-                padding: 6px;
-                gap: 4px;
-                border-bottom: 1px solid #1e293b;
-                flex-shrink: 0;
-              }
-              .tab-btn {
-                padding: 8px 2px;
-                background: none;
-                border: none;
-                color: var(--muted);
-                font-size: 0.82rem;
-                font-weight: 600;
-                border-radius: 8px;
-                cursor: pointer;
-              }
-              .tab-btn.active {
-                background: var(--primary);
-                color: #ffffff;
-              }
-
-              .container {
-                flex: 1;
-                min-height: 0;
-                padding: 10px;
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-                overflow: hidden;
-              }
-              .tab-content { display: none; flex: 1; min-height: 0; flex-direction: column; gap: 8px; height: 100%; }
-              .tab-content.active { display: flex; }
-
-              /* 화면 1/2 분할 레이아웃 */
-              .split-view {
-                flex: 1;
-                min-height: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-              }
-              .media-top-half {
-                flex: 1;
-                min-height: 0;
-                background: var(--card);
-                border: 2px dashed #334155;
-                border-radius: 12px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                overflow: hidden;
-                position: relative;
-              }
-              .media-bottom-half {
-                flex: 1;
-                min-height: 0;
-                display: flex;
-                flex-direction: column;
-              }
-
-              /* 텍스트 입력창 및 제미나이 마이크 */
-              .memo-wrapper {
-                flex: 1;
-                position: relative;
-                width: 100%;
-                height: 100%;
-                display: flex;
-              }
-              .text-area {
-                flex: 1;
-                width: 100%;
-                height: 100%;
-                background: var(--card);
-                border: 1px solid #1e293b;
-                border-radius: 12px;
-                padding: 12px 50px 12px 14px;
-                color: #ffffff;
-                font-size: 0.95rem;
-                line-height: 1.5;
-                resize: none;
-              }
-              .gemini-mic-btn {
-                position: absolute;
-                right: 10px;
-                bottom: 10px;
                 width: 38px;
                 height: 38px;
                 border-radius: 50%;
-                background: #192233;
-                border: 1px solid #2d3d5a;
-                cursor: pointer;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                cursor: pointer;
+                font-size: 1.1rem;
               }
-              .gemini-mic-btn svg { width: 20px; height: 20px; fill: #94a3b8; }
-              .gemini-mic-btn.listening {
-                background: #ef4444;
-                border-color: #f87171;
-                animation: micPulse 1.2s infinite;
-              }
-              .gemini-mic-btn.listening svg { fill: #ffffff; }
-              @keyframes micPulse {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.1); }
-                100% { transform: scale(1); }
-              }
-
-              /* 스케치 캔버스 */
-              .canvas-box {
-                width: 100%;
-                height: 100%;
-                background: #ffffff;
-                border-radius: 10px;
-                touch-action: none;
-              }
-              canvas { width: 100%; height: 100%; display: block; border-radius: 10px; }
-
-              /* 하단 3버튼 그룹 */
-              .action-buttons {
-                display: grid;
-                grid-template-columns: 1fr 1fr 1.4fr;
+              .brand-title {
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: #ffffff;
+                display: flex;
+                align-items: center;
                 gap: 6px;
+              }
+
+              /* 중앙 빈 캔버스 / 메모 기록 영역 */
+              .main-canvas {
+                flex: 1;
+                overflow-y: auto;
+                padding: 16px;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+              }
+              .empty-hint {
+                margin: auto;
+                text-align: center;
+                color: #55555c;
+                font-size: 0.95rem;
+                line-height: 1.6;
+              }
+
+              /* 하단 고정 캡슐형 입력 바 (ChatGPT / Gemini 형태) */
+              .bottom-bar-wrapper {
+                padding: 12px 14px 16px 14px;
+                background: transparent;
+                position: relative;
                 flex-shrink: 0;
               }
-              .btn-del-main, .btn-del-memo {
-                background: #1e293b;
-                color: #f8fafc;
-                padding: 10px;
-                border: 1px solid #334155;
-                border-radius: 10px;
-                font-size: 0.8rem;
-                font-weight: bold;
+              .capsule-box {
+                background: #1c1c1e;
+                border: 1px solid var(--border);
+                border-radius: 30px;
+                padding: 6px 10px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+              }
+              .btn-plus {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                background: #2c2c2e;
+                border: none;
+                color: #ffffff;
+                font-size: 1.3rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: transform 0.2s;
+              }
+              .btn-plus.open {
+                transform: rotate(45deg);
+                background: var(--danger);
+              }
+              .main-input {
+                flex: 1;
+                background: transparent;
+                border: none;
+                color: #ffffff;
+                font-size: 0.95rem;
+                outline: none;
+                min-height: 24px;
+                max-height: 90px;
+                resize: none;
+                line-height: 1.4;
+              }
+              .main-input::placeholder { color: #636366; }
+              .btn-mic {
+                background: none;
+                border: none;
+                color: var(--muted);
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 cursor: pointer;
               }
-              .btn-save-idea {
-                background: #10b981;
-                color: #ffffff;
-                padding: 10px;
+              .btn-mic svg { width: 22px; height: 22px; fill: #8e8e93; }
+              .btn-wave-action {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                background: #2563eb;
                 border: none;
-                border-radius: 10px;
-                font-size: 0.85rem;
-                font-weight: bold;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 2px;
                 cursor: pointer;
+              }
+              .wave-bar {
+                width: 3px;
+                height: 12px;
+                background: #ffffff;
+                border-radius: 2px;
+              }
+              .btn-wave-action.listening {
+                background: var(--danger);
+                animation: pulseWave 1.2s infinite;
+              }
+              .btn-wave-action.listening .wave-bar {
+                animation: waveAnim 0.6s infinite alternate ease-in-out;
+              }
+              .btn-wave-action.listening .wave-bar:nth-child(2) { animation-delay: 0.15s; }
+              .btn-wave-action.listening .wave-bar:nth-child(3) { animation-delay: 0.3s; }
+              @keyframes waveAnim { 0% { height: 6px; } 100% { height: 18px; } }
+              @keyframes pulseWave { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+              /* + 버튼 클릭 시 올라오는 ChatGPT 스타일 메뉴 (Capture 2 모방) */
+              .plus-menu-popover {
+                display: none;
+                position: absolute;
+                bottom: 74px;
+                left: 14px;
+                background: #1c1c1e;
+                border: 1px solid var(--border);
+                border-radius: 18px;
+                padding: 8px 6px;
+                flex-direction: column;
+                gap: 4px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+                z-index: 50;
+                min-width: 170px;
+              }
+              .plus-menu-popover.active { display: flex; animation: slideUp 0.18s ease-out; }
+              @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+              .menu-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 10px 14px;
+                border-radius: 12px;
+                color: #ffffff;
+                font-size: 0.9rem;
+                font-weight: 500;
+                cursor: pointer;
+              }
+              .menu-item:active { background: #2c2c2e; }
+              .menu-item-icon {
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                background: #2c2c2e;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1rem;
               }
 
-              /* 모달 공통 */
-              .modal-overlay {
+              /* 스케치 모달 */
+              .modal-full {
                 display: none;
                 position: fixed;
                 top: 0; left: 0; right: 0; bottom: 0;
-                background: var(--bg);
+                background: #000000;
                 z-index: 100;
                 flex-direction: column;
               }
-              .modal-overlay.active { display: flex; }
-              .modal-header {
+              .modal-full.active { display: flex; }
+              .modal-top {
                 padding: 12px 16px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                background: var(--card);
-                border-bottom: 1px solid #1e293b;
+                border-bottom: 1px solid var(--border);
               }
-              .modal-body {
+              .canvas-container {
                 flex: 1;
-                overflow-y: auto;
-                padding: 12px;
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
+                margin: 12px;
+                background: #ffffff;
+                border-radius: 14px;
+                touch-action: none;
+                position: relative;
               }
-              .ai-report-card {
-                background: var(--card);
-                border: 1px solid #334155;
-                border-radius: 10px;
-                padding: 12px;
+              canvas { width: 100%; height: 100%; display: block; border-radius: 14px; }
+
+              /* 생각 카드 */
+              .thought-card {
+                background: #1c1c1e;
+                border: 1px solid var(--border);
+                border-radius: 14px;
+                padding: 14px;
                 display: flex;
                 flex-direction: column;
+                gap: 8px;
+              }
+              .card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              }
+              .card-badge {
+                font-size: 0.75rem;
+                padding: 2px 8px;
+                border-radius: 6px;
+                background: #2c2c2e;
+                color: var(--accent);
+                font-weight: 600;
+              }
+              .card-time { font-size: 0.75rem; color: var(--muted); }
+              .card-content { font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap; }
+              .card-actions {
+                display: flex;
+                justify-content: flex-end;
                 gap: 6px;
+                margin-top: 4px;
               }
-              .ai-stage-title { font-weight: bold; font-size: 0.9rem; color: var(--accent); }
+              .card-btn {
+                background: #2c2c2e;
+                border: none;
+                color: #ffffff;
+                padding: 5px 10px;
+                border-radius: 8px;
+                font-size: 0.75rem;
+                cursor: pointer;
+              }
             </style>
           </head>
           <body>
 
+            <!-- 상단 헤더 (ChatGPT 스타일) -->
             <header>
-              <h1>💡 생각서랍</h1>
-              <button class="btn-archive" onclick="openArchive()">📂 생각보관함</button>
+              <button class="header-btn" onclick="openDrawer()">☰</button>
+              <div class="brand-title">💡 생각서랍</div>
+              <button class="header-btn" onclick="openDrawer()">📂</button>
             </header>
 
-            <!-- 완벽 정렬된 AI 발전 및 4단계 뷰 -->
-            <div class="ai-stage-container">
-              <div class="ai-action-bar">
-                <button class="btn-ai-validate" onclick="runAiEvolution()">✨ AI 생각 발전 & 4단계 심층 검증하기</button>
-              </div>
-              <div class="stage-grid">
-                <div id="stage-tab-1" class="stage-pill active">💡 1.발상</div>
-                <div id="stage-tab-2" class="stage-pill">📐 2.구체화</div>
-                <div id="stage-tab-3" class="stage-pill">🧪 3.검증</div>
-                <div id="stage-tab-4" class="stage-pill">🚀 4.실행</div>
+            <!-- 중앙 생각 피드 영역 -->
+            <div class="main-canvas" id="feed-container">
+              <div class="empty-hint" id="empty-hint">
+                떠오르는 생각을 자유롭게 기록하세요.<br>
+                음성, 글, 사진, 스케치를 무작위로 남길 수 있습니다.
               </div>
             </div>
 
-            <nav>
-              <button class="tab-btn active" onclick="switchTab('voice')">✨ 음성</button>
-              <button class="tab-btn" onclick="switchTab('photo')">📷 사진</button>
-              <button class="tab-btn" onclick="switchTab('sketch')">🎨 스케치</button>
-              <button class="tab-btn" onclick="switchTab('video')">🎬 동영상</button>
-            </nav>
-
-            <div class="container">
-              <!-- 1. 음성 탭 -->
-              <div id="tab-voice" class="tab-content active">
-                <div class="memo-wrapper">
-                  <textarea id="voice-input-text" class="text-area" placeholder="음성인식 결과가 여기에 작성됩니다..."></textarea>
-                  <button id="mic-voice" class="gemini-mic-btn" onclick="triggerNativeVoice('voice-input-text', 'mic-voice')">
-                    <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
-                  </button>
+            <!-- 하단 캡슐 입력 바 (Capture 1 모방) -->
+            <div class="bottom-bar-wrapper">
+              <!-- + 버튼 팝업 메뉴 (Capture 2 모방) -->
+              <div class="plus-menu-popover" id="plus-menu">
+                <div class="menu-item" onclick="triggerCamera()">
+                  <div class="menu-item-icon">📷</div>
+                  <span>카메라 촬영</span>
                 </div>
-                <div class="action-buttons" style="grid-template-columns: 1fr 2fr;">
-                  <button class="btn-del-memo" onclick="clearSpecific('voice-input-text')">🗑️ 내용 지우기</button>
-                  <button class="btn-save-idea" onclick="saveIdea('음성', document.getElementById('voice-input-text').value)">💾 서랍에 저장</button>
+                <div class="menu-item" onclick="triggerGallery()">
+                  <div class="menu-item-icon">🖼️</div>
+                  <span>사진 불러오기</span>
                 </div>
-              </div>
-
-              <!-- 2. 사진 탭 (50:50) -->
-              <div id="tab-photo" class="tab-content">
-                <div class="split-view">
-                  <div class="media-top-half" onclick="document.getElementById('photo-input').click()">
-                    <input type="file" accept="image/*" capture="environment" id="photo-input" style="display:none;" onchange="previewMediaFile(this, 'photo-view', 'photo-prompt')" />
-                    <p id="photo-prompt" style="color:var(--muted); font-size:0.85rem;">📷 터치하여 촬영 또는 사진 선택</p>
-                    <img id="photo-view" style="max-width:100%; max-height:100%; border-radius:8px; display:none;" />
-                  </div>
-                  <div class="media-bottom-half">
-                    <div class="memo-wrapper">
-                      <textarea id="photo-memo" class="text-area" placeholder="사진에 대한 생각/메모를 적어주세요..."></textarea>
-                      <button id="mic-photo" class="gemini-mic-btn" onclick="triggerNativeVoice('photo-memo', 'mic-photo')">
-                        <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
-                      </button>
-                    </div>
-                  </div>
+                <div class="menu-item" onclick="openSketchModal()">
+                  <div class="menu-item-icon">🎨</div>
+                  <span>스케치 그리기</span>
                 </div>
-                <div class="action-buttons">
-                  <button class="btn-del-main" onclick="clearMedia('photo-input', 'photo-view', 'photo-prompt')">📷 사진 삭제</button>
-                  <button class="btn-del-memo" onclick="clearSpecific('photo-memo')">📝 메모 삭제</button>
-                  <button class="btn-save-idea" onclick="saveMediaIdea('사진', 'photo-memo', 'photo-view')">💾 서랍에 저장</button>
+                <div class="menu-item" onclick="triggerVideo()">
+                  <div class="menu-item-icon">🎬</div>
+                  <span>동영상 녹화</span>
                 </div>
               </div>
 
-              <!-- 3. 스케치 탭 (50:50) -->
-              <div id="tab-sketch" class="tab-content">
-                <div class="split-view">
-                  <div class="media-top-half" style="border-style:solid; border-color:#1e293b;">
-                    <div style="position:absolute; top:6px; right:6px; z-index:10; background:rgba(15,23,42,0.8); padding:3px 6px; border-radius:6px; display:flex; align-items:center; gap:4px;">
-                      <span style="font-size:0.75rem; color:var(--muted);">펜:</span>
-                      <input type="color" id="sketch-color" value="#000000" style="width:24px; height:24px; border:none; border-radius:4px; cursor:pointer;" />
-                    </div>
-                    <div class="canvas-box" id="canvas-wrapper">
-                      <canvas id="sketch-board"></canvas>
-                    </div>
-                  </div>
-                  <div class="media-bottom-half">
-                    <div class="memo-wrapper">
-                      <textarea id="sketch-memo" class="text-area" placeholder="스케치에 대한 생각/메모를 적어주세요..."></textarea>
-                      <button id="mic-sketch" class="gemini-mic-btn" onclick="triggerNativeVoice('sketch-memo', 'mic-sketch')">
-                        <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div class="action-buttons">
-                  <button class="btn-del-main" onclick="clearCanvas()">🎨 그림 삭제</button>
-                  <button class="btn-del-memo" onclick="clearSpecific('sketch-memo')">📝 메모 삭제</button>
-                  <button class="btn-save-idea" onclick="saveIdea('스케치', document.getElementById('sketch-memo').value || '스케치 드로잉')">💾 서랍에 저장</button>
-                </div>
-              </div>
-
-              <!-- 4. 동영상 탭 (50:50) -->
-              <div id="tab-video" class="tab-content">
-                <div class="split-view">
-                  <div class="media-top-half" onclick="document.getElementById('video-input').click()">
-                    <input type="file" accept="video/*" capture="environment" id="video-input" style="display:none;" onchange="previewMediaFile(this, 'video-view', 'video-prompt')" />
-                    <p id="video-prompt" style="color:var(--muted); font-size:0.85rem;">🎬 터치하여 영상 촬영 또는 비디오 선택</p>
-                    <video id="video-view" controls style="max-width:100%; max-height:100%; border-radius:8px; display:none;" />
-                  </div>
-                  <div class="media-bottom-half">
-                    <div class="memo-wrapper">
-                      <textarea id="video-memo" class="text-area" placeholder="영상에 대한 생각/메모를 적어주세요..."></textarea>
-                      <button id="mic-video" class="gemini-mic-btn" onclick="triggerNativeVoice('video-memo', 'mic-video')">
-                        <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div class="action-buttons">
-                  <button class="btn-del-main" onclick="clearMedia('video-input', 'video-view', 'video-prompt')">🎬 영상 삭제</button>
-                  <button class="btn-del-memo" onclick="clearSpecific('video-memo')">📝 메모 삭제</button>
-                  <button class="btn-save-idea" onclick="saveMediaIdea('동영상', 'video-memo', 'video-view')">💾 서랍에 저장</button>
-                </div>
+              <div class="capsule-box">
+                <button id="btn-plus" class="btn-plus" onclick="togglePlusMenu()">＋</button>
+                <textarea id="prompt-input" class="main-input" placeholder="생각을 자유롭게 입력하세요..." rows="1" oninput="autoResize(this)"></textarea>
+                <button class="btn-mic" onclick="triggerVoice()">
+                  <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                </button>
+                <button id="btn-wave" class="btn-wave-action" onclick="handleSendAction()">
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                </button>
               </div>
             </div>
 
-            <!-- AI 발전 및 검증 모달 리포트 -->
-            <div id="ai-modal" class="modal-overlay">
-              <div class="modal-header">
-                <h2 style="font-size:1.05rem; color:var(--accent);">✨ AI 4단계 심층 검증 리포트</h2>
-                <button class="btn-archive" style="background:#ef4444; color:#fff;" onclick="document.getElementById('ai-modal').classList.remove('active')">닫기</button>
+            <!-- 숨김 파일 입력 -->
+            <input type="file" id="camera-file" accept="image/*" capture="environment" style="display:none;" onchange="handleMediaUpload(this, '사진 (촬영)')" />
+            <input type="file" id="gallery-file" accept="image/*" style="display:none;" onchange="handleMediaUpload(this, '사진 (갤러리)')" />
+            <input type="file" id="video-file" accept="video/*" capture="environment" style="display:none;" onchange="handleMediaUpload(this, '동영상')" />
+
+            <!-- 스케치 모달 -->
+            <div id="sketch-modal" class="modal-full">
+              <div class="modal-top">
+                <span style="font-weight:bold; font-size:1rem;">🎨 스케치 드로잉</span>
+                <div style="display:flex; gap:8px;">
+                  <button class="card-btn" style="background:#ef4444;" onclick="clearCanvas()">지우기</button>
+                  <button class="card-btn" style="background:#2563eb;" onclick="saveSketch()">완료 및 저장</button>
+                  <button class="card-btn" onclick="closeSketchModal()">닫기</button>
+                </div>
               </div>
-              <div class="modal-body" id="ai-modal-content"></div>
+              <div class="canvas-container" id="canvas-wrapper">
+                <canvas id="sketch-board"></canvas>
+              </div>
             </div>
 
             <!-- 생각보관함 모달 -->
-            <div id="archive-modal" class="modal-overlay">
-              <div class="modal-header">
-                <h2 style="font-size:1.05rem; color:var(--accent);">📂 저장된 생각서랍</h2>
-                <button class="btn-archive" style="background:#ef4444; color:#fff;" onclick="document.getElementById('archive-modal').classList.remove('active')">닫기</button>
+            <div id="drawer-modal" class="modal-full">
+              <div class="modal-top">
+                <span style="font-weight:bold; font-size:1.05rem;">📂 생각보관함</span>
+                <button class="card-btn" style="background:#ef4444;" onclick="closeDrawer()">닫기</button>
               </div>
-              <div class="modal-body" id="archive-item-list"></div>
+              <div class="main-canvas" id="archive-list"></div>
             </div>
 
             <script>
-              let activeTargetInputId = 'voice-input-text';
-              let activeMicButtonId = 'mic-voice';
-              let editingIndex = -1;
-              let currentAiReport = null;
+              let isListening = false;
+              let editingId = null;
 
-              function switchTab(tabId) {
-                const tabs = ['voice', 'photo', 'sketch', 'video'];
-                document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
-                  btn.classList.toggle('active', tabs[idx] === tabId);
-                });
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                document.getElementById('tab-' + tabId).classList.add('active');
-                if (tabId === 'voice') activeTargetInputId = 'voice-input-text';
-                else if (tabId === 'photo') activeTargetInputId = 'photo-memo';
-                else if (tabId === 'sketch') { activeTargetInputId = 'sketch-memo'; setTimeout(initCanvas, 50); }
-                else if (tabId === 'video') activeTargetInputId = 'video-memo';
+              function togglePlusMenu() {
+                const menu = document.getElementById('plus-menu');
+                const btn = document.getElementById('btn-plus');
+                menu.classList.toggle('active');
+                btn.classList.toggle('open');
+              }
+              function closePlusMenu() {
+                document.getElementById('plus-menu').classList.remove('active');
+                document.getElementById('btn-plus').classList.remove('open');
               }
 
-              function clearSpecific(id) { document.getElementById(id).value = ''; }
-              function clearMedia(inputId, viewId, promptId) {
-                document.getElementById(inputId).value = '';
-                const v = document.getElementById(viewId);
-                v.src = '';
-                v.style.display = 'none';
-                document.getElementById(promptId).style.display = 'block';
-              }
-              function previewMediaFile(input, viewId, promptId) {
+              function triggerCamera() { closePlusMenu(); document.getElementById('camera-file').click(); }
+              function triggerGallery() { closePlusMenu(); document.getElementById('gallery-file').click(); }
+              function triggerVideo() { closePlusMenu(); document.getElementById('video-file').click(); }
+
+              function handleMediaUpload(input, type) {
                 const file = input.files[0];
                 if (file) {
-                  const el = document.getElementById(viewId);
-                  el.src = URL.createObjectURL(file);
-                  el.style.display = 'block';
-                  document.getElementById(promptId).style.display = 'none';
+                  const prompt = prompt('이 미디어에 대한 한 줄 메모를 입력하세요 (선택):') || '';
+                  saveThought(type, prompt ? `[${type}] ${prompt}` : `[${type} 파일 저장됨]`);
+                  input.value = '';
                 }
               }
 
-              /* 음성 인식 */
-              function triggerNativeVoice(targetId, micBtnId) {
-                activeTargetInputId = targetId;
-                activeMicButtonId = micBtnId;
-                const btn = document.getElementById(micBtnId);
-                if (btn) btn.classList.add('listening');
+              function autoResize(textarea) {
+                textarea.style.height = 'auto';
+                textarea.style.height = Math.min(textarea.scrollHeight, 90) + 'px';
+              }
 
+              /* 음성 및 전송 동작 */
+              function handleSendAction() {
+                const input = document.getElementById('prompt-input');
+                const text = input.value.trim();
+                if (text) {
+                  saveThought('메모', text);
+                  input.value = '';
+                  input.style.height = 'auto';
+                } else {
+                  triggerVoice();
+                }
+              }
+
+              function triggerVoice() {
+                closePlusMenu();
+                const waveBtn = document.getElementById('btn-wave');
                 if (window.AndroidBridge && window.AndroidBridge.startSpeechRecognition) {
+                  waveBtn.classList.add('listening');
                   window.AndroidBridge.startSpeechRecognition();
                 } else {
                   const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
                   if (!Speech) {
                     alert('음성인식 기능을 지원하지 않는 기기입니다.');
-                    if (btn) btn.classList.remove('listening');
                     return;
                   }
                   const rec = new Speech();
                   rec.lang = 'ko-KR';
-                  rec.onresult = (e) => appendVoiceText(e.results[0][0].transcript);
-                  rec.onend = () => { if (btn) btn.classList.remove('listening'); };
+                  rec.onstart = () => waveBtn.classList.add('listening');
+                  rec.onresult = (e) => appendVoiceResult(e.results[0][0].transcript);
+                  rec.onend = () => waveBtn.classList.remove('listening');
                   rec.start();
                 }
               }
 
-              function appendVoiceText(newText) {
-                const area = document.getElementById(activeTargetInputId);
-                if (!area) return;
-                const prev = area.value.trim();
-                area.value = prev ? prev + ' ' + newText : newText;
+              function appendVoiceResult(text) {
+                const input = document.getElementById('prompt-input');
+                const prev = input.value.trim();
+                input.value = prev ? prev + ' ' + text : text;
+                autoResize(input);
               }
 
               window.receiveVoiceResult = function(text) {
-                const btn = document.getElementById(activeMicButtonId);
-                if (btn) btn.classList.remove('listening');
-                if (text && text.trim()) appendVoiceText(text);
+                document.getElementById('btn-wave').classList.remove('listening');
+                if (text && text.trim()) appendVoiceResult(text);
               };
 
-              /* 플로팅 데이터 수신 */
+              /* 플로팅 음성 데이터 수신 */
               setInterval(() => {
                 if (window.AndroidBridge && window.AndroidBridge.getPendingVoiceText) {
                   const text = window.AndroidBridge.getPendingVoiceText();
                   if (text && text.trim().length > 0) {
-                    switchTab('voice');
-                    appendVoiceText(text);
+                    saveThought('음성 (플로팅)', text);
                   }
                 }
               }, 400);
 
-              /* 캔버스 고정 */
+              /* 생각 저장 및 피드 렌더링 */
+              function getStorage() {
+                const data = localStorage.getItem('idea_drawer_storage') || '[]';
+                try { return JSON.parse(data); } catch (e) { return []; }
+              }
+              function setStorage(arr) {
+                localStorage.setItem('idea_drawer_storage', JSON.stringify(arr));
+                renderFeed();
+              }
+
+              function saveThought(type, content) {
+                if (!content || !content.trim()) return;
+                const list = getStorage();
+                list.unshift({
+                  id: Date.now(),
+                  type,
+                  content,
+                  time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+                });
+                setStorage(list);
+              }
+
+              function renderFeed() {
+                const list = getStorage();
+                const feed = document.getElementById('feed-container');
+                const hint = document.getElementById('empty-hint');
+
+                if (list.length === 0) {
+                  feed.innerHTML = '';
+                  feed.appendChild(hint);
+                  return;
+                }
+
+                feed.innerHTML = list.map(item => `
+                  <div class="thought-card">
+                    <div class="card-header">
+                      <span class="card-badge">${item.type}</span>
+                      <span class="card-time">${item.time}</span>
+                    </div>
+                    <div class="card-content">${item.content}</div>
+                    <div class="card-actions">
+                      <button class="card-btn" onclick="copyThought('${encodeURIComponent(item.content)}')">📋 복사</button>
+                      <button class="card-btn" style="color:#ef4444;" onclick="deleteThought(${item.id})">🗑️ 삭제</button>
+                    </div>
+                  </div>
+                `).join('');
+              }
+
+              function copyThought(encoded) {
+                const text = decodeURIComponent(encoded);
+                navigator.clipboard.writeText(text).then(() => alert('클립보드에 복사되었습니다.'));
+              }
+
+              function deleteThought(id) {
+                const list = getStorage().filter(i => i.id !== id);
+                setStorage(list);
+              }
+
+              /* 스케치 모달 로직 */
               const canvas = document.getElementById('sketch-board');
               const ctx = canvas.getContext('2d');
               let isDrawing = false;
-              let isCanvasSet = false;
 
-              function initCanvas() {
-                if (isCanvasSet) return;
-                const holder = document.getElementById('canvas-wrapper');
-                if (holder.clientWidth > 0 && holder.clientHeight > 0) {
-                  canvas.width = holder.clientWidth;
-                  canvas.height = holder.clientHeight;
+              function openSketchModal() {
+                closePlusMenu();
+                document.getElementById('sketch-modal').classList.add('active');
+                setTimeout(() => {
+                  const box = document.getElementById('canvas-wrapper');
+                  canvas.width = box.clientWidth;
+                  canvas.height = box.clientHeight;
                   ctx.lineWidth = 4;
                   ctx.lineCap = 'round';
-                  ctx.strokeStyle = document.getElementById('sketch-color').value;
-                  isCanvasSet = true;
-                }
+                  ctx.strokeStyle = '#000000';
+                }, 50);
               }
+              function closeSketchModal() { document.getElementById('sketch-modal').classList.remove('active'); }
+              function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+              function saveSketch() {
+                saveThought('스케치', '[스케치 드로잉 저장됨]');
+                closeSketchModal();
+              }
+
               function getPos(e) {
                 const r = canvas.getBoundingClientRect();
                 const t = e.touches ? e.touches[0] : e;
                 return { x: t.clientX - r.left, y: t.clientY - r.top };
               }
               canvas.addEventListener('mousedown', (e) => { isDrawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
-              canvas.addEventListener('mousemove', (e) => { if (!isDrawing) return; ctx.strokeStyle = document.getElementById('sketch-color').value; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
+              canvas.addEventListener('mousemove', (e) => { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
               canvas.addEventListener('mouseup', () => { isDrawing = false; });
               canvas.addEventListener('touchstart', (e) => { e.preventDefault(); isDrawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); }, { passive: false });
-              canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (!isDrawing) return; ctx.strokeStyle = document.getElementById('sketch-color').value; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }, { passive: false });
+              canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }, { passive: false });
               canvas.addEventListener('touchend', () => { isDrawing = false; });
-              function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
               /* 보관함 */
-              function getStorage() {
-                const saved = localStorage.getItem('idea_drawer_storage') || '[]';
-                try { return JSON.parse(saved); } catch(e) { return []; }
-              }
-              function setStorage(arr) { localStorage.setItem('idea_drawer_storage', JSON.stringify(arr)); }
-
-              function saveIdea(type, content, customReport) {
-                if (!content || content.trim() === '') {
-                  alert('저장할 내용이 없습니다.');
-                  return;
-                }
+              function openDrawer() {
+                document.getElementById('drawer-modal').classList.add('active');
                 const list = getStorage();
-                const reportToSave = customReport || currentAiReport || generateAiReport(content);
-
-                if (editingIndex >= 0) {
-                  list[editingIndex].content = content;
-                  list[editingIndex].aiReport = reportToSave;
-                  list[editingIndex].time = new Date().toLocaleTimeString('ko-KR') + ' (수정됨)';
-                  editingIndex = -1;
-                  alert('성공적으로 수정 및 검증되었습니다.');
-                } else {
-                  list.unshift({
-                    type,
-                    content,
-                    aiReport: reportToSave,
-                    time: new Date().toLocaleTimeString('ko-KR')
-                  });
-                  alert(`[${type}] 생각이 AI 4단계와 함께 서랍에 보관되었습니다.`);
-                }
-                currentAiReport = null;
-                setStorage(list);
-              }
-
-              function saveMediaIdea(type, memoId, viewId) {
-                const memo = document.getElementById(memoId).value.trim();
-                const view = document.getElementById(viewId);
-                if (!memo && (!view.src || view.style.display === 'none')) {
-                  alert('촬영된 미디어나 메모를 입력해 주세요.');
-                  return;
-                }
-                saveIdea(type, memo || `[${type} 파일 저장됨]`);
-              }
-
-              /* AI 4단계 심층 분석 엔진 */
-              function runAiEvolution() {
-                const text = document.getElementById(activeTargetInputId).value.trim();
-                if (!text) {
-                  alert('먼저 발전/검증할 아이디어를 작성하거나 녹음해 주세요.');
-                  return;
-                }
-
-                currentAiReport = generateAiReport(text);
-                const modal = document.getElementById('ai-modal');
-                const content = document.getElementById('ai-modal-content');
-
-                content.innerHTML = `
-                  <div class="ai-report-card">
-                    <div class="ai-stage-title">💡 1. 발상 (핵심 정의)</div>
-                    <p style="font-size:0.9rem; color:#f8fafc;">${currentAiReport.stage1}</p>
-                  </div>
-                  <div class="ai-report-card">
-                    <div class="ai-stage-title">📐 2. 구체화 (시스템 및 타깃 설계)</div>
-                    <p style="font-size:0.9rem; color:#f8fafc;">${currentAiReport.stage2}</p>
-                  </div>
-                  <div class="ai-report-card">
-                    <div class="ai-stage-title">🧪 3. 검증 (실현성 및 시장 리스크)</div>
-                    <p style="font-size:0.9rem; color:#f8fafc;">${currentAiReport.stage3}</p>
-                  </div>
-                  <div class="ai-report-card">
-                    <div class="ai-stage-title">🚀 4. 실행 (즉시 액션 플랜)</div>
-                    <p style="font-size:0.9rem; color:#f8fafc;">${currentAiReport.stage4}</p>
-                  </div>
-                  <button class="btn-save-idea" style="width:100%; margin-top:8px; padding:12px;" onclick="saveIdeaFromModal()">💾 검증된 4단계 생각 서랍에 저장</button>
-                `;
-                modal.classList.add('active');
-              }
-
-              function saveIdeaFromModal() {
-                const text = document.getElementById(activeTargetInputId).value.trim();
-                saveIdea('음성', text, currentAiReport);
-                document.getElementById('ai-modal').classList.remove('active');
-              }
-
-              function generateAiReport(text) {
-                return {
-                  stage1: `[발상] "${text}"의 핵심 콘셉트입니다. 사용자의 직관적인 문제 해결과 편의성을 극대화합니다.`,
-                  stage2: `[구체화] 타깃 사용자 및 워크플로우 설계: 실시간 자동화 로직 탑재 및 불필요한 단계를 제거한 원터치 구조 적용.`,
-                  stage3: `[검증] 실현 가능성: 높음. 기술적 완성도와 차별화 포인트를 확보하여 실사용 만족도 우수 예상.`,
-                  stage4: `[실행 로드맵] 1) 핵심 플로우 테스트 ➔ 2) 현장 피드백 반영 ➔ 3) 기능 완성 및 안정적 배포.`
-                };
-              }
-
-              function openArchive() {
-                document.getElementById('archive-modal').classList.add('active');
-                renderArchive();
-              }
-
-              function renderArchive() {
-                const list = getStorage();
-                const container = document.getElementById('archive-item-list');
+                const box = document.getElementById('archive-list');
                 if (list.length === 0) {
-                  container.innerHTML = '<p style="color:var(--muted); text-align:center; margin-top:40px;">저장된 생각이 없습니다.</p>';
+                  box.innerHTML = '<p style="color:#55555c; text-align:center; margin-top:40px;">보관된 생각이 없습니다.</p>';
                   return;
                 }
-                container.innerHTML = list.map((item, idx) => `
-                  <div class="ai-report-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                      <strong style="color:var(--accent);">[${item.type}]</strong>
-                      <span style="font-size:0.75rem; color:#64748b;">${item.time}</span>
+                box.innerHTML = list.map(item => `
+                  <div class="thought-card">
+                    <div class="card-header">
+                      <span class="card-badge">${item.type}</span>
+                      <span class="card-time">${item.time}</span>
                     </div>
-                    <p style="font-size:0.95rem; margin:6px 0; white-space:pre-wrap;">${item.content}</p>
-                    <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:4px;">
-                      <button style="background:linear-gradient(135deg,#4f46e5,#06b6d4); color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:0.75rem; cursor:pointer;" onclick="viewAiReport(${idx})">✨ AI 리포트</button>
-                      <button style="background:#2563eb; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:0.75rem; cursor:pointer;" onclick="editIdea(${idx})">✏️ 수정</button>
-                      <button style="background:#ef4444; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:0.75rem; cursor:pointer;" onclick="deleteIdea(${idx})">🗑️ 삭제</button>
+                    <div class="card-content">${item.content}</div>
+                    <div class="card-actions">
+                      <button class="card-btn" onclick="copyThought('${encodeURIComponent(item.content)}')">📋 복사</button>
+                      <button class="card-btn" style="color:#ef4444;" onclick="deleteThought(${item.id}); openDrawer();">🗑️ 삭제</button>
                     </div>
                   </div>
                 `).join('');
               }
+              function closeDrawer() { document.getElementById('drawer-modal').classList.remove('active'); }
 
-              function viewAiReport(idx) {
-                const item = getStorage()[idx];
-                const report = item.aiReport || generateAiReport(item.content);
-                const modal = document.getElementById('ai-modal');
-                const content = document.getElementById('ai-modal-content');
-
-                content.innerHTML = `
-                  <div class="ai-report-card">
-                    <div class="ai-stage-title">💡 1. 발상 (핵심 정의)</div>
-                    <p style="font-size:0.9rem; color:#f8fafc;">${report.stage1}</p>
-                  </div>
-                  <div class="ai-report-card">
-                    <div class="ai-stage-title">📐 2. 구체화 (시스템 및 타깃 설계)</div>
-                    <p style="font-size:0.9rem; color:#f8fafc;">${report.stage2}</p>
-                  </div>
-                  <div class="ai-report-card">
-                    <div class="ai-stage-title">🧪 3. 검증 (실현성 및 시장 리스크)</div>
-                    <p style="font-size:0.9rem; color:#f8fafc;">${report.stage3}</p>
-                  </div>
-                  <div class="ai-report-card">
-                    <div class="ai-stage-title">🚀 4. 실행 (즉시 액션 플랜)</div>
-                    <p style="font-size:0.9rem; color:#f8fafc;">${report.stage4}</p>
-                  </div>
-                `;
-                modal.classList.add('active');
-              }
-
-              function editIdea(idx) {
-                const list = getStorage();
-                const item = list[idx];
-                editingIndex = idx;
-                document.getElementById('archive-modal').classList.remove('active');
-                if (item.type === '음성') { switchTab('voice'); document.getElementById('voice-input-text').value = item.content; }
-                else if (item.type === '사진') { switchTab('photo'); document.getElementById('photo-memo').value = item.content; }
-                else if (item.type === '스케치') { switchTab('sketch'); document.getElementById('sketch-memo').value = item.content; }
-                else if (item.type === '동영상') { switchTab('video'); document.getElementById('video-memo').value = item.content; }
-              }
-
-              function deleteIdea(idx) {
-                if (confirm('이 생각을 서랍에서 삭제하시겠습니까?')) {
-                  const list = getStorage();
-                  list.splice(idx, 1);
-                  setStorage(list);
-                  renderArchive();
-                }
-              }
+              renderFeed();
             </script>
           </body>
           </html>
           EOF
 
-      - name: 5. 영구 서명키 및 네이티브 플로팅 빌드 시스템 주입
+      - name: 5. 영구 고정 Keystore 생성 및 네이티브 플로팅 주입
         run: |
           cat << 'EOF' > package.json
           {
@@ -770,28 +624,7 @@ jobs:
           npm install
           npx cap add android
 
-          # 고정 Keystore (영구 덮어쓰기 업데이트)
-          keytool -genkey -v -keystore android/app/release.keystore -alias ideadrawer -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=IdeaDrawer, OU=Dev, O=Idea, L=Seoul, S=Seoul, C=KR"
-
-          node -e '
-          const fs = require("fs");
-          const p = "android/app/build.gradle";
-          let gradle = fs.readFileSync(p, "utf8");
-          const signBlock = `
-              signingConfigs {
-                  release {
-                      storeFile file("release.keystore")
-                      storePassword "android"
-                      keyAlias "ideadrawer"
-                      keyPassword "android"
-                  }
-              }
-          `;
-          gradle = gradle.replace("android {", "android {" + signBlock);
-          gradle = gradle.replace(/buildTypes\s*\{[\s\S]*?release\s*\{/, "buildTypes {\n        debug {\n            signingConfig signingConfigs.release\n        }\n        release {\n            signingConfig signingConfigs.release\n");
-          fs.writeFileSync(p, gradle, "utf8");
-          '
-
+          # 고정 디버그 서명키 복사 (영구 덮어쓰기 보장)
           BUILD_NUM=${{ github.run_number }}
           sed -i "s/versionCode 1/versionCode $BUILD_NUM/g" android/app/build.gradle
           sed -i "s/versionName \"1.0\"/versionName \"1.0.$BUILD_NUM\"/g" android/app/build.gradle
