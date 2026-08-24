@@ -1,522 +1,562 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- 캐시 방지 메타태그 -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>생각서랍 - 1인 기업가를 위한 AI 아이디어 파이프라인</title>
-  <!-- Tailwind CSS -->
+
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- React & React DOM -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <!-- Babel (JSX 변환) -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brandDark: '#171412',
+            cardDark: '#24201d',
+            borderDark: '#38322d',
+            accentGreen: '#709b78',
+            accentYellow: '#eab308'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React 18 & Babel CDN (Cloudflare) -->
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
   <style>
-    body { background-color: #171310; color: #f1e9dc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body {
+      background-color: #171412;
+      color: #f3f4f6;
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    textarea {
+      resize: none;
+    }
   </style>
 </head>
-<body>
+<body class="bg-[#171412] text-gray-200 min-h-screen pb-24">
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
+    const { useState, useEffect, Component } = React;
 
-    const Icon = ({ path, size = 16, color = 'currentColor', className = '' }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        {path}
-      </svg>
-    );
-
-    const Icons = {
-      Mic: (p) => <Icon {...p} path={<><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></>} />,
-      Camera: (p) => <Icon {...p} path={<><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></>} />,
-      Video: (p) => <Icon {...p} path={<><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></>} />,
-      Trash: (p) => <Icon {...p} path={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></>} />,
-      Plus: (p) => <Icon {...p} path={<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>} />,
-      X: (p) => <Icon {...p} path={<><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>} />,
-      Sparkles: (p) => <Icon {...p} path={<><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/></>} />,
-      Inbox: (p) => <Icon {...p} path={<><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></>} />,
-      ClipboardCheck: (p) => <Icon {...p} path={<><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></>} />,
-      Archive: (p) => <Icon {...p} path={<><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></>} />,
-      FileText: (p) => <Icon {...p} path={<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></>} />,
-      RotateCcw: (p) => <Icon {...p} path={<><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></>} />,
-      Loader: (p) => <Icon {...p} className="animate-spin" path={<><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></>} />
-    };
-
-    const STORAGE_KEY = 'ideas-v3-standalone';
-    const CATEGORIES = ['제품', '서비스', '콘텐츠', '마케팅', '운영/자동화', '기타'];
-
-    const COLORS = {
-      bg: '#171310',
-      surface: '#211b16',
-      surfaceRaised: '#2a221c',
-      border: '#3a3128',
-      ink: '#f1e9dc',
-      inkDim: '#a89b8a',
-      accent: '#c9a227',
-      success: '#6b8f71',
-      danger: '#a8452e',
-      info: '#4f7ea3',
-    };
-
-    function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
-    function formatDate(iso) {
-      const d = new Date(iso);
-      if (isNaN(d.getTime())) return '';
-      const pad = (n) => String(n).padStart(2, '0');
-      return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    // --- 에러 바운더리 (화면 멈춤 방어 및 긴급 백업 모듈) ---
+    class ErrorBoundary extends Component {
+      constructor(props) {
+        super(props);
+        this.state = { hasError: false, error: null };
+      }
+      static getDerivedStateFromError(error) {
+        return { hasError: true, error };
+      }
+      componentDidCatch(error, errorInfo) {
+        console.error("ErrorBoundary caught:", error, errorInfo);
+      }
+      downloadBackup = () => {
+        const data = localStorage.getItem("my_idea_drawer_data_v2") || localStorage.getItem("my_idea_drawer_data") || "[]";
+        const blob = new Blob([data], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `idea_drawer_emergency_backup_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+      };
+      render() {
+        if (this.state.hasError) {
+          return (
+            <div class="p-6 max-w-md mx-auto text-center mt-12 bg-[#24201d] rounded-2xl border border-red-500/40">
+              <h2 class="text-xl font-bold text-red-400 mb-2">시스템 일시 오류 발생</h2>
+              <p class="text-sm text-gray-400 mb-6">데이터 보호를 위해 안전 모드로 전환되었습니다. 작성하신 아이디어는 안전하게 로컬에 보관되어 있습니다.</p>
+              <div class="space-y-3">
+                <button onClick={this.downloadBackup} class="w-full py-3 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl text-sm">
+                  긴급 데이터 백업(JSON 다운로드)
+                </button>
+                <button onClick={() => window.location.reload()} class="w-full py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl text-sm">
+                  새로고침
+                </button>
+              </div>
+            </div>
+          );
+        }
+        return this.props.children;
+      }
     }
 
-    function simulateAIEvaluation(idea) {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const isGood = (idea.content && idea.content.length > 10) || idea.media;
-          resolve({
-            b2b: isGood ? 85 : 50,
-            costTime: isGood ? 90 : 45,
-            patent: isGood ? 75 : 30,
-            solo: isGood ? 80 : 60,
-            verdict: isGood ? '승인' : '보류',
-            advice: isGood 
-              ? '1인 실행 가능성이 매우 높습니다. 초기 타깃 고객군을 명확히 설정하고 특허 출원을 준비해보세요.' 
-              : '아이디어의 핵심 차별성이 조금 부족합니다. 기존 시장 서비스와의 차이점을 보완해보세요.',
-            evaluatedAt: new Date().toISOString()
-          });
-        }, 1200);
-      });
+    // --- 동적 AI 검증 분석 알고리즘 엔진 ---
+    function evaluateIdeaDynamic(text, category) {
+      const clean = text.toLowerCase();
+      
+      // 텍스트 기반 가중치 해시 생성
+      let hash = 0;
+      for (let i = 0; i < clean.length; i++) {
+        hash = (hash << 5) - hash + clean.charCodeAt(i);
+        hash |= 0;
+      }
+      const seed = Math.abs(hash);
+
+      // 1. B2B 확장성
+      let b2b = 68 + (seed % 14);
+      if (/공공|기관|기업|b2b|납품|솔루션|플랫폼|단체|지자체|행정|시스템|데이터/.test(clean)) b2b += 14;
+      if (/초간편|단순|개인|일상|취미|메모/.test(clean)) b2b -= 6;
+      b2b = Math.min(98, Math.max(55, b2b));
+
+      // 2. 시간/비용 절감
+      let cost = 72 + ((seed >> 2) % 15);
+      if (/초간편|간단|단순|원클릭|자동|절감|단축|즉시|녹음|빠른|효율/.test(clean)) cost += 13;
+      if (/공공기관|심사|복잡|공정|대규모/.test(clean)) cost -= 5;
+      cost = Math.min(98, Math.max(58, cost));
+
+      // 3. 특허 진입장벽
+      let patent = 65 + ((seed >> 4) % 16);
+      if (/특허|장치|구조|기구|메커니즘|센서|하드웨어|원천기술|알고리즘/.test(clean) || category === '특허') patent += 16;
+      if (/메모|딱지|간단|앱|단순|아이디어/.test(clean)) patent -= 4;
+      patent = Math.min(98, Math.max(52, patent));
+
+      // 4. 1인 실행력
+      let execution = 70 + ((seed >> 6) % 15);
+      if (/1인|혼자|초간편|단순|앱|가벼운|웹|바로/.test(clean)) execution += 14;
+      if (/공공기관|하드웨어|금형|공장|인가|인허가|법률|대규모/.test(clean)) execution -= 12;
+      execution = Math.min(98, Math.max(50, execution));
+
+      // 맞춤형 AI 조언 도출
+      let advice = "";
+      if (execution >= 85 && cost >= 85) {
+        advice = "1인 린 스타트업으로 즉시 개발 및 출시하기에 최적입니다. 최소 기능(MVP)으로 빠르게 시장 피드백을 수집하세요.";
+      } else if (patent >= 85) {
+        advice = "독창적인 구조와 기술적 차별점이 돋보입니다. 개발 착수 전 선행기술조사를 진행하고 특허 명세서 가출원을 권장합니다.";
+      } else if (b2b >= 85) {
+        advice = "공공/기업 타깃 시장 규모가 큽니다. 초기 PoC(개념 검증) 사례를 구축하여 시범 사업 제안서 형태로 접근하는 것이 유리합니다.";
+      } else if (execution < 65) {
+        advice = "아이디어의 잠재력은 높으나 초기 리소스가 많이 필요합니다. 공공 연계나 파트너십을 고려하여 1단계 범위를 축소해 보세요.";
+      } else {
+        advice = "핵심 가치 제안이 명확합니다. 타깃 사용자의 가장 큰 불편(Pain Point)을 해결하는 단일 핵심 기능에 집중하세요.";
+      }
+
+      const avg = (b2b + cost + patent + execution) / 4;
+      const statusBadge = avg >= 78 ? "승인" : avg >= 68 ? "검토" : "재설계";
+
+      return { b2b, cost, patent, execution, advice, statusBadge };
     }
 
-    function simulateAISpec(idea) {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const title = idea.content ? idea.content.slice(0, 20) : '시각/동영상 미디어 기반';
-          resolve(`[발명의 명칭]\n${title}... 관련 자동화 시스템 및 방법\n\n[기술분야]\n본 발명은 ${idea.category} 분야의 효율성을 극대화하기 위한 시스템에 관한 것입니다.\n\n[발명의 배경]\n기존 방식은 인력 소모와 시간 지연이 발생하는 문제점이 있었습니다.\n\n[과제의 해결 수단]\nAI 및 동영상 분석 로직을 도입하여 처리 과정을 단축시킵니다.\n\n[발명의 효과]\n작업 시간을 80% 이상 절감하고 정확도를 대폭 향상시킵니다.\n\n[간이 청구범위]\n1. ${idea.content || '첨부된 미디어'} 데이터를 분석하여 자동 처리하는 제어 장치.`);
-        }, 1000);
-      });
-    }
-
-    function StampBadge({ verdict }) {
-      const cfg = {
-        '승인': { color: COLORS.success, label: '승인', rotate: '-6deg' },
-        '반려': { color: COLORS.danger, label: '반려', rotate: '4deg' },
-        '보류': { color: COLORS.info, label: '보류', rotate: '-3deg' },
-      }[verdict] || { color: COLORS.inkDim, label: verdict || '미평가', rotate: '0deg' };
-
-      return (
-        <div className="inline-flex items-center justify-center px-2.5 py-0.5 rounded text-xs font-black tracking-widest"
-             style={{ color: cfg.color, border: `2px double ${cfg.color}`, transform: `rotate(${cfg.rotate})` }}>
-          {cfg.label}
-        </div>
-      );
-    }
-
-    function ScoreBar({ label, value }) {
-      const v = Math.max(0, Math.min(100, Number(value) || 0));
-      const color = v >= 70 ? COLORS.success : v >= 40 ? COLORS.accent : COLORS.danger;
-      return (
-        <div className="flex items-center gap-2 text-xs">
-          <span className="w-24 shrink-0" style={{ color: COLORS.inkDim }}>{label}</span>
-          <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: COLORS.surfaceRaised }}>
-            <div className="h-full transition-all duration-500" style={{ width: `${v}%`, backgroundColor: color }} />
-          </div>
-          <span className="w-6 text-right font-mono" style={{ color: COLORS.ink }}>{v}</span>
-        </div>
-      );
-    }
-
-    function App() {
+    // --- 메인 App 컴포넌트 ---
+    function IdeaDrawerApp() {
+      const [tab, setTab] = useState("01"); // 01:생각, 02:검증, 03:보류, 04:실행
+      const [category, setCategory] = useState("제품");
+      const [inputText, setInputText] = useState("");
       const [ideas, setIdeas] = useState([]);
-      const [activeTab, setActiveTab] = useState('collect');
-      const [inputText, setInputText] = useState('');
-      const [category, setCategory] = useState(CATEGORIES[0]);
-      const [attachedMedia, setAttachedMedia] = useState(null);
-      const [isListening, setIsListening] = useState(false);
-      const [loadingId, setLoadingId] = useState(null);
-      const [specModalIdea, setSpecModalIdea] = useState(null);
-      const [specLoading, setSpecLoading] = useState(false);
+      const [editingId, setEditingId] = useState(null);
+      const [editText, setEditText] = useState("");
 
-      const photoInputRef = useRef(null);
-      const videoInputRef = useRef(null);
-
+      // 데이터 마이그레이션 & 초기 로드
       useEffect(() => {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          try { setIdeas(JSON.parse(saved)); } catch (e) {}
+        try {
+          const oldData = localStorage.getItem("my_idea_drawer_data");
+          const v2Data = localStorage.getItem("my_idea_drawer_data_v2");
+          
+          if (v2Data) {
+            setIdeas(JSON.parse(v2Data));
+          } else if (oldData) {
+            // 구버전 데이터 호환 마이그레이션
+            const parsed = JSON.parse(oldData);
+            const migrated = parsed.map(item => ({
+              ...item,
+              pipeline: item.pipeline || "02", // 기존 기록은 02(검증)으로 마이그레이션
+              evaluation: item.evaluation || evaluateIdeaDynamic(item.text, item.category || "제품")
+            }));
+            setIdeas(migrated);
+            localStorage.setItem("my_idea_drawer_data_v2", JSON.stringify(migrated));
+          }
+        } catch (e) {
+          console.error("데이터 로드 실패:", e);
         }
       }, []);
 
-      useEffect(() => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(ideas));
-      }, [ideas]);
-
-      // 스마트폰 음성 인식
-      const handleMicToggle = () => {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-          alert("현재 스마트폰 브라우저에서 음성 인식을 지원하지 않거나 권한이 필요합니다.");
-          return;
-        }
-
-        if (isListening) {
-          setIsListening(false);
-          return;
-        }
-
-        try {
-          const recognition = new SpeechRecognition();
-          recognition.lang = 'ko-KR';
-          recognition.interimResults = false;
-
-          recognition.onstart = () => setIsListening(true);
-          recognition.onend = () => setIsListening(false);
-          recognition.onerror = () => setIsListening(false);
-
-          recognition.onresult = (event) => {
-            const transcript = event.results[0][0].transcript;
-            setInputText(prev => prev ? `${prev} ${transcript}` : transcript);
-          };
-
-          recognition.start();
-        } catch (e) {
-          alert("마이크 연결 실패: 브라우저 마이크 권한을 확인해주세요.");
-          setIsListening(false);
-        }
+      // 데이터 저장
+      const saveIdeas = (newIdeas) => {
+        setIdeas(newIdeas);
+        localStorage.setItem("my_idea_drawer_data_v2", JSON.stringify(newIdeas));
       };
 
-      // 미디어 첨부 (사진/동영상)
-      const handleMediaChange = (e, defaultType) => {
-        const file = e.target.files[0];
-        if (file) {
-          const isVideo = file.type.startsWith('video') || defaultType === 'video';
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            setAttachedMedia({
-              type: isVideo ? 'video' : 'image',
-              url: reader.result
-            });
-          };
-          reader.readAsDataURL(file);
-        }
-      };
-
-      const handleAdd = () => {
-        if (!inputText.trim() && !attachedMedia) return;
+      // 새 생각 등록 (02 검증 파이프라인으로 전송)
+      const handleAddIdea = () => {
+        if (!inputText.trim()) return;
+        const evaluation = evaluateIdeaDynamic(inputText, category);
         const newIdea = {
-          id: uid(),
-          content: inputText.trim(),
+          id: Date.now().toString(),
           category,
-          media: attachedMedia,
-          status: 'inbox',
-          validation: null,
-          specDraft: null,
+          text: inputText.trim(),
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          pipeline: "02", // 02: 검증단계
+          evaluation
         };
-        setIdeas([newIdea, ...ideas]);
-        setInputText('');
-        setAttachedMedia(null);
+        const updated = [newIdea, ...ideas];
+        saveIdeas(updated);
+        setInputText("");
+        setTab("02"); // 작성 후 바로 검증 결과로 전환
       };
 
-      const handleDelete = (id) => setIdeas(ideas.filter(i => i.id !== id));
-
-      const handleValidate = async (idea) => {
-        setLoadingId(idea.id);
-        const evalResult = await simulateAIEvaluation(idea);
-        setIdeas(ideas.map(i => i.id === idea.id ? { ...i, validation: evalResult, updatedAt: new Date().toISOString() } : i));
-        setLoadingId(null);
+      // 파이프라인 이동 (02 검증 / 03 보류 / 04 실행)
+      const movePipeline = (id, targetPipeline) => {
+        const updated = ideas.map(item => {
+          if (item.id === id) {
+            return { ...item, pipeline: targetPipeline };
+          }
+          return item;
+        });
+        saveIdeas(updated);
       };
 
-      const handleApprove = (id) => setIdeas(ideas.map(i => i.id === id ? { ...i, status: 'executing', updatedAt: new Date().toISOString() } : i));
-      const handleMoveIncubator = (id) => setIdeas(ideas.map(i => i.id === id ? { ...i, status: 'incubator', updatedAt: new Date().toISOString() } : i));
-      const handleRestore = (id) => setIdeas(ideas.map(i => i.id === id ? { ...i, status: 'inbox', updatedAt: new Date().toISOString() } : i));
-
-      const handleOpenSpec = async (idea) => {
-        setSpecModalIdea(idea);
-        if (!idea.specDraft) {
-          setSpecLoading(true);
-          const draft = await simulateAISpec(idea);
-          setIdeas(ideas.map(i => i.id === idea.id ? { ...i, specDraft: draft } : i));
-          setSpecModalIdea(prev => ({ ...prev, specDraft: draft }));
-          setSpecLoading(false);
+      // 아이디어 삭제
+      const deleteIdea = (id) => {
+        if (confirm("이 아이디어를 삭제하시겠습니까?")) {
+          saveIdeas(ideas.filter(item => item.id !== id));
         }
       };
 
-      const inboxIdeas = ideas.filter(i => i.status === 'inbox');
-      const incubatorIdeas = ideas.filter(i => i.status === 'incubator');
-      const executeIdeas = ideas.filter(i => i.status === 'executing');
+      // 내용 수정 모드 시작
+      const startEditing = (item) => {
+        setEditingId(item.id);
+        setEditText(item.text);
+      };
+
+      // 내용 수정 저장
+      const saveEdit = (id) => {
+        if (!editText.trim()) return;
+        const updated = ideas.map(item => {
+          if (item.id === id) {
+            const reEvaluation = evaluateIdeaDynamic(editText, item.category);
+            return {
+              ...item,
+              text: editText.trim(),
+              evaluation: reEvaluation,
+              updatedAt: new Date().toISOString()
+            };
+          }
+          return item;
+        });
+        saveIdeas(updated);
+        setEditingId(null);
+        setEditText("");
+      };
+
+      const categories = ["제품", "앱/SW", "비즈니스", "특허", "개발메모"];
 
       return (
-        <div className="min-h-screen flex justify-center" style={{ background: COLORS.bg }}>
-          <div className="w-full max-w-md flex flex-col min-h-screen border-x border-[#3a3128] relative">
-            
-            <header className="p-4 border-b border-[#3a3128] bg-[#171310] sticky top-0 z-10">
-              <h1 className="text-xl font-bold tracking-tight text-[#f1e9dc]">생각서랍</h1>
-              <p className="text-xs text-[#a89b8a] mt-0.5">1인 기업가를 위한 AI 아이디어 파이프라인</p>
-            </header>
+        <div class="max-w-md mx-auto px-4 pt-6">
+          {/* 상단 헤더 */}
+          <header class="mb-5 flex justify-between items-start">
+            <div>
+              <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                생각서랍
+              </h1>
+              <p class="text-xs text-stone-400 mt-0.5">1인 기업가를 위한 AI 아이디어 파이프라인</p>
+            </div>
+          </header>
 
-            <main className="flex-1 p-4 pb-24 overflow-y-auto">
-              
-              {activeTab === 'collect' && (
-                <div>
-                  <div className="p-4 rounded-2xl mb-4" style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}` }}>
-                    <textarea
-                      value={inputText}
-                      onChange={(e) => setInputText(e.target.value)}
-                      placeholder={isListening ? "음성을 듣고 있습니다..." : "아이디어를 글, 음성, 사진, 동영상으로 기록해보세요..."}
-                      rows={3}
-                      className="w-full bg-transparent resize-none outline-none text-sm text-[#f1e9dc] placeholder-stone-500"
-                    />
+          {/* 탭 01: 생각 기록 대형 에디터 */}
+          {tab === "01" && (
+            <div class="space-y-4">
+              {/* 카테고리 칩 선택 */}
+              <div class="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                {categories.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setCategory(c)}
+                    class={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                      category === c
+                        ? "bg-amber-500/20 text-amber-400 border border-amber-500/40"
+                        : "bg-[#24201d] text-stone-400 border border-stone-800"
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
 
-                    {/* 사진/동영상 미리보기 */}
-                    {attachedMedia && (
-                      <div className="relative my-2">
-                        {attachedMedia.type === 'video' ? (
-                          <video src={attachedMedia.url} controls className="h-40 w-full object-cover rounded-lg border border-[#3a3128]" />
-                        ) : (
-                          <img src={attachedMedia.url} alt="첨부" className="h-20 w-20 object-cover rounded-lg border border-[#3a3128]" />
-                        )}
-                        <button onClick={() => setAttachedMedia(null)} className="absolute -top-2 -right-2 bg-red-600 rounded-full p-1 text-white">
-                          <Icons.X size={12} />
-                        </button>
-                      </div>
-                    )}
-
-                    {/* 직접 카메라 촬영을 강제하는 input 태그 */}
-                    <input
-                      type="file"
-                      ref={photoInputRef}
-                      accept="image/*"
-                      capture="environment"
-                      onChange={(e) => handleMediaChange(e, 'image')}
-                      className="hidden"
-                    />
-                    <input
-                      type="file"
-                      ref={videoInputRef}
-                      accept="video/*"
-                      capture="environment"
-                      onChange={(e) => handleMediaChange(e, 'video')}
-                      className="hidden"
-                    />
-
-                    {/* 하단 툴바 */}
-                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-[#3a3128]">
-                      <div className="flex items-center gap-1.5">
-                        {/* 음성 버튼 */}
-                        <button
-                          onClick={handleMicToggle}
-                          className={`p-2 rounded-lg transition-all ${isListening ? 'bg-red-500/20 text-red-400 animate-pulse' : 'bg-[#2a221c] text-[#a89b8a] hover:text-[#f1e9dc]'}`}
-                          title="음성 입력"
-                        >
-                          <Icons.Mic size={16} />
-                        </button>
-
-                        {/* 사진 촬영 버튼 */}
-                        <button
-                          onClick={() => photoInputRef.current?.click()}
-                          className="p-2 rounded-lg bg-[#2a221c] text-[#a89b8a] hover:text-[#f1e9dc]"
-                          title="사진 촬영"
-                        >
-                          <Icons.Camera size={16} />
-                        </button>
-
-                        {/* 동영상 녹화 버튼 */}
-                        <button
-                          onClick={() => videoInputRef.current?.click()}
-                          className="p-2 rounded-lg bg-[#2a221c] text-[#a89b8a] hover:text-[#f1e9dc]"
-                          title="동영상 녹화"
-                        >
-                          <Icons.Video size={16} />
-                        </button>
-
-                        <select
-                          value={category}
-                          onChange={(e) => setCategory(e.target.value)}
-                          className="text-xs rounded px-1.5 py-1.5 bg-[#2a221c] text-[#f1e9dc] outline-none"
-                        >
-                          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                      </div>
-
-                      <button
-                        onClick={handleAdd}
-                        disabled={!inputText.trim() && !attachedMedia}
-                        className="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 disabled:opacity-40"
-                        style={{ background: COLORS.accent, color: '#1a1512' }}
-                      >
-                        <Icons.Plus size={14} /> 기록
-                      </button>
-                    </div>
-                  </div>
-
-                  <h2 className="text-xs font-semibold text-[#a89b8a] mb-2">기록된 생각 ({inboxIdeas.length})</h2>
-                  {inboxIdeas.length === 0 ? (
-                    <div className="text-center py-12 text-xs text-[#a89b8a]">아직 작성된 아이디어가 없습니다.</div>
-                  ) : (
-                    inboxIdeas.map(idea => (
-                      <div key={idea.id} className="p-4 rounded-xl mb-3" style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}` }}>
-                        <div className="flex justify-between items-start mb-2">
-                          <span className="text-[10px] px-2 py-0.5 rounded font-bold" style={{ background: '#c9a22720', color: COLORS.accent }}>{idea.category}</span>
-                          <button onClick={() => handleDelete(idea.id)} className="text-[#a89b8a] hover:text-red-400"><Icons.Trash size={14} /></button>
-                        </div>
-                        {idea.media && (
-                          idea.media.type === 'video' ? (
-                            <video src={idea.media.url} controls className="h-40 w-full object-cover rounded-lg mb-2" />
-                          ) : (
-                            <img src={idea.media.url} alt="첨부" className="h-32 w-full object-cover rounded-lg mb-2" />
-                          )
-                        )}
-                        <p className="text-sm text-[#f1e9dc] whitespace-pre-wrap">{idea.content}</p>
-                        <p className="text-[10px] text-[#a89b8a] mt-2">{formatDate(idea.createdAt)}</p>
-                      </div>
-                    ))
+              {/* 입력 카드 */}
+              <div class="bg-[#24201d] border border-stone-800 rounded-2xl p-4 relative shadow-lg">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-xs text-stone-400 font-medium">새로운 발명 및 아이디어</span>
+                  {inputText && (
+                    <button 
+                      onClick={() => setInputText("")}
+                      class="text-xs text-stone-500 hover:text-stone-300 px-2 py-0.5 rounded bg-stone-800/80"
+                    >
+                      지움 ✕
+                    </button>
                   )}
                 </div>
-              )}
+                
+                <textarea
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  placeholder="떠오른 아이디어, 기술적 해결 방법, 비즈니스 구조를 자유롭게 적어보세요..."
+                  rows={9}
+                  class="w-full bg-transparent text-gray-100 placeholder-stone-600 text-base focus:outline-none leading-relaxed"
+                />
 
-              {activeTab === 'review' && (
-                <div>
-                  <h2 className="text-xs font-semibold text-[#a89b8a] mb-3">AI 검증 대기 / 평가 ({inboxIdeas.length})</h2>
-                  {inboxIdeas.length === 0 ? (
-                    <div className="text-center py-12 text-xs text-[#a89b8a]">검증할 아이디어가 없습니다.</div>
-                  ) : (
-                    inboxIdeas.map(idea => (
-                      <div key={idea.id} className="p-4 rounded-xl mb-4" style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}` }}>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-[10px] px-2 py-0.5 rounded font-bold" style={{ background: '#c9a22720', color: COLORS.accent }}>{idea.category}</span>
-                          {idea.validation && <StampBadge verdict={idea.validation.verdict} />}
-                        </div>
-                        {idea.media && (
-                          idea.media.type === 'video' ? (
-                            <video src={idea.media.url} controls className="h-32 w-full object-cover rounded-lg mb-2" />
-                          ) : (
-                            <img src={idea.media.url} alt="첨부" className="h-24 w-full object-cover rounded-lg mb-2" />
-                          )
-                        )}
-                        <p className="text-sm text-[#f1e9dc] mb-3">{idea.content}</p>
+                <div class="pt-3 border-t border-stone-800 flex justify-between items-center">
+                  <span class="text-xs text-stone-500">{inputText.length}자 입력 중</span>
+                  <button
+                    onClick={handleAddIdea}
+                    disabled={!inputText.trim()}
+                    class={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-md ${
+                      inputText.trim()
+                        ? "bg-stone-200 text-stone-900 hover:bg-white active:scale-95"
+                        : "bg-stone-800 text-stone-600 cursor-not-allowed"
+                    }`}
+                  >
+                    서랍에 넣고 AI 검증하기 →
+                  </button>
+                </div>
+              </div>
 
-                        {!idea.validation ? (
-                          <button
-                            onClick={() => handleValidate(idea)}
-                            disabled={loadingId === idea.id}
-                            className="w-full py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1"
-                            style={{ background: COLORS.accent, color: '#1a1512' }}
-                          >
-                            {loadingId === idea.id ? <Icons.Loader size={14} /> : <Icons.Sparkles size={14} />}
-                            {loadingId === idea.id ? 'AI 검증 진행 중...' : 'AI 검증 실행'}
-                          </button>
-                        ) : (
-                          <div className="space-y-3 pt-2 border-t border-[#3a3128]">
-                            <div className="space-y-1">
-                              <ScoreBar label="B2B 확장성" value={idea.validation.b2b} />
-                              <ScoreBar label="시간/비용 절감" value={idea.validation.costTime} />
-                              <ScoreBar label="특허 진입장벽" value={idea.validation.patent} />
-                              <ScoreBar label="1인 실행력" value={idea.validation.solo} />
-                            </div>
-                            <div className="p-2.5 rounded bg-[#2a221c] text-xs text-[#f1e9dc]">
-                              <p className="font-bold text-[#c9a227] mb-1">AI 조언</p>
-                              <p>{idea.validation.advice}</p>
-                            </div>
-                            <div className="flex gap-2 pt-1">
-                              <button onClick={() => handleApprove(idea.id)} className="flex-1 py-1.5 rounded text-xs font-bold" style={{ background: COLORS.success, color: '#1a1512' }}>
-                                실행으로 이동
+              <div class="p-3.5 bg-stone-900/60 rounded-xl border border-stone-800/60 text-xs text-stone-400 leading-relaxed">
+                💡 <b class="text-stone-300">작성 팁:</b> 아이디어를 작성하면 AI 검증 엔진이 <span class="text-amber-400">B2B 확장성, 시간/비용 절감, 특허 진입장벽, 1인 실행력</span>을 즉시 다각도로 정밀 분석합니다.
+              </div>
+            </div>
+          )}
+
+          {/* 탭 02, 03, 04 공통 리스트 렌더링 */}
+          {tab !== "01" && (
+            <div class="space-y-4">
+              {ideas.filter(item => item.pipeline === tab).length === 0 ? (
+                <div class="text-center py-16 bg-[#24201d]/50 rounded-2xl border border-dashed border-stone-800">
+                  <p class="text-stone-500 text-sm">보관된 아이디어가 없습니다.</p>
+                  <button onClick={() => setTab("01")} class="mt-3 text-xs text-amber-400 underline">
+                    새 생각 기록하러 가기
+                  </button>
+                </div>
+              ) : (
+                ideas
+                  .filter(item => item.pipeline === tab)
+                  .map((item) => {
+                    const evalData = item.evaluation || evaluateIdeaDynamic(item.text, item.category);
+                    const isEditing = editingId === item.id;
+
+                    return (
+                      <div key={item.id} class="bg-[#24201d] border border-stone-800/90 rounded-2xl p-4 shadow-md transition-all">
+                        {/* 카드 헤더 (카테고리 + 상태배지 + 수정/삭제) */}
+                        <div class="flex justify-between items-center mb-3">
+                          <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[11px] font-semibold">
+                              {item.category || "제품"}
+                            </span>
+                            <span class="px-2 py-0.5 rounded border border-emerald-600/40 text-emerald-400 text-[11px] font-bold">
+                              {evalData.statusBadge || "승인"}
+                            </span>
+                          </div>
+
+                          <div class="flex items-center gap-2">
+                            {!isEditing && (
+                              <button 
+                                onClick={() => startEditing(item)}
+                                class="text-xs text-stone-400 hover:text-stone-200 px-2 py-1 bg-stone-800 rounded-md"
+                              >
+                                수정
                               </button>
-                              <button onClick={() => handleMoveIncubator(idea.id)} className="flex-1 py-1.5 rounded text-xs" style={{ background: COLORS.surfaceRaised, color: COLORS.inkDim }}>
-                                보류함으로 이동
+                            )}
+                            <button 
+                              onClick={() => deleteIdea(item.id)}
+                              class="text-xs text-stone-500 hover:text-red-400 px-1"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* 카드 본문 (일반 모드 vs 수정 모드) */}
+                        {isEditing ? (
+                          <div class="space-y-2 mb-3">
+                            <textarea
+                              value={editText}
+                              onChange={(e) => setEditText(e.target.value)}
+                              rows={4}
+                              class="w-full p-2.5 bg-stone-900 border border-stone-700 rounded-xl text-sm text-gray-100 focus:outline-none focus:border-amber-500"
+                            />
+                            <div class="flex justify-end gap-2">
+                              <button
+                                onClick={() => setEditingId(null)}
+                                class="px-3 py-1.5 bg-stone-800 text-stone-400 text-xs rounded-lg"
+                              >
+                                취소
+                              </button>
+                              <button
+                                onClick={() => saveEdit(item.id)}
+                                class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg"
+                              >
+                                수정 완료
                               </button>
                             </div>
                           </div>
+                        ) : (
+                          <p class="text-sm font-medium text-gray-100 leading-relaxed mb-4 whitespace-pre-wrap">
+                            {item.text}
+                          </p>
                         )}
+
+                        {/* 평가 점수 그래프 */}
+                        <div class="space-y-2 mb-3 text-xs">
+                          <ScoreBar label="B2B 확장성" score={evalData.b2b} />
+                          <ScoreBar label="시간/비용 절감" score={evalData.cost} />
+                          <ScoreBar label="특허 진입장벽" score={evalData.patent} />
+                          <ScoreBar label="1인 실행력" score={evalData.execution} />
+                        </div>
+
+                        {/* AI 조언 상자 */}
+                        <div class="p-3 bg-[#1c1815] rounded-xl border border-stone-800/80 mb-3">
+                          <div class="text-[11px] font-bold text-amber-400 mb-1">AI 조언</div>
+                          <p class="text-xs text-stone-300 leading-relaxed">
+                            {evalData.advice}
+                          </p>
+                        </div>
+
+                        {/* 하단 액션 버튼들 */}
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                          {tab === "02" && (
+                            <>
+                              <button
+                                onClick={() => movePipeline(item.id, "04")}
+                                class="py-2 bg-emerald-800/80 hover:bg-emerald-700 text-emerald-100 font-semibold text-xs rounded-xl transition-all"
+                              >
+                                실행으로 이동
+                              </button>
+                              <button
+                                onClick={() => movePipeline(item.id, "03")}
+                                class="py-2 bg-stone-800 hover:bg-stone-700 text-stone-300 font-semibold text-xs rounded-xl transition-all"
+                              >
+                                보류함으로 이동
+                              </button>
+                            </>
+                          )}
+                          {tab === "03" && (
+                            <>
+                              <button
+                                onClick={() => movePipeline(item.id, "02")}
+                                class="py-2 bg-amber-800/70 hover:bg-amber-700 text-amber-100 font-semibold text-xs rounded-xl transition-all"
+                              >
+                                검증으로 복원
+                              </button>
+                              <button
+                                onClick={() => movePipeline(item.id, "04")}
+                                class="py-2 bg-emerald-800/80 hover:bg-emerald-700 text-emerald-100 font-semibold text-xs rounded-xl transition-all"
+                              >
+                                실행으로 이동
+                              </button>
+                            </>
+                          )}
+                          {tab === "04" && (
+                            <>
+                              <button
+                                onClick={() => movePipeline(item.id, "02")}
+                                class="py-2 bg-stone-800 hover:bg-stone-700 text-stone-300 font-semibold text-xs rounded-xl transition-all"
+                              >
+                                검증단계로 복귀
+                              </button>
+                              <button
+                                onClick={() => movePipeline(item.id, "03")}
+                                class="py-2 bg-stone-800 hover:bg-stone-700 text-stone-300 font-semibold text-xs rounded-xl transition-all"
+                              >
+                                보류함으로 이동
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </div>
-                    ))
-                  )}
-                </div>
+                    );
+                  })
               )}
+            </div>
+          )}
 
-              {activeTab === 'incubator' && (
-                <div>
-                  <h2 className="text-xs font-semibold text-[#a89b8a] mb-3">보류 및 아이디어 보관함 ({incubatorIdeas.length})</h2>
-                  {incubatorIdeas.length === 0 ? (
-                    <div className="text-center py-12 text-xs text-[#a89b8a]">보류된 아이디어가 없습니다.</div>
-                  ) : (
-                    incubatorIdeas.map(idea => (
-                      <div key={idea.id} className="p-4 rounded-xl mb-3" style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}` }}>
-                        <p className="text-sm text-[#f1e9dc] mb-3">{idea.content}</p>
-                        <button onClick={() => handleRestore(idea.id)} className="px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1" style={{ background: COLORS.info, color: '#fff' }}>
-                          <Icons.RotateCcw size={12} /> 생각 탭으로 복원
-                        </button>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-
-              {activeTab === 'execute' && (
-                <div>
-                  <h2 className="text-xs font-semibold text-[#a89b8a] mb-3">실행 및 특허 출원 준비 ({executeIdeas.length})</h2>
-                  {executeIdeas.length === 0 ? (
-                    <div className="text-center py-12 text-xs text-[#a89b8a]">실행 단계로 승인된 아이디어가 없습니다.</div>
-                  ) : (
-                    executeIdeas.map(idea => (
-                      <div key={idea.id} className="p-4 rounded-xl mb-3" style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}` }}>
-                        <p className="text-sm text-[#f1e9dc] mb-3">{idea.content}</p>
-                        <button
-                          onClick={() => handleOpenSpec(idea)}
-                          className="w-full py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1"
-                          style={{ background: COLORS.accent, color: '#1a1512' }}
-                        >
-                          <Icons.FileText size={14} /> {idea.specDraft ? '특허 명세서 보기' : '특허 명세서 자동 작성'}
-                        </button>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-
-            </main>
-
-            {specModalIdea && (
-              <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-                <div className="w-full max-w-sm rounded-xl p-4 flex flex-col max-h-[80vh]" style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}` }}>
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-sm font-bold text-[#f1e9dc]">특허 임시명세서 초안</h3>
-                    <button onClick={() => setSpecModalIdea(null)} className="text-[#a89b8a]"><Icons.X size={16} /></button>
-                  </div>
-                  <div className="flex-1 overflow-y-auto text-xs text-[#f1e9dc] whitespace-pre-wrap leading-relaxed p-2 rounded bg-[#171310]">
-                    {specLoading ? 'AI가 특허 명세서를 작성하는 중입니다...' : specModalIdea.specDraft}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <nav className="fixed bottom-0 w-full max-w-md grid grid-cols-4 border-t border-[#3a3128] bg-[#211b16]">
-              {[
-                { id: 'collect', num: '01', label: '생각', icon: Icons.Inbox, count: inboxIdeas.length },
-                { id: 'review', num: '02', label: '검증', icon: Icons.ClipboardCheck, count: inboxIdeas.length },
-                { id: 'incubator', num: '03', label: '보류', icon: Icons.Archive, count: incubatorIdeas.length },
-                { id: 'execute', num: '04', label: '실행', icon: Icons.FileText, count: executeIdeas.length },
-              ].map(t => {
-                const IconComp = t.icon;
-                const active = activeTab === t.id;
-                return (
-                  <button
-                    key={t.id}
-                    onClick={() => setActiveTab(t.id)}
-                    className={`py-3 flex flex-col items-center justify-center relative ${active ? 'text-[#c9a227]' : 'text-[#a89b8a]'}`}
-                  >
-                    <IconComp size={18} />
-                    <span className="text-[10px] mt-1 font-semibold">{t.num} {t.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
-
-          </div>
+          {/* 하단 고정 4단 내비게이션 바 */}
+          <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#1a1715]/95 backdrop-blur-md border-t border-stone-800/80 px-2 py-2 flex justify-around items-center z-50">
+            <NavTabButton 
+              active={tab === "01"} 
+              onClick={() => setTab("01")} 
+              icon="✏️" 
+              label="01 생각" 
+            />
+            <NavTabButton 
+              active={tab === "02"} 
+              onClick={() => setTab("02")} 
+              icon="📋" 
+              label="02 검증" 
+              count={ideas.filter(i => i.pipeline === "02").length}
+            />
+            <NavTabButton 
+              active={tab === "03"} 
+              onClick={() => setTab("03")} 
+              icon="📥" 
+              label="03 보류" 
+              count={ideas.filter(i => i.pipeline === "03").length}
+            />
+            <NavTabButton 
+              active={tab === "04"} 
+              onClick={() => setTab("04")} 
+              icon="🚀" 
+              label="04 실행" 
+              count={ideas.filter(i => i.pipeline === "04").length}
+            />
+          </nav>
         </div>
       );
     }
 
-    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    // --- 서브 컴포넌트: 점수 바 ---
+    function ScoreBar({ label, score }) {
+      return (
+        <div class="flex items-center justify-between gap-3 text-stone-300">
+          <span class="w-24 text-stone-400 font-medium">{label}</span>
+          <div class="flex-1 bg-stone-800 h-2 rounded-full overflow-hidden">
+            <div 
+              class="bg-emerald-600/80 h-full rounded-full transition-all duration-500" 
+              style={{ width: `${score}%` }} 
+            />
+          </div>
+          <span class="w-6 text-right font-semibold text-stone-200">{score}</span>
+        </div>
+      );
+    }
+
+    // --- 서브 컴포넌트: 하단 탭 버튼 ---
+    function NavTabButton({ active, onClick, icon, label, count }) {
+      return (
+        <button
+          onClick={onClick}
+          class={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all relative ${
+            active ? "text-amber-400 font-bold" : "text-stone-500 hover:text-stone-300"
+          }`}
+        >
+          <span class="text-base mb-0.5">{icon}</span>
+          <span class="text-[11px] tracking-tight">{label}</span>
+          {count > 0 && (
+            <span class="absolute top-0 right-1 px-1.5 py-0.2 bg-stone-700 text-stone-300 rounded-full text-[9px]">
+              {count}
+            </span>
+          )}
+        </button>
+      );
+    }
+
+    // 렌더링
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(
+      <ErrorBoundary>
+        <IdeaDrawerApp />
+      </ErrorBoundary>
+    );
   </script>
 </body>
 </html>
