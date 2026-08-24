@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: 4. 앱 설정 파일 생성 및 안드로이드 프로젝트 구성
+      - name: 4. 프로젝트 설정 및 플로팅 네이티브 서비스 주입
         run: |
           mkdir -p www
           cp index.html www/index.html
@@ -53,18 +53,180 @@ jobs:
           npm install
           npx cap add android
 
-      - name: 5. 화면 상시 표시 및 마이크 권한 주입
-        run: |
-          sed -i 's/<application/    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" \/>\n    <uses-permission android:name="android.permission.RECORD_AUDIO" \/>\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" \/>\n    <application/g' android/app/src/main/AndroidManifest.xml
+          # 권한 추가
+          sed -i 's/<application/    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" \/>\n    <uses-permission android:name="android.permission.RECORD_AUDIO" \/>\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" \/>\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" \/>\n    <application/g' android/app/src/main/AndroidManifest.xml
+
+          # 플로팅 서비스 등록
+          sed -i '/<\/application>/i \    <service android:name=".FloatingWidgetService" android:exported="false" android:foregroundServiceType="specialUse" />' android/app/src/main/AndroidManifest.xml
+
+          # 플로팅 위젯 서비스 Java 소스 생성
+          cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/FloatingWidgetService.java
+          package com.k2hkkh.ideadrawer;
+
+          import android.app.Notification;
+          import android.app.NotificationChannel;
+          import android.app.NotificationManager;
+          import android.app.Service;
+          import android.content.Intent;
+          import android.graphics.Color;
+          import android.graphics.PixelFormat;
+          import android.graphics.drawable.GradientDrawable;
+          import android.os.Build;
+          import android.os.IBinder;
+          import android.view.Gravity;
+          import android.view.MotionEvent;
+          import android.view.View;
+          import android.view.WindowManager;
+          import android.widget.TextView;
+          import androidx.core.app.NotificationCompat;
+
+          public class FloatingWidgetService extends Service {
+              private WindowManager windowManager;
+              private View floatingView;
+
+              @Override
+              public IBinder onBind(Intent intent) { return null; }
+
+              @Override
+              public void onCreate() {
+                  super.onCreate();
+                  createNotificationChannel();
+                  Notification notification = new NotificationCompat.Builder(this, "floating_service_channel")
+                          .setContentTitle("생각서랍 실행 중")
+                          .setContentText("플로팅 버튼이 활성화되어 있습니다.")
+                          .setSmallIcon(android.R.drawable.ic_btn_speak_now)
+                          .build();
+                  startForeground(1, notification);
+
+                  windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+                  
+                  TextView btn = new TextView(this);
+                  btn.setText("💡");
+                  btn.setTextSize(26);
+                  btn.setGravity(Gravity.CENTER);
+
+                  GradientDrawable bg = new GradientDrawable();
+                  bg.setShape(GradientDrawable.OVAL);
+                  bg.setColor(Color.parseColor("#4f46e5"));
+                  btn.setBackground(bg);
+
+                  final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                          160, 160,
+                          Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE,
+                          WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                          PixelFormat.TRANSLUCENT
+                  );
+
+                  params.gravity = Gravity.TOP | Gravity.START;
+                  params.x = 50;
+                  params.y = 300;
+
+                  btn.setOnTouchListener(new View.OnTouchListener() {
+                      private int initialX, initialY;
+                      private float initialTouchX, initialTouchY;
+
+                      @Override
+                      public boolean onTouch(View v, MotionEvent event) {
+                          switch (event.getAction()) {
+                              case MotionEvent.ACTION_DOWN:
+                                  initialX = params.x;
+                                  initialY = params.y;
+                                  initialTouchX = event.getRawX();
+                                  initialTouchY = event.getRawY();
+                                  return true;
+                              case MotionEvent.ACTION_MOVE:
+                                  params.x = initialX + (int) (event.getRawX() - initialTouchX);
+                                  params.y = initialY + (int) (event.getRawY() - initialTouchY);
+                                  windowManager.updateViewLayout(floatingView, params);
+                                  return true;
+                              case MotionEvent.ACTION_UP:
+                                  if (Math.abs(event.getRawX() - initialTouchX) < 10 && Math.abs(event.getRawY() - initialTouchY) < 10) {
+                                      Intent appIntent = new Intent(FloatingWidgetService.this, MainActivity.class);
+                                      appIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                      startActivity(appIntent);
+                                  }
+                                  return true;
+                          }
+                          return false;
+                      }
+                  });
+
+                  floatingView = btn;
+                  windowManager.addView(floatingView, params);
+              }
+
+              private void createNotificationChannel() {
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                      NotificationChannel channel = new NotificationChannel("floating_service_channel", "Floating Widget", NotificationManager.IMPORTANCE_LOW);
+                      NotificationManager manager = getSystemService(NotificationManager.class);
+                      if (manager != null) manager.createNotificationChannel(channel);
+                  }
+              }
+
+              @Override
+              public void onDestroy() {
+                  super.onDestroy();
+                  if (floatingView != null) windowManager.removeView(floatingView);
+              }
+          }
+          EOF
+
+          # MainActivity에서 서비스 자동 시작
+          cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/MainActivity.java
+          package com.k2hkkh.ideadrawer;
+
+          import android.content.Intent;
+          import android.net.Uri;
+          import android.os.Build;
+          import android.os.Bundle;
+          import android.provider.Settings;
+          import com.getcapacitor.BridgeActivity;
+
+          public class MainActivity extends BridgeActivity {
+              @Override
+              public void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                      if (!Settings.canDrawOverlays(this)) {
+                          Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+                          startActivity(intent);
+                      } else {
+                          startFloatingService();
+                      }
+                  } else {
+                      startFloatingService();
+                  }
+              }
+
+              @Override
+              protected void onResume() {
+                  super.onResume();
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.canDrawOverlays(this)) {
+                      startFloatingService();
+                  }
+              }
+
+              private void startFloatingService() {
+                  Intent serviceIntent = new Intent(this, FloatingWidgetService.class);
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                      startForegroundService(serviceIntent);
+                  } else {
+                      startService(serviceIntent);
+                  }
+              }
+          }
+          EOF
+
           npx cap sync android
 
-      - name: 6. APK 파일 조립
+      - name: 5. APK 파일 빌드
         run: |
           cd android
           chmod +x ./gradlew
           ./gradlew assembleDebug --no-daemon
 
-      - name: 7. 완성된 APK 업로드
+      - name: 6. 완성된 APK 업로드
         uses: actions/upload-artifact@v4
         with:
           name: 생각서랍-설치파일-APK
