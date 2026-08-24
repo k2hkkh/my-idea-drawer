@@ -189,7 +189,7 @@ jobs:
               }
               .card-btn.delete { color: var(--danger); }
 
-              /* 첨부 미디어 미리보기 트레이 (입력창 위) */
+              /* 첨부 미디어 미리보기 트레이 */
               .attachment-tray {
                 display: none;
                 padding: 8px 14px;
@@ -524,7 +524,7 @@ jobs:
 
             <script>
               let currentFilter = '전체';
-              let currentAttachments = []; // 현재 입력창에 첨부된 미디어 배열 [{type, data, isVideo}]
+              let currentAttachments = [];
               let editingThoughtId = null;
 
               function toggleFilterBar() {
@@ -553,7 +553,6 @@ jobs:
               function triggerGallery() { closePlusMenu(); document.getElementById('gallery-file').click(); }
               function triggerVideo() { closePlusMenu(); document.getElementById('video-file').click(); }
 
-              /* 복수 미디어 파일 처리 및 트레이 등록 */
               function processMediaFiles(input, type) {
                 const files = input.files;
                 if (files && files.length > 0) {
@@ -601,7 +600,6 @@ jobs:
                 textarea.style.height = Math.min(textarea.scrollHeight, 90) + 'px';
               }
 
-              /* 생각 저장 (메모 + 복수 첨부파일) */
               function handleSendAction() {
                 const input = document.getElementById('prompt-input');
                 const text = input.value.trim();
@@ -623,7 +621,6 @@ jobs:
                 }
               }
 
-              /* 음성 인식 */
               function triggerVoice() {
                 closePlusMenu();
                 const waveBtn = document.getElementById('btn-wave');
@@ -657,7 +654,6 @@ jobs:
                 if (text && text.trim()) appendVoiceResult(text);
               };
 
-              /* 플로팅 데이터 수신 */
               setInterval(() => {
                 if (window.AndroidBridge && window.AndroidBridge.getPendingVoiceText) {
                   const text = window.AndroidBridge.getPendingVoiceText();
@@ -667,7 +663,6 @@ jobs:
                 }
               }, 400);
 
-              /* 저장소 관리 */
               function getStorage() {
                 const data = localStorage.getItem('idea_drawer_storage') || '[]';
                 try { return JSON.parse(data); } catch (e) { return []; }
@@ -737,7 +732,6 @@ jobs:
                 }
               }
 
-              /* 수정 모달 */
               function openEditModal(id) {
                 const item = getStorage().find(i => i.id === id);
                 if (item) {
@@ -767,7 +761,6 @@ jobs:
                 closeEditModal();
               }
 
-              /* 스케치 모달 */
               const canvas = document.getElementById('sketch-board');
               const ctx = canvas.getContext('2d');
               let isDrawing = false;
@@ -818,7 +811,6 @@ jobs:
               canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (!isDrawing) return; ctx.strokeStyle = currentColor; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }, { passive: false });
               canvas.addEventListener('touchend', () => { isDrawing = false; });
 
-              /* 보관함 모달 */
               function openArchiveModal() {
                 document.getElementById('archive-modal').classList.add('active');
                 const list = getStorage();
@@ -858,7 +850,7 @@ jobs:
           </html>
           EOF
 
-      - name: 5. 고정 Keystore 및 플로팅 백그라운드 엔진 주입
+      - name: 5. 플로팅 백그라운드 서비스 및 네이티브 엔진 주입
         run: |
           cat << 'EOF' > package.json
           {
@@ -959,7 +951,7 @@ jobs:
                       startForeground(1001, notification);
                   } catch (Exception ignored) {}
 
-                  windowManager = (SystemService(WINDOW_SERVICE) != null) ? (WindowManager) getSystemService(WINDOW_SERVICE) : null;
+                  windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 
                   floatingView = new TextView(this);
                   floatingView.setText("✨");
@@ -1007,7 +999,7 @@ jobs:
                               case MotionEvent.ACTION_MOVE:
                                   params.x = initialX + (int) (event.getRawX() - initialTouchX);
                                   params.y = initialY + (int) (event.getRawY() - initialTouchY);
-                                  if (windowManager != null) windowManager.updateViewLayout(floatingView, params);
+                                  windowManager.updateViewLayout(floatingView, params);
                                   return true;
                               case MotionEvent.ACTION_UP:
                                   float diffX = Math.abs(event.getRawX() - initialTouchX);
@@ -1021,7 +1013,7 @@ jobs:
                       }
                   });
 
-                  if (windowManager != null) windowManager.addView(floatingView, params);
+                  windowManager.addView(floatingView, params);
               }
 
               private void startFloatingVoice() {
