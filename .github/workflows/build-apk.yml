@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: 4. 생각서랍 커서 위치 음성 삽입 및 긴 호흡 녹음 웹 UI 구성
+      - name: 4. 생각서랍 무제한 연속 녹음 & 커서 삽입 웹 UI 구성
         run: |
           mkdir -p www
           cat << 'EOF' > www/index.html
@@ -162,7 +162,6 @@ jobs:
               }
               .card-time { font-size: 0.75rem; color: var(--muted); }
               
-              /* 멀티 미디어 그리드 */
               .card-media-grid {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
@@ -302,6 +301,8 @@ jobs:
                 cursor: pointer;
               }
               .btn-mic svg { width: 22px; height: 22px; fill: #8e8e93; }
+              .btn-mic.listening svg { fill: #ef4444; animation: micPulse 1.2s infinite; }
+              
               .btn-action-send {
                 width: 36px;
                 height: 36px;
@@ -329,6 +330,7 @@ jobs:
               .btn-action-send.listening .wave-bar:nth-child(3) { animation-delay: 0.3s; }
               @keyframes waveAnim { 0% { height: 6px; } 100% { height: 18px; } }
               @keyframes pulseWave { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+              @keyframes micPulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
               /* + 팝업 메뉴 */
               .plus-menu-popover {
@@ -450,11 +452,6 @@ jobs:
                 animation: micPulse 1.2s infinite;
               }
               .edit-mic-btn.listening svg { fill: #ffffff; }
-              @keyframes micPulse {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.1); }
-                100% { transform: scale(1); }
-              }
 
               /* 스케치 전용 팔레트 */
               .palette-bar {
@@ -541,7 +538,7 @@ jobs:
                   onmouseup="trackCursor(this)" 
                   ontouchend="trackCursor(this)" 
                   onfocus="trackCursor(this)"></textarea>
-                <button class="btn-mic" onclick="triggerVoice('main')">
+                <button id="btn-mic-main" class="btn-mic" onclick="toggleContinuousVoice('main')">
                   <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                 </button>
                 <button id="btn-wave" class="btn-action-send" onclick="handleSendAction()">
@@ -597,7 +594,7 @@ jobs:
                     onmouseup="trackCursor(this)" 
                     ontouchend="trackCursor(this)" 
                     onfocus="trackCursor(this)"></textarea>
-                  <button id="edit-mic-btn" class="edit-mic-btn" onclick="triggerVoice('edit')">
+                  <button id="edit-mic-btn" class="edit-mic-btn" onclick="toggleContinuousVoice('edit')">
                     <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                   </button>
                 </div>
@@ -620,8 +617,8 @@ jobs:
               let editingMediaList = [];
               let activeTargetContext = 'main';
               let activeVoiceTarget = 'main';
+              let isListeningContinuous = false;
 
-              /* 커서 위치 실시간 추적 저장소 */
               let cursorPositions = {
                 'prompt-input': { start: 0, end: 0 },
                 'edit-input': { start: 0, end: 0 }
@@ -636,7 +633,6 @@ jobs:
                 }
               }
 
-              /* 중복 입력 방지 상태값 */
               let lastProcessedVoice = '';
               let lastProcessedTime = 0;
 
@@ -805,6 +801,8 @@ jobs:
                 const hasAttachments = currentAttachments.length > 0;
                 
                 if (text || hasAttachments) {
+                  if (isListeningContinuous) stopContinuousVoice();
+
                   let category = '노트';
                   if (hasAttachments) {
                     const hasVideo = currentAttachments.some(a => a.type === '동영상');
@@ -825,46 +823,96 @@ jobs:
                   updateSendButtonState();
                   selectCategory('첫 생각');
                 } else {
-                  triggerVoice('main');
+                  toggleContinuousVoice('main');
                 }
               }
 
-              function triggerVoice(target) {
+              /* 무제한 연속 음성 인식 토글 엔진 */
+              function toggleContinuousVoice(target) {
                 activeVoiceTarget = target;
                 closePlusMenu();
-                
+
                 const targetId = (target === 'edit') ? 'edit-input' : 'prompt-input';
                 const el = document.getElementById(targetId);
                 if (el) trackCursor(el);
 
-                const btn = (target === 'edit') ? document.getElementById('edit-mic-btn') : document.getElementById('btn-wave');
-                if (btn) btn.classList.add('listening');
-
-                if (window.AndroidBridge && window.AndroidBridge.startSpeechRecognition) {
-                  window.AndroidBridge.startSpeechRecognition();
+                if (isListeningContinuous) {
+                  stopContinuousVoice();
                 } else {
-                  const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-                  if (!Speech) {
-                    alert('음성인식 기능을 지원하지 않는 기기입니다.');
-                    if (btn) btn.classList.remove('listening');
-                    return;
-                  }
-                  const rec = new Speech();
-                  rec.lang = 'ko-KR';
-                  rec.continuous = true;
-                  rec.onresult = (e) => appendVoiceResult(e.results[e.results.length - 1][0].transcript);
-                  rec.onend = () => { if (btn) btn.classList.remove('listening'); };
-                  rec.start();
+                  startContinuousVoice(target);
                 }
               }
 
-              /* 정확한 커서 위치 삽입 엔진 */
+              function startContinuousVoice(target) {
+                isListeningContinuous = true;
+                updateVoiceButtonUI(true);
+
+                if (window.AndroidBridge && window.AndroidBridge.startContinuousSpeech) {
+                  window.AndroidBridge.startContinuousSpeech();
+                } else {
+                  startWebSpeechContinuous();
+                }
+              }
+
+              function stopContinuousVoice() {
+                isListeningContinuous = false;
+                updateVoiceButtonUI(false);
+
+                if (window.AndroidBridge && window.AndroidBridge.stopContinuousSpeech) {
+                  window.AndroidBridge.stopContinuousSpeech();
+                }
+              }
+
+              function updateVoiceButtonUI(listening) {
+                const btnWave = document.getElementById('btn-wave');
+                const btnMicMain = document.getElementById('btn-mic-main');
+                const btnMicEdit = document.getElementById('edit-mic-btn');
+
+                if (listening) {
+                  if (btnWave) btnWave.classList.add('listening');
+                  if (btnMicMain) btnMicMain.classList.add('listening');
+                  if (btnMicEdit) btnMicEdit.classList.add('listening');
+                } else {
+                  if (btnWave) btnWave.classList.remove('listening');
+                  if (btnMicMain) btnMicMain.classList.remove('listening');
+                  if (btnMicEdit) btnMicEdit.classList.remove('listening');
+                }
+              }
+
+              let webSpeechInstance = null;
+              function startWebSpeechContinuous() {
+                const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!Speech) {
+                  alert('음성인식 기능을 지원하지 않는 기기입니다.');
+                  stopContinuousVoice();
+                  return;
+                }
+                webSpeechInstance = new Speech();
+                webSpeechInstance.lang = 'ko-KR';
+                webSpeechInstance.continuous = true;
+                webSpeechInstance.interimResults = false;
+
+                webSpeechInstance.onresult = (e) => {
+                  const lastText = e.results[e.results.length - 1][0].transcript;
+                  appendVoiceResult(lastText);
+                };
+
+                webSpeechInstance.onend = () => {
+                  if (isListeningContinuous) {
+                    try { webSpeechInstance.start(); } catch (e) {}
+                  }
+                };
+
+                webSpeechInstance.start();
+              }
+
+              /* 커서 위치 실시간 삽입 로직 */
               function appendVoiceResult(text) {
                 if (!text || !text.trim()) return;
                 const clean = text.trim();
                 const now = Date.now();
 
-                if (clean === lastProcessedVoice && (now - lastProcessedTime < 2500)) {
+                if (clean === lastProcessedVoice && (now - lastProcessedTime < 1800)) {
                   return;
                 }
                 lastProcessedVoice = clean;
@@ -900,11 +948,13 @@ jobs:
               }
 
               window.receiveVoiceResult = function(text) {
-                const btnMain = document.getElementById('btn-wave');
-                const btnEdit = document.getElementById('edit-mic-btn');
-                if (btnMain) btnMain.classList.remove('listening');
-                if (btnEdit) btnEdit.classList.remove('listening');
                 if (text && text.trim()) appendVoiceResult(text);
+              };
+
+              window.onSpeechEndedNative = function() {
+                if (!isListeningContinuous) {
+                  updateVoiceButtonUI(false);
+                }
               };
 
               function pollFloatingVoiceText() {
@@ -1065,12 +1115,14 @@ jobs:
               }
 
               function closeEditModal() {
+                if (isListeningContinuous) stopContinuousVoice();
                 document.getElementById('edit-modal').classList.remove('active');
                 editingThoughtId = null;
                 editingMediaList = [];
               }
 
               function confirmEditThought() {
+                if (isListeningContinuous) stopContinuousVoice();
                 const text = document.getElementById('edit-input').value.trim();
                 const list = getStorage();
                 const target = list.find(i => i.id === editingThoughtId);
@@ -1149,10 +1201,9 @@ jobs:
               canvas.addEventListener('mousemove', (e) => { if (!isDrawing) return; ctx.strokeStyle = currentColor; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
               canvas.addEventListener('mouseup', () => { isDrawing = false; });
               canvas.addEventListener('touchstart', (e) => { e.preventDefault(); isDrawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); }, { passive: false });
-              canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (!isDrawing) return; ctx.strokeStyle = currentColor; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }, { passive: false });
+              canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (!isDrawing) return; ctx.strokeStyle = currentColor; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
               canvas.addEventListener('touchend', () => { isDrawing = false; });
 
-              /* 보관함 모달 */
               function openArchiveModal() {
                 document.getElementById('archive-modal').classList.add('active');
                 const list = getStorage();
@@ -1189,7 +1240,7 @@ jobs:
           </html>
           EOF
 
-      - name: 5. 고정 Keystore 및 긴 호흡 음성엔진 주입
+      - name: 5. 고정 Keystore 및 연속 음성인식 네이티브 엔진 주입
         run: |
           cat << 'EOF' > package.json
           {
@@ -1215,7 +1266,7 @@ jobs:
           npm install
           npx cap add android
 
-          # 고정 Keystore 보존 확인
+          # 고정 Keystore 보존
           if [ -f "release.keystore" ]; then
             cp release.keystore android/app/release.keystore
           else
@@ -1264,7 +1315,7 @@ jobs:
 
           mkdir -p android/app/src/main/java/com/k2hkkh/ideadrawer
 
-          # 플로팅 위젯 소스코드 (무음 대기시간 5초 연장)
+          # 플로팅 위젯 소스코드
           cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/FloatingWidgetService.java
           package com.k2hkkh.ideadrawer;
 
@@ -1408,10 +1459,8 @@ jobs:
                           intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
                           intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
                           
-                          // 무음 대기 시간 5초로 연장
-                          intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 5000L);
-                          intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 5000L);
-                          intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 3000L);
+                          intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 6000L);
+                          intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 6000L);
 
                           speechRecognizer.setRecognitionListener(new RecognitionListener() {
                               @Override
@@ -1419,7 +1468,7 @@ jobs:
                                   isListening = true;
                                   floatingView.setBackground(activeBg);
                                   floatingView.setText("🎙️");
-                                  Toast.makeText(getApplicationContext(), "💡 듣고 있습니다. 천천히 말씀하세요...", Toast.LENGTH_SHORT).show();
+                                  Toast.makeText(getApplicationContext(), "💡 듣고 있습니다. 편하게 말씀하세요...", Toast.LENGTH_SHORT).show();
                               }
 
                               @Override public void onBeginningOfSpeech() {}
@@ -1439,7 +1488,6 @@ jobs:
                                   ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                                   if (matches != null && !matches.isEmpty()) {
                                       String spokenText = matches.get(0);
-                                      
                                       SharedPreferences prefs = getSharedPreferences("IdeaPrefs", MODE_PRIVATE);
                                       prefs.edit().putString("PENDING_VOICE", spokenText).apply();
 
@@ -1496,7 +1544,7 @@ jobs:
           }
           EOF
 
-          # 메인 액티비티 소스코드 (무음 대기시간 5초 연장)
+          # 메인 액티비티 소스코드 (무제한 연속 음성 루프 내장)
           cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/MainActivity.java
           package com.k2hkkh.ideadrawer;
 
@@ -1521,6 +1569,7 @@ jobs:
 
           public class MainActivity extends BridgeActivity {
               private SpeechRecognizer inAppRecognizer;
+              private boolean isContinuousMode = false;
 
               @Override
               public void onCreate(Bundle savedInstanceState) {
@@ -1531,8 +1580,24 @@ jobs:
                   if (getBridge() != null && getBridge().getWebView() != null) {
                       getBridge().getWebView().addJavascriptInterface(new Object() {
                           @JavascriptInterface
-                          public void startSpeechRecognition() {
-                              new Handler(Looper.getMainLooper()).post(() -> startInAppVoice());
+                          public void startContinuousSpeech() {
+                              new Handler(Looper.getMainLooper()).post(() -> {
+                                  isContinuousMode = true;
+                                  startListeningLoop();
+                              });
+                          }
+
+                          @JavascriptInterface
+                          public void stopContinuousSpeech() {
+                              new Handler(Looper.getMainLooper()).post(() -> {
+                                  isContinuousMode = false;
+                                  if (inAppRecognizer != null) {
+                                      inAppRecognizer.stopListening();
+                                      inAppRecognizer.destroy();
+                                      inAppRecognizer = null;
+                                  }
+                                  evalJS("if (window.onSpeechEndedNative) window.onSpeechEndedNative();");
+                              });
                           }
 
                           @JavascriptInterface
@@ -1560,62 +1625,84 @@ jobs:
                   }
               }
 
-              public void startInAppVoice() {
+              private void startListeningLoop() {
+                  if (!isContinuousMode) return;
+
                   if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
                       requestAppPermissions();
+                      isContinuousMode = false;
+                      evalJS("if (window.onSpeechEndedNative) window.onSpeechEndedNative();");
                       return;
                   }
 
                   try {
-                      if (inAppRecognizer != null) inAppRecognizer.destroy();
+                      if (inAppRecognizer != null) {
+                          inAppRecognizer.destroy();
+                          inAppRecognizer = null;
+                      }
+
                       inAppRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
                       Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
                       intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
                       intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
-                      
-                      // 무음 대기 시간 5초로 연장
-                      intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 5000L);
-                      intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 5000L);
-                      intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 3000L);
+                      intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
 
                       inAppRecognizer.setRecognitionListener(new RecognitionListener() {
-                          @Override public void onReadyForSpeech(Bundle params) {
-                              Toast.makeText(MainActivity.this, "💡 말씀하세요 (천천히 말씀하셔도 됩니다)...", Toast.LENGTH_SHORT).show();
-                          }
+                          @Override public void onReadyForSpeech(Bundle params) {}
                           @Override public void onBeginningOfSpeech() {}
                           @Override public void onRmsChanged(float rmsdB) {}
                           @Override public void onBufferReceived(byte[] buffer) {}
                           @Override public void onEndOfSpeech() {}
-                          @Override public void onError(int error) {
-                              evalJS("if (window.receiveVoiceResult) window.receiveVoiceResult('');");
+
+                          @Override
+                          public void onError(int error) {
+                              // 무음이나 일시적 타임아웃 발생 시 무조건 다시 듣기 루프 시작
+                              if (isContinuousMode) {
+                                  new Handler(Looper.getMainLooper()).postDelayed(() -> startListeningLoop(), 200);
+                              } else {
+                                  evalJS("if (window.onSpeechEndedNative) window.onSpeechEndedNative();");
+                              }
                           }
+
                           @Override
                           public void onResults(Bundle results) {
                               ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                               if (matches != null && !matches.isEmpty()) {
                                   sendTextToWebView(matches.get(0));
                               }
+                              // 말이 끝나도 사용자가 마이크를 다시 누를 때까지 계속 듣기 유지
+                              if (isContinuousMode) {
+                                  new Handler(Looper.getMainLooper()).postDelayed(() -> startListeningLoop(), 100);
+                              }
                           }
+
                           @Override public void onPartialResults(Bundle partialResults) {}
                           @Override public void onEvent(int eventType, Bundle params) {}
                       });
 
                       inAppRecognizer.startListening(intent);
                   } catch (Exception e) {
-                      Toast.makeText(this, "음성 인식기를 구동할 수 없습니다.", Toast.LENGTH_SHORT).show();
+                      isContinuousMode = false;
+                      evalJS("if (window.onSpeechEndedNative) window.onSpeechEndedNative();");
                   }
               }
 
               private void evalJS(String script) {
-                  if (getBridge() != null && getBridge().getWebView() != null) {
-                      getBridge().getWebView().post(() -> getBridge().getWebView().evaluateJavascript(script, null));
-                  }
+                if (getBridge() != null && getBridge().getWebView() != null) {
+                    getBridge().getWebView().post(() -> getBridge().getWebView().evaluateJavascript(script, null));
+                }
               }
 
               @Override
               public void onResume() {
                   super.onResume();
                   startWidgetIfAllowed();
+              }
+
+              @Override
+              public void onNewIntent(Intent intent) {
+                  super.onNewIntent(intent);
+                  setIntent(intent);
               }
 
               private void sendTextToWebView(String text) {
