@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: 4. 생각서랍 웹 UI 구성
+      - name: 4. 생각서랍 & 나의계획 2단 실행형 웹 UI 구성
         run: |
           mkdir -p www
           cat << 'EOF' > www/index.html
@@ -46,6 +46,8 @@ jobs:
                 --surface: #2c2c2e;
                 --primary: #2563eb;
                 --accent: #38bdf8;
+                --success: #10b981;
+                --warning: #f59e0b;
                 --danger: #ef4444;
                 --text: #f8fafc;
                 --muted: #8e8e93;
@@ -62,7 +64,7 @@ jobs:
                 overflow: hidden;
               }
               header {
-                padding: 12px 16px;
+                padding: 10px 14px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
@@ -74,25 +76,46 @@ jobs:
                 background: var(--card);
                 border: 1px solid var(--border);
                 color: #ffffff;
-                width: 38px;
-                height: 38px;
+                width: 36px;
+                height: 36px;
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 cursor: pointer;
-                font-size: 1.1rem;
+                font-size: 1.05rem;
               }
-              .brand-title {
-                font-size: 1.1rem;
+              
+              /* 상단 2분할 모드 전환 탭 */
+              .main-mode-switch {
+                display: flex;
+                background: #141416;
+                padding: 3px;
+                border-radius: 20px;
+                border: 1px solid var(--border);
+                gap: 4px;
+              }
+              .mode-btn {
+                padding: 6px 14px;
+                border-radius: 16px;
+                border: none;
+                background: transparent;
+                color: var(--muted);
+                font-size: 0.85rem;
                 font-weight: 700;
-                color: #ffffff;
+                cursor: pointer;
                 display: flex;
                 align-items: center;
-                gap: 6px;
+                gap: 4px;
+                transition: all 0.2s;
+              }
+              .mode-btn.active {
+                background: var(--primary);
+                color: #ffffff;
+                box-shadow: 0 2px 8px rgba(37,99,235,0.4);
               }
 
-              /* 카테고리 바 */
+              /* 카테고리 바 (생각서랍 전용) */
               .category-bar {
                 display: flex;
                 padding: 8px 14px;
@@ -112,7 +135,6 @@ jobs:
                 cursor: pointer;
                 white-space: nowrap;
                 font-weight: 600;
-                transition: all 0.15s;
               }
               .category-pill.active {
                 background: var(--primary);
@@ -120,8 +142,8 @@ jobs:
                 border-color: var(--primary);
               }
 
-              /* 메인 피드 */
-              .main-feed {
+              /* 뷰 컨테이너 */
+              .view-container {
                 flex: 1;
                 overflow-y: auto;
                 padding: 14px;
@@ -161,7 +183,6 @@ jobs:
                 font-weight: 600;
               }
               .card-time { font-size: 0.75rem; color: var(--muted); }
-              
               .card-media-grid {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
@@ -176,7 +197,6 @@ jobs:
                 border: 1px solid var(--border);
                 background: #fff;
               }
-
               .card-content { font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap; }
               .card-actions {
                 display: flex;
@@ -197,6 +217,79 @@ jobs:
                 gap: 4px;
               }
               .card-btn.delete { color: var(--danger); }
+              .card-btn.plan-send { color: var(--accent); }
+
+              /* 나의계획 2단 대시보드 UI */
+              .plan-section-title {
+                font-size: 0.95rem;
+                font-weight: 700;
+                color: #ffffff;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-top: 4px;
+                margin-bottom: 2px;
+                padding-left: 2px;
+              }
+              .plan-count-badge {
+                font-size: 0.75rem;
+                background: var(--surface);
+                color: var(--accent);
+                padding: 2px 8px;
+                border-radius: 10px;
+              }
+              .plan-card {
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: 14px;
+                padding: 12px 14px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                transition: border-color 0.2s;
+              }
+              .plan-card.completed {
+                opacity: 0.6;
+                border-color: #27272a;
+              }
+              .plan-card-top {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+              }
+              .status-tag {
+                font-size: 0.72rem;
+                font-weight: 700;
+                padding: 4px 8px;
+                border-radius: 6px;
+                cursor: pointer;
+                white-space: nowrap;
+              }
+              .status-tag.waiting { background: #3f3f46; color: #d4d4d8; }
+              .status-tag.progress { background: #1e3a8a; color: #60a5fa; }
+              .status-tag.done { background: #064e3b; color: #34d399; }
+              .plan-title {
+                flex: 1;
+                font-size: 0.95rem;
+                font-weight: 500;
+                color: #ffffff;
+              }
+              .plan-title.completed {
+                text-decoration: line-through;
+                color: var(--muted);
+              }
+              .plan-notes-box {
+                background: #121214;
+                border-radius: 8px;
+                padding: 8px 10px;
+                font-size: 0.8rem;
+                color: #a1a1aa;
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                border-left: 2px solid var(--primary);
+              }
+              .plan-note-item { line-height: 1.4; }
 
               /* 첨부 미디어 트레이 */
               .attachment-tray {
@@ -210,35 +303,11 @@ jobs:
                 flex-shrink: 0;
               }
               .attachment-tray.active { display: flex; }
-              .tray-item {
-                position: relative;
-                width: 60px;
-                height: 60px;
-                flex-shrink: 0;
-              }
-              .tray-thumb {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                border-radius: 8px;
-                border: 1px solid var(--accent);
-                background: #fff;
-              }
+              .tray-item { position: relative; width: 60px; height: 60px; flex-shrink: 0; }
+              .tray-thumb { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid var(--accent); background: #fff; }
               .tray-remove-btn {
-                position: absolute;
-                top: -4px;
-                right: -4px;
-                width: 18px;
-                height: 18px;
-                border-radius: 50%;
-                background: var(--danger);
-                color: #fff;
-                font-size: 0.7rem;
-                border: none;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
+                position: absolute; top: -4px; right: -4px; width: 18px; height: 18px; border-radius: 50%;
+                background: var(--danger); color: #fff; font-size: 0.7rem; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer;
               }
 
               /* 하단 캡슐 바 */
@@ -271,10 +340,7 @@ jobs:
                 cursor: pointer;
                 transition: transform 0.2s;
               }
-              .btn-plus.open {
-                transform: rotate(45deg);
-                background: var(--danger);
-              }
+              .btn-plus.open { transform: rotate(45deg); background: var(--danger); }
               .main-input {
                 flex: 1;
                 background: transparent;
@@ -319,13 +385,8 @@ jobs:
                 font-weight: bold;
               }
               .wave-bar { width: 3px; height: 12px; background: #ffffff; border-radius: 2px; }
-              .btn-action-send.listening {
-                background: var(--danger);
-                animation: pulseWave 1.2s infinite;
-              }
-              .btn-action-send.listening .wave-bar {
-                animation: waveAnim 0.6s infinite alternate ease-in-out;
-              }
+              .btn-action-send.listening { background: var(--danger); animation: pulseWave 1.2s infinite; }
+              .btn-action-send.listening .wave-bar { animation: waveAnim 0.6s infinite alternate ease-in-out; }
               .btn-action-send.listening .wave-bar:nth-child(2) { animation-delay: 0.15s; }
               .btn-action-send.listening .wave-bar:nth-child(3) { animation-delay: 0.3s; }
               @keyframes waveAnim { 0% { height: 6px; } 100% { height: 18px; } }
@@ -453,28 +514,12 @@ jobs:
               }
               .edit-mic-btn.listening svg { fill: #ffffff; }
 
-              /* 스케치 전용 팔레트 */
-              .palette-bar {
-                display: flex;
-                gap: 8px;
-                align-items: center;
-              }
-              .color-dot {
-                width: 26px;
-                height: 26px;
-                border-radius: 50%;
-                border: 2px solid transparent;
-                cursor: pointer;
-              }
+              /* 스케치 전용 */
+              .palette-bar { display: flex; gap: 8px; align-items: center; }
+              .color-dot { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
               .color-dot.active { border-color: #ffffff; transform: scale(1.1); }
               .canvas-container {
-                flex: 1;
-                background: #ffffff;
-                border-radius: 14px;
-                touch-action: none;
-                position: relative;
-                min-height: 260px;
-                margin: 10px;
+                flex: 1; background: #ffffff; border-radius: 14px; touch-action: none; position: relative; min-height: 260px; margin: 10px;
               }
               canvas { width: 100%; height: 100%; display: block; border-radius: 14px; background: #ffffff; }
             </style>
@@ -483,13 +528,19 @@ jobs:
 
             <!-- 헤더 -->
             <header>
-              <button class="header-btn" onclick="selectCategory('첫 생각')">💡</button>
-              <div class="brand-title">💡 생각서랍</div>
+              <button class="header-btn" onclick="resetToIdeaDrawer()">💡</button>
+              
+              <!-- 상단 2분할 탭 -->
+              <div class="main-mode-switch">
+                <button id="tab-btn-idea" class="mode-btn active" onclick="switchMainMode('idea')">💡 생각서랍</button>
+                <button id="tab-btn-plan" class="mode-btn" onclick="switchMainMode('plan')">📋 나의계획</button>
+              </div>
+
               <button class="header-btn" onclick="openArchiveModal()">📂</button>
             </header>
 
-            <!-- 카테고리 바 -->
-            <div class="category-bar">
+            <!-- 1. 생각서랍 전용 카테고리 바 -->
+            <div class="category-bar" id="idea-category-bar">
               <div class="category-pill active" onclick="selectCategory('첫 생각')">💡 첫 생각</div>
               <div class="category-pill" onclick="selectCategory('노트')">📝 노트</div>
               <div class="category-pill" onclick="selectCategory('사진')">📷 사진</div>
@@ -498,12 +549,29 @@ jobs:
               <div class="category-pill" onclick="selectCategory('전체')">📂 전체</div>
             </div>
 
-            <!-- 메인 피드 -->
-            <div class="main-feed" id="feed-container">
+            <!-- 2. 메인 뷰: 생각서랍 피드 -->
+            <div class="view-container" id="idea-feed-container">
               <div class="empty-canvas" id="empty-hint">
                 떠오르는 생각을 자유롭게 기록하세요.<br>
                 저장 즉시 서랍으로 들어가 깨끗한 화면이 유지됩니다.
               </div>
+            </div>
+
+            <!-- 3. 메인 뷰: 나의계획 피드 (2단 실행형 구조) -->
+            <div class="view-container" id="plan-feed-container" style="display:none;">
+              <!-- 오늘 할 일 섹션 -->
+              <div class="plan-section-title">
+                <span>⚡ 오늘 집중 (Today Focus)</span>
+                <span class="plan-count-badge" id="today-count-badge">0건</span>
+              </div>
+              <div id="today-plan-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+
+              <!-- 진행 중 및 대기 섹션 -->
+              <div class="plan-section-title" style="margin-top:16px;">
+                <span>🔄 진행 중 및 보관 (Backlog)</span>
+                <span class="plan-count-badge" id="backlog-count-badge">0건</span>
+              </div>
+              <div id="backlog-plan-list" style="display:flex; flex-direction:column; gap:8px;"></div>
             </div>
 
             <!-- 첨부된 미디어 트레이 -->
@@ -575,7 +643,7 @@ jobs:
               </div>
             </div>
 
-            <!-- 수정 전용 모달 -->
+            <!-- 생각 수정 모달 -->
             <div id="edit-modal" class="modal-full">
               <div class="modal-top">
                 <span id="edit-modal-title" style="font-weight:bold; font-size:1rem;">✏️ 생각 수정</span>
@@ -589,15 +657,38 @@ jobs:
                 <div id="edit-media-preview" class="card-media-grid"></div>
                 <div class="edit-input-wrapper">
                   <textarea id="edit-input" class="main-input" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 50px 12px 14px; min-height:180px; width:100%;" placeholder="수정할 메모를 입력하거나 마이크로 이어서 말씀하세요..."
-                    oninput="trackCursor(this)" 
-                    onkeyup="trackCursor(this)" 
-                    onmouseup="trackCursor(this)" 
-                    ontouchend="trackCursor(this)" 
-                    onfocus="trackCursor(this)"></textarea>
+                    oninput="trackCursor(this)" onkeyup="trackCursor(this)" onmouseup="trackCursor(this)" ontouchend="trackCursor(this)" onfocus="trackCursor(this)"></textarea>
                   <button id="edit-mic-btn" class="edit-mic-btn" onclick="toggleContinuousVoice('edit')">
                     <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                   </button>
                 </div>
+              </div>
+            </div>
+
+            <!-- 나의계획 상세/진행메모 수정 모달 -->
+            <div id="plan-edit-modal" class="modal-full">
+              <div class="modal-top">
+                <span style="font-weight:bold; font-size:1rem;">📋 계획 및 진행상황 기록</span>
+                <div style="display:flex; gap:8px;">
+                  <button class="card-btn" style="background:var(--primary);" onclick="confirmEditPlan()">💾 저장</button>
+                  <button class="card-btn" style="background:var(--danger);" onclick="closePlanEditModal()">취소</button>
+                </div>
+              </div>
+              <div class="modal-body">
+                <label style="font-size:0.8rem; color:var(--muted);">할 일 / 프로젝트 제목</label>
+                <input id="plan-edit-title" class="main-input" style="background:var(--card); border:1px solid var(--border); border-radius:10px; padding:10px; font-size:1rem; font-weight:bold;" />
+
+                <label style="font-size:0.8rem; color:var(--muted); margin-top:8px;">진행 메모 추가 (음성 입력 가능)</label>
+                <div class="edit-input-wrapper">
+                  <textarea id="plan-edit-newnote" class="main-input" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 50px 12px 14px; min-height:100px; width:100%;" placeholder="새로운 진행상황을 말씀하시거나 입력하세요..."
+                    oninput="trackCursor(this)" onkeyup="trackCursor(this)" onmouseup="trackCursor(this)" ontouchend="trackCursor(this)" onfocus="trackCursor(this)"></textarea>
+                  <button id="plan-mic-btn" class="edit-mic-btn" onclick="toggleContinuousVoice('plan-edit')">
+                    <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                  </button>
+                </div>
+
+                <label style="font-size:0.8rem; color:var(--muted); margin-top:8px;">누적된 진행 기록</label>
+                <div id="plan-edit-history" class="plan-notes-box" style="min-height:80px; max-height:160px; overflow-y:auto;"></div>
               </div>
             </div>
 
@@ -607,34 +698,69 @@ jobs:
                 <span style="font-weight:bold; font-size:1.05rem;">📂 생각보관함 (전체)</span>
                 <button class="card-btn" style="background:var(--danger);" onclick="closeArchiveModal()">닫기</button>
               </div>
-              <div class="main-feed" id="archive-feed"></div>
+              <div class="view-container" id="archive-feed"></div>
             </div>
 
             <script>
+              let currentMainMode = 'idea'; // 'idea' 또는 'plan'
               let currentCategory = '첫 생각';
               let currentAttachments = [];
               let editingThoughtId = null;
               let editingMediaList = [];
+              let editingPlanId = null;
+
               let activeTargetContext = 'main';
               let activeVoiceTarget = 'main';
               let isListeningContinuous = false;
 
               let cursorPositions = {
                 'prompt-input': { start: 0, end: 0 },
-                'edit-input': { start: 0, end: 0 }
+                'edit-input': { start: 0, end: 0 },
+                'plan-edit-newnote': { start: 0, end: 0 }
               };
 
               function trackCursor(el) {
                 if (el && el.id && cursorPositions.hasOwnProperty(el.id)) {
-                  cursorPositions[el.id] = {
-                    start: el.selectionStart,
-                    end: el.selectionEnd
-                  };
+                  cursorPositions[el.id] = { start: el.selectionStart, end: el.selectionEnd };
                 }
               }
 
               let lastProcessedVoice = '';
               let lastProcessedTime = 0;
+
+              /* 상단 모드 전환 (생각서랍 ↔ 나의계획) */
+              function switchMainMode(mode) {
+                currentMainMode = mode;
+                document.getElementById('tab-btn-idea').classList.toggle('active', mode === 'idea');
+                document.getElementById('tab-btn-plan').classList.toggle('active', mode === 'plan');
+
+                const ideaCategoryBar = document.getElementById('idea-category-bar');
+                const ideaFeed = document.getElementById('idea-feed-container');
+                const planFeed = document.getElementById('plan-feed-container');
+                const plusBtn = document.getElementById('btn-plus');
+                const input = document.getElementById('prompt-input');
+
+                if (mode === 'idea') {
+                  ideaCategoryBar.style.display = 'flex';
+                  ideaFeed.style.display = 'flex';
+                  planFeed.style.display = 'none';
+                  plusBtn.style.display = 'flex';
+                  input.placeholder = '생각을 입력하거나 사진·영상을 덧붙이세요...';
+                  renderFeed();
+                } else {
+                  ideaCategoryBar.style.display = 'none';
+                  ideaFeed.style.display = 'none';
+                  planFeed.style.display = 'flex';
+                  plusBtn.style.display = 'none'; // 계획 모드에서는 간결성을 위해 미디어 버튼 숨김
+                  input.placeholder = '⚡ 오늘 할 일 또는 새로운 계획을 등록하세요...';
+                  renderPlanView();
+                }
+              }
+
+              function resetToIdeaDrawer() {
+                switchMainMode('idea');
+                selectCategory('첫 생각');
+              }
 
               function selectCategory(cat) {
                 currentCategory = cat;
@@ -655,21 +781,9 @@ jobs:
                 document.getElementById('btn-plus').classList.remove('open');
               }
 
-              function triggerCamera(context = 'main') {
-                activeTargetContext = context;
-                closePlusMenu();
-                document.getElementById('camera-file').click();
-              }
-              function triggerGallery(context = 'main') {
-                activeTargetContext = context;
-                closePlusMenu();
-                document.getElementById('gallery-file').click();
-              }
-              function triggerVideo(context = 'main') {
-                activeTargetContext = context;
-                closePlusMenu();
-                document.getElementById('video-file').click();
-              }
+              function triggerCamera(context = 'main') { activeTargetContext = context; closePlusMenu(); document.getElementById('camera-file').click(); }
+              function triggerGallery(context = 'main') { activeTargetContext = context; closePlusMenu(); document.getElementById('gallery-file').click(); }
+              function triggerVideo(context = 'main') { activeTargetContext = context; closePlusMenu(); document.getElementById('video-file').click(); }
 
               function compressImage(file, maxWidth = 800, quality = 0.65) {
                 return new Promise((resolve) => {
@@ -678,14 +792,9 @@ jobs:
                     const img = new Image();
                     img.onload = () => {
                       const canvas = document.createElement('canvas');
-                      let w = img.width;
-                      let h = img.height;
-                      if (w > maxWidth) {
-                        h = Math.round((h * maxWidth) / w);
-                        w = maxWidth;
-                      }
-                      canvas.width = w;
-                      canvas.height = h;
+                      let w = img.width, h = img.height;
+                      if (w > maxWidth) { h = Math.round((h * maxWidth) / w); w = maxWidth; }
+                      canvas.width = w; canvas.height = h;
                       const ctx = canvas.getContext('2d');
                       ctx.drawImage(img, 0, 0, w, h);
                       resolve(canvas.toDataURL('image/jpeg', quality));
@@ -700,10 +809,7 @@ jobs:
                 return new Promise((resolve) => {
                   const url = URL.createObjectURL(file);
                   const video = document.createElement('video');
-                  video.src = url;
-                  video.muted = true;
-                  video.playsInline = true;
-                  video.currentTime = 0.5;
+                  video.src = url; video.muted = true; video.playsInline = true; video.currentTime = 0.5;
                   video.onloadeddata = () => {
                     const canvas = document.createElement('canvas');
                     canvas.width = 400;
@@ -713,10 +819,7 @@ jobs:
                     URL.revokeObjectURL(url);
                     resolve(canvas.toDataURL('image/jpeg', 0.6));
                   };
-                  video.onerror = () => {
-                    URL.revokeObjectURL(url);
-                    resolve('');
-                  };
+                  video.onerror = () => { URL.revokeObjectURL(url); resolve(''); };
                 });
               }
 
@@ -758,11 +861,7 @@ jobs:
 
               function renderAttachmentTray() {
                 const tray = document.getElementById('attachment-tray');
-                if (currentAttachments.length === 0) {
-                  tray.classList.remove('active');
-                  tray.innerHTML = '';
-                  return;
-                }
+                if (currentAttachments.length === 0) { tray.classList.remove('active'); tray.innerHTML = ''; return; }
                 tray.classList.add('active');
                 tray.innerHTML = currentAttachments.map((item, idx) => `
                   <div class="tray-item">
@@ -795,6 +894,7 @@ jobs:
                 }
               }
 
+              /* 하단 전송 처리 (생각서랍 / 나의계획 자동 분기) */
               function handleSendAction() {
                 const input = document.getElementById('prompt-input');
                 const text = input.value.trim();
@@ -803,35 +903,44 @@ jobs:
                 if (text || hasAttachments) {
                   if (isListeningContinuous) stopContinuousVoice();
 
-                  let category = '노트';
-                  if (hasAttachments) {
-                    const hasVideo = currentAttachments.some(a => a.type === '동영상');
-                    const hasSketch = currentAttachments.some(a => a.type === '스케치');
-                    const hasPhoto = currentAttachments.some(a => a.type === '사진');
-                    if (hasVideo) category = '동영상';
-                    else if (hasSketch) category = '스케치';
-                    else if (hasPhoto) category = '사진';
+                  if (currentMainMode === 'idea') {
+                    let category = '노트';
+                    if (hasAttachments) {
+                      const hasVideo = currentAttachments.some(a => a.type === '동영상');
+                      const hasSketch = currentAttachments.some(a => a.type === '스케치');
+                      const hasPhoto = currentAttachments.some(a => a.type === '사진');
+                      if (hasVideo) category = '동영상';
+                      else if (hasSketch) category = '스케치';
+                      else if (hasPhoto) category = '사진';
+                    }
+                    saveThought(category, text, [...currentAttachments]);
+                    selectCategory('첫 생각');
+                  } else {
+                    // 나의계획 모드: '오늘 할 일'로 즉시 등록
+                    savePlan(text, true);
+                    renderPlanView();
                   }
 
-                  saveThought(category, text, [...currentAttachments]);
-                  
                   input.value = '';
                   input.style.height = 'auto';
                   currentAttachments = [];
                   cursorPositions['prompt-input'] = { start: 0, end: 0 };
                   renderAttachmentTray();
                   updateSendButtonState();
-                  selectCategory('첫 생각');
                 } else {
                   toggleContinuousVoice('main');
                 }
               }
 
+              /* 음성 인식 엔진 */
               function toggleContinuousVoice(target) {
                 activeVoiceTarget = target;
                 closePlusMenu();
 
-                const targetId = (target === 'edit') ? 'edit-input' : 'prompt-input';
+                let targetId = 'prompt-input';
+                if (target === 'edit') targetId = 'edit-input';
+                else if (target === 'plan-edit') targetId = 'plan-edit-newnote';
+
                 const el = document.getElementById(targetId);
                 if (el) trackCursor(el);
 
@@ -856,7 +965,6 @@ jobs:
               function stopContinuousVoice() {
                 isListeningContinuous = false;
                 updateVoiceButtonUI(false);
-
                 if (window.AndroidBridge && window.AndroidBridge.stopContinuousSpeech) {
                   window.AndroidBridge.stopContinuousSpeech();
                 }
@@ -866,26 +974,20 @@ jobs:
                 const btnWave = document.getElementById('btn-wave');
                 const btnMicMain = document.getElementById('btn-mic-main');
                 const btnMicEdit = document.getElementById('edit-mic-btn');
+                const btnMicPlan = document.getElementById('plan-mic-btn');
 
-                if (listening) {
-                  if (btnWave) btnWave.classList.add('listening');
-                  if (btnMicMain) btnMicMain.classList.add('listening');
-                  if (btnMicEdit) btnMicEdit.classList.add('listening');
-                } else {
-                  if (btnWave) btnWave.classList.remove('listening');
-                  if (btnMicMain) btnMicMain.classList.remove('listening');
-                  if (btnMicEdit) btnMicEdit.classList.remove('listening');
-                }
+                [btnWave, btnMicMain, btnMicEdit, btnMicPlan].forEach(btn => {
+                  if (btn) {
+                    if (listening) btn.classList.add('listening');
+                    else btn.classList.remove('listening');
+                  }
+                });
               }
 
               let webSpeechInstance = null;
               function startWebSpeechContinuous() {
                 const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (!Speech) {
-                  alert('음성인식 기능을 지원하지 않는 기기입니다.');
-                  stopContinuousVoice();
-                  return;
-                }
+                if (!Speech) { alert('음성인식 기능을 지원하지 않는 기기입니다.'); stopContinuousVoice(); return; }
                 webSpeechInstance = new Speech();
                 webSpeechInstance.lang = 'ko-KR';
                 webSpeechInstance.continuous = true;
@@ -895,13 +997,11 @@ jobs:
                   const lastText = e.results[e.results.length - 1][0].transcript;
                   appendVoiceResult(lastText);
                 };
-
                 webSpeechInstance.onend = () => {
                   if (isListeningContinuous) {
                     try { webSpeechInstance.start(); } catch (e) {}
                   }
                 };
-
                 webSpeechInstance.start();
               }
 
@@ -910,13 +1010,14 @@ jobs:
                 const clean = text.trim();
                 const now = Date.now();
 
-                if (clean === lastProcessedVoice && (now - lastProcessedTime < 1800)) {
-                  return;
-                }
+                if (clean === lastProcessedVoice && (now - lastProcessedTime < 1800)) return;
                 lastProcessedVoice = clean;
                 lastProcessedTime = now;
 
-                const targetId = (activeVoiceTarget === 'edit') ? 'edit-input' : 'prompt-input';
+                let targetId = 'prompt-input';
+                if (activeVoiceTarget === 'edit') targetId = 'edit-input';
+                else if (activeVoiceTarget === 'plan-edit') targetId = 'plan-edit-newnote';
+
                 const el = document.getElementById(targetId);
                 if (!el) return;
 
@@ -939,10 +1040,7 @@ jobs:
                 el.selectionEnd = nextPos;
                 cursorPositions[targetId] = { start: nextPos, end: nextPos };
 
-                if (targetId === 'prompt-input') {
-                  handleInputChange(el);
-                  selectCategory('첫 생각');
-                }
+                if (targetId === 'prompt-input') handleInputChange(el);
               }
 
               window.receiveVoiceResult = function(text) {
@@ -950,16 +1048,17 @@ jobs:
               };
 
               window.onSpeechEndedNative = function() {
-                if (!isListeningContinuous) {
-                  updateVoiceButtonUI(false);
-                }
+                if (!isListeningContinuous) updateVoiceButtonUI(false);
               };
 
+              /* 플로팅 버튼 음성 수신 시 무조건 [생각서랍]으로 전환 */
               function pollFloatingVoiceText() {
                 if (window.AndroidBridge && window.AndroidBridge.getPendingVoiceText) {
                   try {
                     const text = window.AndroidBridge.getPendingVoiceText();
                     if (text && text.trim().length > 0) {
+                      switchMainMode('idea');
+                      selectCategory('첫 생각');
                       activeVoiceTarget = 'main';
                       appendVoiceResult(text);
                     }
@@ -969,21 +1068,17 @@ jobs:
               setInterval(pollFloatingVoiceText, 300);
               window.addEventListener('DOMContentLoaded', pollFloatingVoiceText);
 
-              function getStorage() {
+              /* 저장소 관리: 생각서랍 */
+              function getThoughtStorage() {
                 const data = localStorage.getItem('idea_drawer_storage') || '[]';
                 try { return JSON.parse(data); } catch (e) { return []; }
               }
-              function setStorage(arr) {
-                try {
-                  localStorage.setItem('idea_drawer_storage', JSON.stringify(arr));
-                } catch (e) {
-                  alert('저장 공간이 부족하여 오래된 메모를 정리해주세요.');
-                }
+              function setThoughtStorage(arr) {
+                try { localStorage.setItem('idea_drawer_storage', JSON.stringify(arr)); } catch (e) {}
                 renderFeed();
               }
-
               function saveThought(category, content, mediaList) {
-                const list = getStorage();
+                const list = getThoughtStorage();
                 list.unshift({
                   id: Date.now(),
                   category: category,
@@ -991,12 +1086,46 @@ jobs:
                   mediaList: mediaList || [],
                   time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
                 });
-                setStorage(list);
+                setThoughtStorage(list);
               }
 
+              /* 저장소 관리: 나의계획 */
+              function getPlanStorage() {
+                const data = localStorage.getItem('plan_drawer_storage') || '[]';
+                try { return JSON.parse(data); } catch (e) { return []; }
+              }
+              function setPlanStorage(arr) {
+                try { localStorage.setItem('plan_drawer_storage', JSON.stringify(arr)); } catch (e) {}
+                renderPlanView();
+              }
+              function savePlan(title, isToday = true) {
+                if (!title || !title.trim()) return;
+                const list = getPlanStorage();
+                list.unshift({
+                  id: Date.now(),
+                  title: title.trim(),
+                  status: '대기', // '대기' | '진행중' | '완료'
+                  isToday: isToday,
+                  notes: [],
+                  updatedAt: new Date().toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })
+                });
+                setPlanStorage(list);
+              }
+
+              /* 생각서랍 카드 -> 나의계획으로 전송 */
+              function sendThoughtToPlan(id) {
+                const thought = getThoughtStorage().find(t => t.id === id);
+                if (thought) {
+                  const title = thought.content ? thought.content.split('\n')[0] : `[${thought.category}] 계획 항목`;
+                  savePlan(title, true);
+                  alert('⚡ 오늘 할 일 목록에 등록되었습니다!');
+                }
+              }
+
+              /* 생각서랍 피드 렌더링 */
               function renderFeed() {
-                const list = getStorage();
-                const feed = document.getElementById('feed-container');
+                const list = getThoughtStorage();
+                const feed = document.getElementById('idea-feed-container');
 
                 if (currentCategory === '첫 생각') {
                   feed.innerHTML = `
@@ -1030,9 +1159,10 @@ jobs:
                     ` : ''}
                     ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
                     <div class="card-actions">
+                      <button class="card-btn plan-send" onclick="sendThoughtToPlan(${item.id})">📋 계획으로</button>
                       <button class="card-btn" onclick="openEditModal(${item.id})">✏️ 수정</button>
                       <button class="card-btn" onclick="copyThought('${encodeURIComponent(item.content || '')}')">📋 복사</button>
-                      <button class="card-btn delete" onclick="deleteThought(${item.id}); openArchiveModal();">🗑️ 삭제</button>
+                      <button class="card-btn delete" onclick="deleteThought(${item.id})">🗑️ 삭제</button>
                     </div>
                   </div>
                 `).join('');
@@ -1045,13 +1175,136 @@ jobs:
 
               function deleteThought(id) {
                 if (confirm('이 생각을 삭제하시겠습니까?')) {
-                  const list = getStorage().filter(i => i.id !== id);
-                  setStorage(list);
+                  const list = getThoughtStorage().filter(i => i.id !== id);
+                  setThoughtStorage(list);
                 }
               }
 
+              /* 나의계획 피드 렌더링 (2단 구조) */
+              function renderPlanView() {
+                const list = getPlanStorage();
+                const todayList = list.filter(p => p.isToday);
+                const backlogList = list.filter(p => !p.isToday);
+
+                document.getElementById('today-count-badge').innerText = `${todayList.length}건`;
+                document.getElementById('backlog-count-badge').innerText = `${backlogList.length}건`;
+
+                const todayContainer = document.getElementById('today-plan-list');
+                const backlogContainer = document.getElementById('backlog-plan-list');
+
+                if (todayList.length === 0) {
+                  todayContainer.innerHTML = '<div style="color:#52525b; font-size:0.85rem; padding:10px 4px;">오늘 집중할 계획이 없습니다. 아래 입력창으로 추가하세요.</div>';
+                } else {
+                  todayContainer.innerHTML = todayList.map(p => renderPlanCardHtml(p)).join('');
+                }
+
+                if (backlogList.length === 0) {
+                  backlogContainer.innerHTML = '<div style="color:#52525b; font-size:0.85rem; padding:10px 4px;">보관된 장기 프로젝트나 대기 작업이 없습니다.</div>';
+                } else {
+                  backlogContainer.innerHTML = backlogList.map(p => renderPlanCardHtml(p)).join('');
+                }
+              }
+
+              function renderPlanCardHtml(p) {
+                const isDone = p.status === '완료';
+                const statusClass = (p.status === '진행중') ? 'progress' : (isDone ? 'done' : 'waiting');
+
+                return `
+                  <div class="plan-card ${isDone ? 'completed' : ''}">
+                    <div class="plan-card-top">
+                      <span class="status-tag ${statusClass}" onclick="cyclePlanStatus(${p.id})">${p.status}</span>
+                      <div class="plan-title ${isDone ? 'completed' : ''}">${p.title}</div>
+                      <span style="font-size:0.75rem; color:var(--muted);">${p.updatedAt}</span>
+                    </div>
+
+                    ${p.notes && p.notes.length > 0 ? `
+                      <div class="plan-notes-box">
+                        ${p.notes.map(n => `<div class="plan-note-item">• ${n}</div>`).join('')}
+                      </div>
+                    ` : ''}
+
+                    <div class="card-actions" style="margin-top:2px;">
+                      <button class="card-btn" onclick="toggleTodayFlag(${p.id})">${p.isToday ? '🔄 보관으로' : '⚡ 오늘로'}</button>
+                      <button class="card-btn" onclick="openPlanEditModal(${p.id})">✏️ 메모/수정</button>
+                      <button class="card-btn delete" onclick="deletePlan(${p.id})">🗑️ 삭제</button>
+                    </div>
+                  </div>
+                `;
+              }
+
+              /* 원터치 상태 순환 (대기 -> 진행중 -> 완료) */
+              function cyclePlanStatus(id) {
+                const list = getPlanStorage();
+                const item = list.find(p => p.id === id);
+                if (item) {
+                  if (item.status === '대기') item.status = '진행중';
+                  else if (item.status === '진행중') item.status = '완료';
+                  else item.status = '대기';
+                  setPlanStorage(list);
+                }
+              }
+
+              function toggleTodayFlag(id) {
+                const list = getPlanStorage();
+                const item = list.find(p => p.id === id);
+                if (item) {
+                  item.isToday = !item.isToday;
+                  setPlanStorage(list);
+                }
+              }
+
+              function deletePlan(id) {
+                if (confirm('이 계획을 삭제하시겠습니까?')) {
+                  const list = getPlanStorage().filter(p => p.id !== id);
+                  setPlanStorage(list);
+                }
+              }
+
+              /* 나의계획 상세 수정 모달 */
+              function openPlanEditModal(id) {
+                const item = getPlanStorage().find(p => p.id === id);
+                if (item) {
+                  editingPlanId = id;
+                  document.getElementById('plan-edit-title').value = item.title;
+                  document.getElementById('plan-edit-newnote').value = '';
+                  
+                  const hist = document.getElementById('plan-edit-history');
+                  hist.innerHTML = (item.notes && item.notes.length > 0)
+                    ? item.notes.map(n => `<div>• ${n}</div>`).join('')
+                    : '<span style="color:#52525b;">기록된 진행 메모가 없습니다.</span>';
+
+                  cursorPositions['plan-edit-newnote'] = { start: 0, end: 0 };
+                  document.getElementById('plan-edit-modal').classList.add('active');
+                }
+              }
+
+              function closePlanEditModal() {
+                if (isListeningContinuous) stopContinuousVoice();
+                document.getElementById('plan-edit-modal').classList.remove('active');
+                editingPlanId = null;
+              }
+
+              function confirmEditPlan() {
+                const title = document.getElementById('plan-edit-title').value.trim();
+                const newNote = document.getElementById('plan-edit-newnote').value.trim();
+                const list = getPlanStorage();
+                const target = list.find(p => p.id === editingPlanId);
+
+                if (target && title) {
+                  target.title = title;
+                  if (newNote) {
+                    const timeStamp = new Date().toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' });
+                    target.notes.push(`[${timeStamp}] ${newNote}`);
+                  }
+                  target.updatedAt = new Date().toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' });
+                  setPlanStorage(list);
+                }
+                closePlanEditModal();
+              }
+
+              /* 생각서랍 수정 모달 */
               function openEditModal(id) {
-                const item = getStorage().find(i => i.id === id);
+                const item = getThoughtStorage().find(i => i.id === id);
                 if (item) {
                   editingThoughtId = id;
                   editingMediaList = JSON.parse(JSON.stringify(item.mediaList || []));
@@ -1071,25 +1324,15 @@ jobs:
               function renderCustomEditToolbar(category, mediaList) {
                 const toolbar = document.getElementById('edit-media-toolbar');
                 let buttons = '';
-
                 if (category.includes('스케치') || mediaList.some(m => m.type === '스케치')) {
                   buttons += `<button class="edit-add-btn" onclick="openSketchModal('edit')">🎨 스케치 추가</button>`;
                 } else if (category.includes('사진') || mediaList.some(m => m.type === '사진')) {
-                  buttons += `
-                    <button class="edit-add-btn" onclick="triggerCamera('edit')">📷 촬영 추가</button>
-                    <button class="edit-add-btn" onclick="triggerGallery('edit')">🖼️ 사진 추가</button>
-                  `;
+                  buttons += `<button class="edit-add-btn" onclick="triggerCamera('edit')">📷 촬영 추가</button><button class="edit-add-btn" onclick="triggerGallery('edit')">🖼️ 사진 추가</button>`;
                 } else if (category.includes('동영상') || mediaList.some(m => m.type === '동영상')) {
                   buttons += `<button class="edit-add-btn" onclick="triggerVideo('edit')">🎬 영상 추가</button>`;
                 }
-
-                if (buttons) {
-                  toolbar.style.display = 'flex';
-                  toolbar.innerHTML = buttons;
-                } else {
-                  toolbar.style.display = 'none';
-                  toolbar.innerHTML = '';
-                }
+                toolbar.style.display = buttons ? 'flex' : 'none';
+                toolbar.innerHTML = buttons;
               }
 
               function renderEditMediaPreview() {
@@ -1101,11 +1344,7 @@ jobs:
                   </div>
                 `).join('');
               }
-
-              function removeEditMedia(idx) {
-                editingMediaList.splice(idx, 1);
-                renderEditMediaPreview();
-              }
+              function removeEditMedia(idx) { editingMediaList.splice(idx, 1); renderEditMediaPreview(); }
 
               function closeEditModal() {
                 if (isListeningContinuous) stopContinuousVoice();
@@ -1117,12 +1356,11 @@ jobs:
               function confirmEditThought() {
                 if (isListeningContinuous) stopContinuousVoice();
                 const text = document.getElementById('edit-input').value.trim();
-                const list = getStorage();
+                const list = getThoughtStorage();
                 const target = list.find(i => i.id === editingThoughtId);
                 if (target) {
                   target.content = text;
                   target.mediaList = editingMediaList;
-                  
                   if (editingMediaList.length > 0) {
                     if (editingMediaList.some(a => a.type === '동영상')) target.category = '동영상';
                     else if (editingMediaList.some(a => a.type === '스케치')) target.category = '스케치';
@@ -1130,13 +1368,13 @@ jobs:
                   } else {
                     target.category = '노트';
                   }
-
                   target.time = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) + ' (수정됨)';
-                  setStorage(list);
+                  setThoughtStorage(list);
                 }
                 closeEditModal();
               }
 
+              /* 스케치 모달 */
               const canvas = document.getElementById('sketch-board');
               const ctx = canvas.getContext('2d');
               let isDrawing = false;
@@ -1165,10 +1403,7 @@ jobs:
                 }, 50);
               }
               function closeSketchModal() { document.getElementById('sketch-modal').classList.remove('active'); }
-              function clearCanvas() {
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-              }
+              function clearCanvas() { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
 
               function attachSketch() {
                 const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
@@ -1198,7 +1433,7 @@ jobs:
 
               function openArchiveModal() {
                 document.getElementById('archive-modal').classList.add('active');
-                const list = getStorage();
+                const list = getThoughtStorage();
                 const feed = document.getElementById('archive-feed');
                 if (list.length === 0) {
                   feed.innerHTML = '<p style="color:#55555c; text-align:center; margin-top:40px;">보관된 생각이 없습니다.</p>';
@@ -1217,8 +1452,8 @@ jobs:
                     ` : ''}
                     ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
                     <div class="card-actions">
+                      <button class="card-btn plan-send" onclick="sendThoughtToPlan(${item.id})">📋 계획으로</button>
                       <button class="card-btn" onclick="openEditModal(${item.id})">✏️ 수정</button>
-                      <button class="card-btn" onclick="copyThought('${encodeURIComponent(item.content || '')}')">📋 복사</button>
                       <button class="card-btn delete" onclick="deleteThought(${item.id}); openArchiveModal();">🗑️ 삭제</button>
                     </div>
                   </div>
