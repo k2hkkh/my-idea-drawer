@@ -349,13 +349,13 @@ jobs:
               .btn-mic {
                 background: none;
                 border: none;
-                color: var(--muted);
                 width: 32px;
                 height: 32px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 cursor: pointer;
+                flex-shrink: 0;
               }
               .btn-mic svg { width: 22px; height: 22px; fill: #8e8e93; }
               .btn-mic.listening svg { fill: #ef4444; animation: micPulse 1.2s infinite; }
@@ -374,6 +374,7 @@ jobs:
                 color: #ffffff;
                 font-size: 1.2rem;
                 font-weight: bold;
+                flex-shrink: 0;
               }
               .wave-bar { width: 3px; height: 12px; background: #ffffff; border-radius: 2px; }
               .btn-action-send.listening { background: var(--danger); animation: pulseWave 1.2s infinite; }
@@ -453,7 +454,7 @@ jobs:
                 overflow-y: auto;
               }
 
-              /* 풀스크린 노트 수정창 스타일 */
+              /* 풀스크린 노트 수정창 */
               .fullscreen-editor-area {
                 flex: 1;
                 width: 100%;
@@ -470,7 +471,6 @@ jobs:
                 user-select: text;
               }
 
-              /* 수정창 내 마이크 입력 버튼 */
               .edit-input-wrapper {
                 position: relative;
                 flex: 1;
@@ -499,7 +499,7 @@ jobs:
               }
               .edit-mic-btn.listening svg { fill: #ffffff; }
 
-              /* ================== 암전 풀스크린 메모딱지 (떡메모지) ================== */
+              /* ================== 암전 풀스크린 메모딱지 ================== */
               #memopad-screen {
                 display: none;
                 position: fixed;
@@ -517,20 +517,22 @@ jobs:
                 background: #000000;
               }
               
-              /* 더블탭 시 등장하는 슬림 상단 툴바 */
               .memopad-toolbar {
                 display: none;
                 position: absolute;
                 top: 10px;
-                left: 10px;
-                right: 10px;
-                background: rgba(28, 28, 30, 0.95);
-                backdrop-filter: blur(10px);
+                left: 8px;
+                right: 8px;
+                width: calc(100vw - 16px);
+                max-width: calc(100vw - 16px);
+                box-sizing: border-box;
+                background: rgba(28, 28, 30, 0.96);
+                backdrop-filter: blur(12px);
                 border: 1px solid #3a3a3c;
                 border-radius: 20px;
-                padding: 8px 12px;
+                padding: 6px 8px;
                 align-items: center;
-                gap: 8px;
+                gap: 5px;
                 z-index: 2100;
                 box-shadow: 0 8px 24px rgba(0,0,0,0.7);
                 animation: slideDown 0.2s ease-out;
@@ -538,46 +540,81 @@ jobs:
               .memopad-toolbar.active { display: flex; }
               @keyframes slideDown { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
 
-              .pad-palette { display: flex; gap: 6px; align-items: center; }
-              .color-dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
+              .pad-palette { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
+              .color-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
               .color-dot.active { border-color: #ffffff; transform: scale(1.15); }
               .pad-eraser-btn {
-                background: transparent; border: none; font-size: 1.1rem; cursor: pointer; opacity: 0.6;
+                background: transparent; border: none; font-size: 1.05rem; cursor: pointer; opacity: 0.6;
               }
               .pad-eraser-btn.active { opacity: 1; transform: scale(1.15); }
 
               .pad-input-box {
                 flex: 1;
+                min-width: 0;
                 display: flex;
                 align-items: center;
                 background: #121214;
                 border-radius: 14px;
-                padding: 4px 8px;
+                padding: 3px 6px;
                 border: 1px solid #2c2c2e;
               }
               .pad-input-box input {
                 flex: 1;
+                min-width: 0;
                 background: transparent;
                 border: none;
                 color: #ffffff;
-                font-size: 0.85rem;
+                font-size: 0.82rem;
                 outline: none;
                 user-select: text;
               }
+              
               .pad-mic-btn {
                 background: none;
                 border: none;
                 cursor: pointer;
-                font-size: 1.05rem;
+                width: 26px;
+                height: 26px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
               }
-              .pad-mic-btn.listening { animation: micPulse 1.2s infinite; }
+              .pad-mic-btn svg { width: 17px; height: 17px; fill: #8e8e93; }
+              .pad-mic-btn.listening svg { fill: #ef4444; animation: micPulse 1.2s infinite; }
 
-              /* 타이핑/음성 입력 텍스트 스티커 띠 */
+              .pad-action-btn {
+                background: var(--primary);
+                border: none;
+                color: #ffffff;
+                padding: 5px 8px;
+                border-radius: 8px;
+                font-size: 0.75rem;
+                font-weight: bold;
+                cursor: pointer;
+                white-space: nowrap;
+                flex-shrink: 0;
+              }
+              .pad-close-btn {
+                background: var(--surface);
+                border: none;
+                color: #ffffff;
+                width: 26px;
+                height: 26px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.8rem;
+                cursor: pointer;
+                flex-shrink: 0;
+              }
+
               .memopad-text-strip {
                 position: absolute;
-                top: 70px;
-                left: 14px;
-                right: 14px;
+                top: 65px;
+                left: 12px;
+                right: 12px;
                 background: rgba(37, 99, 235, 0.85);
                 color: #ffffff;
                 padding: 8px 12px;
@@ -590,7 +627,6 @@ jobs:
                 box-shadow: 0 4px 12px rgba(0,0,0,0.5);
               }
 
-              /* 모서리 제스처 안내 힌트 (은은한 표시) */
               .corner-guide {
                 position: absolute;
                 bottom: 12px;
@@ -602,7 +638,6 @@ jobs:
               .corner-guide.left { left: 14px; }
               .corner-guide.right { right: 14px; }
 
-              /* 보관함 서브탭 */
               .archive-subtabs {
                 display: flex;
                 gap: 6px;
@@ -624,7 +659,6 @@ jobs:
                 color: #ffffff;
               }
 
-              /* 매뉴얼 카드 */
               .manual-card {
                 background: var(--card);
                 border: 1px solid var(--border);
@@ -652,7 +686,7 @@ jobs:
               </div>
 
               <div style="display:flex; gap:6px;">
-                <button class="header-btn" onclick="openManualModal()" title="1분 사용 매뉴얼">❓</button>
+                <button class="header-btn" onclick="openManualModal()" title="1분 가이드">❓</button>
                 <button class="header-btn" onclick="openArchiveModal()" title="보관함/휴지통/백업">📂</button>
               </div>
             </header>
@@ -661,7 +695,6 @@ jobs:
             <div class="category-bar" id="idea-category-bar">
               <div class="category-pill active" onclick="selectCategory('첫 생각')">💡 첫 생각</div>
               <div class="category-pill" onclick="selectCategory('노트')">📝 노트</div>
-              <div class="category-pill" onclick="selectCategory('메모딱지')">📑 메모딱지</div>
               <div class="category-pill" onclick="selectCategory('사진')">📷 사진</div>
               <div class="category-pill" onclick="selectCategory('동영상')">🎬 동영상</div>
               <div class="category-pill" onclick="selectCategory('전체')">📂 전체</div>
@@ -693,7 +726,7 @@ jobs:
             <!-- 첨부된 미디어 트레이 -->
             <div class="attachment-tray" id="attachment-tray"></div>
 
-            <!-- 하단 캡슐 입력 바 -->
+            <!-- 하단 캡슐 입력 바 (커서 정밀 추적 이벤트 추가) -->
             <div class="bottom-bar-wrapper">
               <div class="plus-menu-popover" id="plus-menu">
                 <div class="menu-item" onclick="triggerCamera('main')">
@@ -718,10 +751,11 @@ jobs:
                 <button id="btn-plus" class="btn-plus" onclick="togglePlusMenu()">＋</button>
                 <textarea id="prompt-input" class="main-input" placeholder="생각을 입력하거나 사진·영상을 덧붙이세요..." rows="1" 
                   oninput="handleInputChange(this); trackCursor(this);" 
+                  onclick="trackCursor(this)"
                   onkeyup="trackCursor(this)" 
                   onmouseup="trackCursor(this)" 
-                  ontouchend="trackCursor(this)" 
-                  onfocus="trackCursor(this)"></textarea>
+                  ontouchend="setTimeout(() => trackCursor(this), 60)" 
+                  onfocus="setTimeout(() => trackCursor(this), 60)"></textarea>
                 <button id="btn-mic-main" class="btn-mic" onclick="toggleContinuousVoice('main')">
                   <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                 </button>
@@ -739,9 +773,8 @@ jobs:
             <input type="file" id="video-file" accept="video/*" capture="environment" style="display:none;" onchange="processVideoFile(this)" />
             <input type="file" id="backup-import-file" accept=".json" style="display:none;" onchange="importBackupData(this)" />
 
-            <!-- ================== 암전 풀스크린 메모딱지 캔버스 ================== -->
+            <!-- 암전 풀스크린 메모딱지 -->
             <div id="memopad-screen">
-              <!-- 더블탭 1단계 툴바 -->
               <div id="memopad-toolbar" class="memopad-toolbar">
                 <div class="pad-palette">
                   <div class="color-dot active" style="background:#ffffff;" onclick="setPadColor('#ffffff', this)"></div>
@@ -751,13 +784,14 @@ jobs:
                 </div>
                 <div class="pad-input-box">
                   <input id="memopad-text-input" type="text" placeholder="글자 입력..." oninput="handlePadTextInput(this.value)" />
-                  <button id="memopad-mic-btn" class="pad-mic-btn" onclick="toggleContinuousVoice('pad')">🎙️</button>
+                  <button id="memopad-mic-btn" class="pad-mic-btn" onclick="toggleContinuousVoice('pad')">
+                    <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                  </button>
                 </div>
-                <button class="card-btn" style="background:var(--primary);" onclick="saveMemoPadToDrawer()">💾 저장</button>
-                <button class="card-btn" style="background:var(--surface);" onclick="closeMemoPadDirect()">✕</button>
+                <button class="pad-action-btn" onclick="saveMemoPadToDrawer()">💾 저장</button>
+                <button class="pad-close-btn" onclick="closeMemoPadDirect()">✕</button>
               </div>
 
-              <!-- 상단 텍스트 스티커 띠 -->
               <div id="memopad-text-strip" class="memopad-text-strip" style="display:none;">
                 <span id="memopad-text-display"></span>
               </div>
@@ -768,7 +802,7 @@ jobs:
               <div class="corner-guide right">💾 우측 쓸어올려 저장</div>
             </div>
 
-            <!-- ================== 풀스크린 생각 수정 모달 (100vh) ================== -->
+            <!-- 풀스크린 생각 수정 모달 (커서 정밀 추적 추가) -->
             <div id="edit-modal" class="modal-full">
               <div class="modal-top">
                 <span id="edit-modal-title" style="font-weight:bold; font-size:1rem;">✏️ 생각 수정</span>
@@ -781,7 +815,12 @@ jobs:
                 <div id="edit-media-preview" class="card-media-grid" style="flex-shrink:0;"></div>
                 <div class="edit-input-wrapper" style="flex:1; margin-top:8px;">
                   <textarea id="edit-input" class="fullscreen-editor-area" placeholder="수정할 내용을 자유롭게 입력하세요..."
-                    oninput="trackCursor(this)" onkeyup="trackCursor(this)" onmouseup="trackCursor(this)" ontouchend="trackCursor(this)" onfocus="trackCursor(this)"></textarea>
+                    oninput="trackCursor(this)"
+                    onclick="trackCursor(this)"
+                    onkeyup="trackCursor(this)" 
+                    onmouseup="trackCursor(this)" 
+                    ontouchend="setTimeout(() => trackCursor(this), 60)" 
+                    onfocus="setTimeout(() => trackCursor(this), 60)"></textarea>
                   <button id="edit-mic-btn" class="edit-mic-btn" onclick="toggleContinuousVoice('edit')">
                     <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                   </button>
@@ -802,10 +841,15 @@ jobs:
                 <label style="font-size:0.8rem; color:var(--muted);">할 일 / 프로젝트 제목</label>
                 <input id="plan-edit-title" class="main-input" style="background:var(--card); border:1px solid var(--border); border-radius:10px; padding:10px; font-size:1rem; font-weight:bold;" />
 
-                <label style="font-size:0.8rem; color:var(--muted); margin-top:8px;">새로운 진행 메모 (음성 입력 가능)</label>
+                <label style="font-size:0.8rem; color:var(--muted); margin-top:8px;">새로운 진행 메모</label>
                 <div class="edit-input-wrapper">
                   <textarea id="plan-edit-newnote" class="main-input" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 50px 12px 14px; min-height:90px; width:100%;" placeholder="새로운 진행상황을 말씀하시거나 입력하세요..."
-                    oninput="trackCursor(this)" onkeyup="trackCursor(this)" onmouseup="trackCursor(this)" ontouchend="trackCursor(this)" onfocus="trackCursor(this)"></textarea>
+                    oninput="trackCursor(this)"
+                    onclick="trackCursor(this)"
+                    onkeyup="trackCursor(this)" 
+                    onmouseup="trackCursor(this)" 
+                    ontouchend="setTimeout(() => trackCursor(this), 60)" 
+                    onfocus="setTimeout(() => trackCursor(this), 60)"></textarea>
                   <button id="plan-mic-btn" class="edit-mic-btn" onclick="toggleContinuousVoice('plan-edit')">
                     <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                   </button>
@@ -830,18 +874,13 @@ jobs:
                 </div>
               </div>
 
-              <!-- 서브탭 1: 전체 생각 보관함 -->
               <div class="view-container" id="archive-feed"></div>
-
-              <!-- 서브탭 2: 떡메모 휴지통 -->
               <div class="view-container" id="trash-feed" style="display:none;"></div>
-
-              <!-- 서브탭 3: 데이터 백업 및 복원 -->
               <div class="view-container" id="backup-pane" style="display:none; gap:16px;">
                 <div class="thought-card">
                   <div style="font-weight:bold; font-size:1rem; color:var(--accent);">📥 전체 데이터 백업 (파일 다운로드)</div>
                   <div style="font-size:0.85rem; color:var(--muted); line-height:1.5;">
-                    현재까지 작성된 모든 생각, 계획표, 메모딱지를 하나의 백업 파일(`idea_drawer_backup.json`)로 스마트폰에 안전하게 저장합니다.
+                    현재까지 작성된 모든 생각, 계획표, 메모딱지를 하나의 백업 파일(`idea_drawer_backup.json`)로 안전하게 내려받습니다.
                   </div>
                   <button class="card-btn" style="background:var(--primary); padding:10px; justify-content:center; margin-top:6px;" onclick="exportBackupData()">
                     💾 백업 파일 다운로드
@@ -851,7 +890,7 @@ jobs:
                 <div class="thought-card">
                   <div style="font-weight:bold; font-size:1rem; color:var(--success);">📤 데이터 복원 (기기 변경 시)</div>
                   <div style="font-size:0.85rem; color:var(--muted); line-height:1.5;">
-                    새 스마트폰이나 다른 기기에서 백업 파일을 불러와 기존의 모든 생각과 계획을 1초 만에 원상 복원합니다.
+                    새 스마트폰에서 백업 파일을 불러와 기존의 모든 생각과 계획을 원상 복원합니다.
                   </div>
                   <button class="card-btn" style="background:var(--surface); border:1px solid var(--border); padding:10px; justify-content:center; margin-top:6px;" onclick="document.getElementById('backup-import-file').click()">
                     📂 백업 파일 선택하여 복원
@@ -870,21 +909,21 @@ jobs:
                 <div class="manual-card">
                   <div class="manual-title">1. 노란 전구(💡) 플로팅 버튼</div>
                   <div class="manual-desc">
-                    다른 앱(유튜브, 지도 등)을 보는 중에도 화면 밖의 노란 전구를 터치하고 편하게 말씀하세요. 녹음된 음성은 자동으로 **[생각서랍]**에 깨끗하게 저장됩니다.
+                    다른 앱을 사용하는 중에도 노란 전구를 터치하고 말씀하시면, 음성이 자동으로 **[생각서랍]**에 안전하게 보관됩니다.
                   </div>
                 </div>
 
                 <div class="manual-card">
                   <div class="manual-title">2. 상단 3분할 모드 전환</div>
                   <div class="manual-desc">
-                    • **💡 생각서랍**: 떠오르는 아이디어를 음성, 타이핑, 사진으로 낚아채는 빈 도화지<br>
-                    • **📋 나의계획**: `⚡ 오늘 집중`과 `🔄 진행/보관`으로 나뉜 2단 실행 대시보드 (원터치 상태 순환)<br>
-                    • **📑 메모딱지**: 버튼 없는 암전 화면에서 자유롭게 손글씨를 쓰고 찢어버리는 아날로그 낙서장
+                    • **💡 생각서랍**: 번개처럼 떠오른 아이디어를 음성, 글자, 사진으로 담는 깨끗한 빈 도화지<br>
+                    • **📋 나의계획**: `⚡ 오늘 집중`과 `🔄 진행/보관`으로 나뉜 2단 실행 대시보드<br>
+                    • **📑 메모딱지**: 버튼 없는 암전 화면에서 손글씨를 자유롭게 쓰고 찢어버리는 낙서장
                   </div>
                 </div>
 
                 <div class="manual-card">
-                  <div class="manual-title">3. 📑 메모딱지 제스처 (핵심 손맛)</div>
+                  <div class="manual-title">3. 📑 메모딱지 제스처</div>
                   <div class="manual-desc">
                     • **더블탭 1단계 (톡톡)**: 화면을 두 번 두드리면 상단에 펜 색상, 지우개, 음성/자판 입력바 등장<br>
                     • **더블탭 2단계 (톡톡)**: 상단 바가 열린 상태에서 빈 화면을 다시 두 번 치면 **생각서랍에 자동 저장 후 복귀**<br>
@@ -896,7 +935,7 @@ jobs:
                 <div class="manual-card">
                   <div class="manual-title">4. 데이터 백업 및 휴지통 복원</div>
                   <div class="manual-desc">
-                    우측 상단 보관함(`📂`)을 열면 실수로 버린 메모딱지를 되살리는 **휴지통**과 스마트폰을 바꿀 때 데이터를 안전하게 보존하는 **원터치 백업/복원** 기능이 있습니다.
+                    보관함(`📂`)에서 버린 메모딱지를 되살리는 **휴지통**과 스마트폰 교체 시 데이터를 안전하게 보존하는 **백업/복원**을 이용할 수 있습니다.
                   </div>
                 </div>
               </div>
@@ -922,14 +961,23 @@ jobs:
 
               function trackCursor(el) {
                 if (el && el.id && cursorPositions.hasOwnProperty(el.id)) {
-                  cursorPositions[el.id] = { start: el.selectionStart, end: el.selectionEnd };
+                  if (typeof el.selectionStart === 'number') {
+                    cursorPositions[el.id] = { start: el.selectionStart, end: el.selectionEnd };
+                  }
                 }
               }
+
+              /* 전역 커서 감지: 손가락으로 글자 중간을 찍거나 드래그하는 0.001초 순간 즉각 갱신 */
+              document.addEventListener('selectionchange', () => {
+                const el = document.activeElement;
+                if (el && el.id && cursorPositions.hasOwnProperty(el.id)) {
+                  trackCursor(el);
+                }
+              });
 
               let lastProcessedVoice = '';
               let lastProcessedTime = 0;
 
-              /* 상단 모드 전환 */
               function switchMainMode(mode) {
                 currentMainMode = mode;
                 document.getElementById('tab-btn-idea').classList.toggle('active', mode === 'idea');
@@ -1130,7 +1178,6 @@ jobs:
                 }
               }
 
-              /* 음성 인식 엔진 */
               function toggleContinuousVoice(target) {
                 activeVoiceTarget = target;
                 closePlusMenu();
@@ -1141,7 +1188,9 @@ jobs:
                 else if (target === 'pad') targetId = 'memopad-text-input';
 
                 const el = document.getElementById(targetId);
-                if (el) trackCursor(el);
+                if (el && document.activeElement === el) {
+                  trackCursor(el);
+                }
 
                 if (isListeningContinuous) {
                   stopContinuousVoice();
@@ -1210,6 +1259,7 @@ jobs:
                 webSpeechInstance.start();
               }
 
+              /* 정밀 커서 중간 삽입 로직 */
               function appendVoiceResult(text) {
                 if (!text || !text.trim()) return;
                 const clean = text.trim();
@@ -1233,9 +1283,17 @@ jobs:
                 const el = document.getElementById(targetId);
                 if (!el) return;
 
-                let pos = cursorPositions[targetId] || { start: el.value.length, end: el.value.length };
-                let start = (pos.start !== undefined && pos.start >= 0) ? pos.start : el.value.length;
-                let end = (pos.end !== undefined && pos.end >= 0) ? pos.end : el.value.length;
+                if (document.activeElement === el && typeof el.selectionStart === 'number') {
+                  trackCursor(el);
+                }
+
+                let pos = cursorPositions[targetId];
+                let start = (pos && typeof pos.start === 'number' && pos.start >= 0 && pos.start <= el.value.length) 
+                  ? pos.start 
+                  : el.value.length;
+                let end = (pos && typeof pos.end === 'number' && pos.end >= start && pos.end <= el.value.length) 
+                  ? pos.end 
+                  : start;
 
                 const val = el.value;
                 const before = val.substring(0, start);
@@ -1248,8 +1306,12 @@ jobs:
                 el.value = before + insertChunk + after;
 
                 const nextPos = start + insertChunk.length;
-                el.selectionStart = nextPos;
-                el.selectionEnd = nextPos;
+                if (typeof el.setSelectionRange === 'function') {
+                  el.setSelectionRange(nextPos, nextPos);
+                } else {
+                  el.selectionStart = nextPos;
+                  el.selectionEnd = nextPos;
+                }
                 cursorPositions[targetId] = { start: nextPos, end: nextPos };
 
                 if (targetId === 'prompt-input') handleInputChange(el);
@@ -1263,7 +1325,6 @@ jobs:
                 if (!isListeningContinuous) updateVoiceButtonUI(false);
               };
 
-              /* 플로팅 버튼 음성 수신 시 무조건 [생각서랍]으로 전환 */
               function pollFloatingVoiceText() {
                 if (window.AndroidBridge && window.AndroidBridge.getPendingVoiceText) {
                   try {
@@ -1280,7 +1341,6 @@ jobs:
               setInterval(pollFloatingVoiceText, 300);
               window.addEventListener('DOMContentLoaded', pollFloatingVoiceText);
 
-              /* ================== 생각서랍 스토리지 ================== */
               function getThoughtStorage() {
                 const data = localStorage.getItem('idea_drawer_storage') || '[]';
                 try { return JSON.parse(data); } catch (e) { return []; }
@@ -1301,7 +1361,6 @@ jobs:
                 setThoughtStorage(list);
               }
 
-              /* ================== 나의계획 스토리지 ================== */
               function getPlanStorage() {
                 const data = localStorage.getItem('plan_drawer_storage') || '[]';
                 try { return JSON.parse(data); } catch (e) { return []; }
@@ -1324,7 +1383,6 @@ jobs:
                 setPlanStorage(list);
               }
 
-              /* ================== 떡메모 전용 휴지통 스토리지 ================== */
               function getPadTrashStorage() {
                 const data = localStorage.getItem('memopad_trash_storage') || '[]';
                 try { return JSON.parse(data); } catch (e) { return []; }
@@ -1342,7 +1400,6 @@ jobs:
                 }
               }
 
-              /* ================== 피드 렌더링 ================== */
               function renderFeed() {
                 const list = getThoughtStorage();
                 const feed = document.getElementById('idea-feed-container');
@@ -1400,7 +1457,6 @@ jobs:
                 }
               }
 
-              /* ================== 나의계획 렌더링 ================== */
               function renderPlanView() {
                 const list = getPlanStorage();
                 const todayList = list.filter(p => p.isToday);
@@ -1479,7 +1535,6 @@ jobs:
                 }
               }
 
-              /* ================== 풀스크린 생각 수정창 ================== */
               function openEditModal(id) {
                 const item = getThoughtStorage().find(i => i.id === id);
                 if (item) {
@@ -1529,7 +1584,6 @@ jobs:
                 closeEditModal();
               }
 
-              /* 계획 수정 모달 */
               function openPlanEditModal(id) {
                 const item = getPlanStorage().find(p => p.id === id);
                 if (item) {
@@ -1580,15 +1634,16 @@ jobs:
               const padTextDisplay = document.getElementById('memopad-text-display');
 
               let padDrawing = false;
+              let isMoving = false;
               let padColor = '#ffffff';
               let isPadEraser = false;
-              let padStrokeCount = 0;
+              const MOVE_THRESHOLD = 5;
 
               let lastTapTime = 0;
               let lastTapX = 0, lastTapY = 0;
 
               let touchStartX = 0, touchStartY = 0;
-              let isCornerGesture = null; // 'left' | 'right' | null
+              let isCornerGesture = null;
 
               function openMemoPadDirect() {
                 closePlusMenu();
@@ -1597,7 +1652,6 @@ jobs:
                 padTextStrip.style.display = 'none';
                 document.getElementById('memopad-text-input').value = '';
                 padTextDisplay.innerText = '';
-                padStrokeCount = 0;
 
                 setTimeout(() => {
                   padCanvas.width = window.innerWidth;
@@ -1631,7 +1685,7 @@ jobs:
                 document.getElementById('pad-eraser-btn').classList.toggle('active', isPadEraser);
                 if (isPadEraser) {
                   padCtx.strokeStyle = '#000000';
-                  padCtx.lineWidth = 22;
+                  padCtx.lineWidth = 24;
                 } else {
                   setPadColor(padColor);
                 }
@@ -1646,14 +1700,12 @@ jobs:
                 }
               }
 
-              /* 캔버스 터치 이벤트 (필기, 2단계 더블탭, 모서리 쓸어올리기) */
               padCanvas.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 const t = e.touches[0];
                 const x = t.clientX, y = t.clientY;
                 const winW = window.innerWidth, winH = window.innerHeight;
 
-                // 좌/우측 하단 모서리 스와이프 감지 준비
                 if (y > winH - 120 && x < 120) {
                   isCornerGesture = 'left';
                   touchStartX = x; touchStartY = y;
@@ -1664,16 +1716,13 @@ jobs:
                   return;
                 }
 
-                // 2단계 더블탭 감지 (320ms 이내)
                 const now = Date.now();
                 if (now - lastTapTime < 320 && Math.abs(x - lastTapX) < 25 && Math.abs(y - lastTapY) < 25) {
                   if (padToolbar.classList.contains('active')) {
-                    // 2단계: 툴바 열린 상태에서 빈 캔버스 더블탭 -> 생각서랍 자동 저장 후 복귀
                     saveMemoPadToDrawer();
                     lastTapTime = 0;
                     return;
                   } else {
-                    // 1단계: 툴바 호출
                     padToolbar.classList.add('active');
                     lastTapTime = 0;
                     return;
@@ -1683,11 +1732,10 @@ jobs:
                 lastTapX = x;
                 lastTapY = y;
 
-                // 일반 필기 시작
-                padDrawing = true;
-                padStrokeCount++;
-                padCtx.beginPath();
-                padCtx.moveTo(x, y);
+                touchStartX = x;
+                touchStartY = y;
+                isMoving = false;
+                padDrawing = false;
               }, { passive: false });
 
               padCanvas.addEventListener('touchmove', (e) => {
@@ -1695,31 +1743,38 @@ jobs:
                 const t = e.touches[0];
                 const x = t.clientX, y = t.clientY;
 
-                // 모서리 쓸어올리기 제스처 판정
                 if (isCornerGesture) {
                   const dy = touchStartY - y;
                   if (dy > 80) {
-                    if (isCornerGesture === 'left') {
-                      trashMemoPad();
-                    } else if (isCornerGesture === 'right') {
-                      saveMemoPadToDrawer();
-                    }
+                    if (isCornerGesture === 'left') trashMemoPad();
+                    else if (isCornerGesture === 'right') saveMemoPadToDrawer();
                     isCornerGesture = null;
                   }
                   return;
                 }
 
-                if (!padDrawing) return;
-                padCtx.lineTo(x, y);
-                padCtx.stroke();
+                if (!isMoving) {
+                  const dist = Math.hypot(x - touchStartX, y - touchStartY);
+                  if (dist > MOVE_THRESHOLD) {
+                    isMoving = true;
+                    padDrawing = true;
+                    padCtx.beginPath();
+                    padCtx.moveTo(touchStartX, touchStartY);
+                  }
+                }
+
+                if (padDrawing) {
+                  padCtx.lineTo(x, y);
+                  padCtx.stroke();
+                }
               }, { passive: false });
 
               padCanvas.addEventListener('touchend', () => {
                 padDrawing = false;
+                isMoving = false;
                 isCornerGesture = null;
               });
 
-              /* 메모딱지 -> 휴지통 직행 */
               function trashMemoPad() {
                 const dataUrl = padCanvas.toDataURL('image/jpeg', 0.8);
                 const text = document.getElementById('memopad-text-input').value.trim();
@@ -1738,11 +1793,9 @@ jobs:
                 alert('🗑️ 메모딱지가 휴지통으로 버려졌습니다.');
               }
 
-              /* 메모딱지 -> 생각서랍 보관 완료 */
               function saveMemoPadToDrawer() {
                 const text = document.getElementById('memopad-text-input').value.trim();
                 
-                // 텍스트 스티커가 있으면 캔버스 상단에 렌더링
                 if (text) {
                   padCtx.fillStyle = '#2563eb';
                   padCtx.fillRect(10, 10, padCanvas.width - 20, 44);
@@ -1757,11 +1810,10 @@ jobs:
                 saveThought('메모딱지', text, [item]);
                 closeMemoPadDirect();
                 switchMainMode('idea');
-                selectCategory('메모딱지');
+                selectCategory('전체');
                 alert('💾 메모딱지가 생각서랍에 안전하게 보관되었습니다!');
               }
 
-              /* ================== 보관함 / 휴지통 / 백업 관리 ================== */
               function openArchiveModal() {
                 document.getElementById('archive-modal').classList.add('active');
                 switchArchiveTab('archive');
@@ -1867,7 +1919,6 @@ jobs:
                 }
               }
 
-              /* 데이터 백업 & 복원 */
               function exportBackupData() {
                 const backupObj = {
                   version: '1.0',
@@ -1913,7 +1964,6 @@ jobs:
                 input.value = '';
               }
 
-              /* 1분 사용 매뉴얼 모달 */
               function openManualModal() { document.getElementById('manual-modal').classList.add('active'); }
               function closeManualModal() { document.getElementById('manual-modal').classList.remove('active'); }
 
@@ -1949,7 +1999,6 @@ jobs:
           npm install
           npx cap add android
 
-          # 고정 Keystore 보존
           if [ -f "release.keystore" ]; then
             cp release.keystore android/app/release.keystore
           else
@@ -1998,7 +2047,6 @@ jobs:
 
           mkdir -p android/app/src/main/java/com/k2hkkh/ideadrawer
 
-          # 노란 전구 다마(💡) 플로팅 위젯 소스코드
           cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/FloatingWidgetService.java
           package com.k2hkkh.ideadrawer;
 
@@ -2228,7 +2276,6 @@ jobs:
           }
           EOF
 
-          # 메인 액티비티 소스코드
           cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/MainActivity.java
           package com.k2hkkh.ideadrawer;
 
