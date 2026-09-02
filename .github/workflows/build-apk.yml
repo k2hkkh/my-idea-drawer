@@ -507,22 +507,20 @@ jobs:
                 background: #000000;
               }
               
+              /* 여유로운 2단 슬림 툴바 설계 */
               .memopad-toolbar {
                 display: none;
                 position: absolute;
                 top: 8px;
-                left: 6px;
-                right: 6px;
-                width: calc(100vw - 12px);
-                max-width: calc(100vw - 12px);
-                box-sizing: border-box;
-                background: rgba(28, 28, 30, 0.96);
-                backdrop-filter: blur(12px);
+                left: 8px;
+                right: 8px;
+                background: rgba(28, 28, 30, 0.97);
+                backdrop-filter: blur(14px);
                 border: 1px solid #3a3a3c;
                 border-radius: 20px;
-                padding: 6px 8px;
-                align-items: center;
-                gap: 5px;
+                padding: 8px 10px;
+                flex-direction: column;
+                gap: 7px;
                 z-index: 2100;
                 box-shadow: 0 8px 24px rgba(0,0,0,0.7);
                 animation: slideDown 0.2s ease-out;
@@ -530,43 +528,54 @@ jobs:
               .memopad-toolbar.active { display: flex; }
               @keyframes slideDown { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
 
-              .pad-palette { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
-              .color-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
+              .pad-toolbar-row1 {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+              }
+              .pad-toolbar-row2 {
+                display: flex;
+                align-items: center;
+                width: 100%;
+                gap: 6px;
+              }
+
+              .pad-palette { display: flex; gap: 6px; align-items: center; }
+              .color-dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
               .color-dot.active { border-color: #ffffff; transform: scale(1.15); }
               
-              /* 지우개 및 취소 도구 버튼 */
               .pad-tool-btn {
-                background: transparent;
-                border: none;
-                font-size: 1.05rem;
+                background: var(--surface);
+                border: 1px solid #3a3a3c;
+                border-radius: 8px;
+                font-size: 0.9rem;
+                color: #ffffff;
                 cursor: pointer;
-                opacity: 0.75;
-                padding: 2px;
+                padding: 4px 7px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                flex-shrink: 0;
+                gap: 3px;
               }
-              .pad-tool-btn:active { transform: scale(1.2); opacity: 1; }
-              .pad-tool-btn.active { opacity: 1; filter: drop-shadow(0 0 3px #ffffff); }
+              .pad-tool-btn:active { transform: scale(0.95); }
+              .pad-tool-btn.active { background: #3b82f6; border-color: #60a5fa; }
 
               .pad-input-box {
                 flex: 1;
-                min-width: 0;
                 display: flex;
                 align-items: center;
                 background: #121214;
-                border-radius: 14px;
-                padding: 3px 6px;
-                border: 1px solid #2c2c2e;
+                border-radius: 12px;
+                padding: 6px 8px;
+                border: 1px solid #3a3a3c;
               }
               .pad-input-box input {
                 flex: 1;
-                min-width: 0;
                 background: transparent;
                 border: none;
                 color: #ffffff;
-                font-size: 0.82rem;
+                font-size: 0.88rem;
                 outline: none;
                 user-select: text;
               }
@@ -575,23 +584,23 @@ jobs:
                 background: none;
                 border: none;
                 cursor: pointer;
-                width: 26px;
-                height: 26px;
+                width: 28px;
+                height: 28px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 flex-shrink: 0;
               }
-              .pad-mic-btn svg { width: 17px; height: 17px; fill: #8e8e93; }
+              .pad-mic-btn svg { width: 19px; height: 19px; fill: #8e8e93; }
               .pad-mic-btn.listening svg { fill: #ef4444; animation: micPulse 1.2s infinite; }
 
               .pad-action-btn {
                 background: var(--primary);
                 border: none;
                 color: #ffffff;
-                padding: 5px 8px;
+                padding: 5px 10px;
                 border-radius: 8px;
-                font-size: 0.75rem;
+                font-size: 0.8rem;
                 font-weight: bold;
                 cursor: pointer;
                 white-space: nowrap;
@@ -601,27 +610,27 @@ jobs:
                 background: var(--surface);
                 border: none;
                 color: #ffffff;
-                width: 26px;
-                height: 26px;
+                width: 28px;
+                height: 28px;
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 0.8rem;
+                font-size: 0.85rem;
                 cursor: pointer;
                 flex-shrink: 0;
               }
 
               .memopad-text-strip {
                 position: absolute;
-                top: 65px;
+                top: 96px;
                 left: 12px;
                 right: 12px;
-                background: rgba(37, 99, 235, 0.85);
+                background: rgba(37, 99, 235, 0.88);
                 color: #ffffff;
                 padding: 8px 12px;
                 border-radius: 10px;
-                font-size: 0.9rem;
+                font-size: 0.92rem;
                 font-weight: bold;
                 z-index: 2050;
                 cursor: move;
@@ -749,9 +758,8 @@ jobs:
                   onclick="trackCursor(this)"
                   onkeyup="trackCursor(this)" 
                   onmouseup="trackCursor(this)" 
-                  ontouchend="setTimeout(() => trackCursor(this), 50)" 
-                  onfocus="setTimeout(() => trackCursor(this), 50)"></textarea>
-                <!-- 마이크 터치 시 포커스 풀림 방지 -->
+                  ontouchend="setTimeout(() => trackCursor(this), 40)" 
+                  onfocus="setTimeout(() => trackCursor(this), 40)"></textarea>
                 <button id="btn-mic-main" class="btn-mic" onpointerdown="event.preventDefault()" onclick="toggleContinuousVoice('main')">
                   <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                 </button>
@@ -768,29 +776,41 @@ jobs:
             <input type="file" id="video-file" accept="video/*" capture="environment" style="display:none;" onchange="processVideoFile(this)" />
             <input type="file" id="backup-import-file" accept=".json" style="display:none;" onchange="importBackupData(this)" />
 
-            <!-- 암전 풀스크린 메모딱지 -->
+            <!-- ================== 암전 풀스크린 메모딱지 ================== -->
             <div id="memopad-screen">
               <div id="memopad-toolbar" class="memopad-toolbar">
-                <div class="pad-palette">
-                  <div class="color-dot active" style="background:#ffffff;" onclick="setPadColor('#ffffff', this)"></div>
-                  <div class="color-dot" style="background:#facc15;" onclick="setPadColor('#facc15', this)"></div>
-                  <div class="color-dot" style="background:#38bdf8;" onclick="setPadColor('#38bdf8', this)"></div>
-                  <button id="pad-eraser-btn" class="pad-tool-btn" onclick="togglePadEraser()" title="지우개">🧹</button>
-                  <button class="pad-tool-btn" onclick="undoPadStroke()" title="직전 획 취소">↩️</button>
-                  <button class="pad-tool-btn" onclick="clearPadCanvas()" title="도화지 전체 싹 지우기">🔄</button>
+                <!-- 1단: 색상 3종 + 부분지우개 + 1획취소 + 전체삭제 + 저장/닫기 -->
+                <div class="pad-toolbar-row1">
+                  <div class="pad-palette">
+                    <div class="color-dot active" style="background:#ffffff;" onclick="setPadColor('#ffffff', this)"></div>
+                    <div class="color-dot" style="background:#facc15;" onclick="setPadColor('#facc15', this)"></div>
+                    <div class="color-dot" style="background:#38bdf8;" onclick="setPadColor('#38bdf8', this)"></div>
+                    <div style="width:1px; height:18px; background:#3a3a3c; margin:0 2px;"></div>
+                    <button id="pad-eraser-btn" class="pad-tool-btn" onclick="togglePadEraser()" title="부분 지우개">🧹 지우개</button>
+                    <button class="pad-tool-btn" onclick="undoPadStroke()" title="1획 취소">↩️ 취소</button>
+                    <button class="pad-tool-btn" onclick="clearPadCanvas()" title="도화지 전체 삭제">🔄 싹지우기</button>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <button class="pad-action-btn" onclick="saveMemoPadToDrawer()">💾 저장</button>
+                    <button class="pad-close-btn" onclick="closeMemoPadDirect()">✕</button>
+                  </div>
                 </div>
-                <div class="pad-input-box">
-                  <input id="memopad-text-input" type="text" placeholder="글자 입력..." 
-                    oninput="handlePadTextInput(this.value); trackCursor(this);" 
-                    onclick="trackCursor(this)"
-                    onkeyup="trackCursor(this)"
-                    ontouchend="setTimeout(() => trackCursor(this), 50)" />
-                  <button id="memopad-mic-btn" class="pad-mic-btn" onpointerdown="event.preventDefault()" onclick="toggleContinuousVoice('pad')">
-                    <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
-                  </button>
+
+                <!-- 2단: 넓어진 텍스트 & 음성 입력창 (커서 찍기 최적화) -->
+                <div class="pad-toolbar-row2">
+                  <div class="pad-input-box">
+                    <input id="memopad-text-input" type="text" placeholder="글자 중간 터치 후 말씀하세요..." 
+                      oninput="handlePadTextInput(this.value); trackCursor(this);" 
+                      onclick="trackCursor(this)"
+                      onkeyup="trackCursor(this)"
+                      onmouseup="trackCursor(this)"
+                      ontouchend="setTimeout(() => trackCursor(this), 40)"
+                      onfocus="setTimeout(() => trackCursor(this), 40)" />
+                    <button id="memopad-mic-btn" class="pad-mic-btn" onpointerdown="event.preventDefault()" onclick="toggleContinuousVoice('pad')">
+                      <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                    </button>
+                  </div>
                 </div>
-                <button class="pad-action-btn" onclick="saveMemoPadToDrawer()">💾 저장</button>
-                <button class="pad-close-btn" onclick="closeMemoPadDirect()">✕</button>
               </div>
 
               <div id="memopad-text-strip" class="memopad-text-strip" style="display:none;">
@@ -820,8 +840,8 @@ jobs:
                     onclick="trackCursor(this)"
                     onkeyup="trackCursor(this)" 
                     onmouseup="trackCursor(this)" 
-                    ontouchend="setTimeout(() => trackCursor(this), 50)" 
-                    onfocus="setTimeout(() => trackCursor(this), 50)"></textarea>
+                    ontouchend="setTimeout(() => trackCursor(this), 40)" 
+                    onfocus="setTimeout(() => trackCursor(this), 40)"></textarea>
                   <button id="edit-mic-btn" class="edit-mic-btn" onpointerdown="event.preventDefault()" onclick="toggleContinuousVoice('edit')">
                     <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                   </button>
@@ -849,8 +869,8 @@ jobs:
                     onclick="trackCursor(this)"
                     onkeyup="trackCursor(this)" 
                     onmouseup="trackCursor(this)" 
-                    ontouchend="setTimeout(() => trackCursor(this), 50)" 
-                    onfocus="setTimeout(() => trackCursor(this), 50)"></textarea>
+                    ontouchend="setTimeout(() => trackCursor(this), 40)" 
+                    onfocus="setTimeout(() => trackCursor(this), 40)"></textarea>
                   <button id="plan-mic-btn" class="edit-mic-btn" onpointerdown="event.preventDefault()" onclick="toggleContinuousVoice('plan-edit')">
                     <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                   </button>
@@ -924,11 +944,12 @@ jobs:
                 </div>
 
                 <div class="manual-card">
-                  <div class="manual-title">3. 📑 메모딱지 손글씨 지우기 & 제스처</div>
+                  <div class="manual-title">3. 📑 메모딱지 지우개 3종 & 제스처</div>
                   <div class="manual-desc">
-                    • **↩️ 한 획 취소**: 방금 잘못 그은 선이나 글씨를 터치 한 번으로 되돌리기<br>
-                    • **🔄 도화지 싹 지우기**: 전체 화면을 깨끗한 검정 도화지로 완전 리셋<br>
-                    • **더블탭 2단계 (톡톡)**: 상단 바가 열린 상태에서 빈 화면을 다시 두 번 치면 **생각서랍에 자동 저장 후 복귀**<br>
+                    • **🧹 부분 지우개**: 원하는 선만 문질러서 지우기<br>
+                    • **↩️ 취소**: 방금 그은 선이나 글씨 1획 되돌리기<br>
+                    • **🔄 싹지우기**: 화면 전체를 검정 도화지로 즉시 완전 리셋<br>
+                    • **더블탭 2단계 (톡톡)**: 상단 바 열린 상태에서 빈 화면을 다시 치면 **생각서랍 자동 저장 후 복귀**<br>
                     • **좌측 하단 쓸어올리기**: 메모지를 구겨 **휴지통으로 직행**<br>
                     • **우측 하단 쓸어올리기**: 즉시 **생각서랍에 저장 후 복귀**
                   </div>
@@ -963,10 +984,8 @@ jobs:
               };
 
               function trackCursor(el) {
-                if (el && el.id && cursorPositions.hasOwnProperty(el.id)) {
-                  if (typeof el.selectionStart === 'number') {
-                    cursorPositions[el.id] = { start: el.selectionStart, end: el.selectionEnd };
-                  }
+                if (el && typeof el.selectionStart === 'number') {
+                  cursorPositions[el.id] = { start: el.selectionStart, end: el.selectionEnd };
                 }
               }
 
@@ -1279,13 +1298,22 @@ jobs:
                 const el = document.getElementById(targetId);
                 if (!el) return;
 
-                let pos = cursorPositions[targetId];
-                let start = (pos && typeof pos.start === 'number' && pos.start >= 0 && pos.start <= el.value.length) 
-                  ? pos.start 
-                  : el.value.length;
-                let end = (pos && typeof pos.end === 'number' && pos.end >= start && pos.end <= el.value.length) 
-                  ? pos.end 
-                  : start;
+                let start = el.selectionStart;
+                let end = el.selectionEnd;
+
+                if (typeof start !== 'number' || document.activeElement !== el) {
+                  const saved = cursorPositions[targetId];
+                  if (saved && typeof saved.start === 'number') {
+                    start = saved.start;
+                    end = saved.end;
+                  } else {
+                    start = el.value.length;
+                    end = el.value.length;
+                  }
+                }
+
+                if (start < 0 || start > el.value.length) start = el.value.length;
+                if (end < start || end > el.value.length) end = start;
 
                 const val = el.value;
                 const before = val.substring(0, start);
@@ -1298,10 +1326,11 @@ jobs:
                 el.value = before + insertChunk + after;
 
                 const nextPos = start + insertChunk.length;
-                if (typeof el.setSelectionRange === 'function') {
-                  el.setSelectionRange(nextPos, nextPos);
-                }
                 cursorPositions[targetId] = { start: nextPos, end: nextPos };
+
+                try {
+                  el.setSelectionRange(nextPos, nextPos);
+                } catch (e) {}
 
                 if (targetId === 'prompt-input') handleInputChange(el);
                 if (targetId === 'memopad-text-input') handlePadTextInput(el.value);
@@ -1635,12 +1664,13 @@ jobs:
               let touchStartX = 0, touchStartY = 0;
               let isCornerGesture = null;
 
-              /* 실행 취소(Undo) 히스토리 스택 */
               let padHistory = [];
 
               function savePadState() {
-                if (padHistory.length > 20) padHistory.shift();
-                padHistory.push(padCtx.getImageData(0, 0, padCanvas.width, padCanvas.height));
+                if (padHistory.length > 25) padHistory.shift();
+                try {
+                  padHistory.push(padCtx.getImageData(0, 0, padCanvas.width, padCanvas.height));
+                } catch(e) {}
               }
 
               function undoPadStroke() {
@@ -1773,7 +1803,7 @@ jobs:
                 if (!isMoving) {
                   const dist = Math.hypot(x - touchStartX, y - touchStartY);
                   if (dist > MOVE_THRESHOLD) {
-                    savePadState(); // 새 획 시작 직전 상태 저장
+                    savePadState();
                     isMoving = true;
                     padDrawing = true;
                     padCtx.beginPath();
