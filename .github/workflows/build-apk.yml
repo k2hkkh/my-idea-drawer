@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: 4. 생각서랍 & 나의계획 2단 실행형 웹 UI 구성
+      - name: 4. 생각서랍 전체 통합 웹 UI 구성
         run: |
           mkdir -p www
           cat << 'EOF' > www/index.html
@@ -64,13 +64,14 @@ jobs:
                 overflow: hidden;
               }
               header {
-                padding: 10px 14px;
+                padding: 10px 12px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
                 background: var(--bg);
                 border-bottom: 1px solid var(--border);
                 flex-shrink: 0;
+                gap: 6px;
               }
               .header-btn {
                 background: var(--card);
@@ -84,29 +85,34 @@ jobs:
                 justify-content: center;
                 cursor: pointer;
                 font-size: 1.05rem;
+                flex-shrink: 0;
               }
-              
-              /* 상단 2분할 모드 전환 탭 */
+
+              /* 상단 3분할 모드 전환 탭 */
               .main-mode-switch {
                 display: flex;
                 background: #141416;
                 padding: 3px;
                 border-radius: 20px;
                 border: 1px solid var(--border);
-                gap: 4px;
+                gap: 2px;
+                flex: 1;
+                justify-content: center;
+                max-width: 320px;
               }
               .mode-btn {
-                padding: 6px 14px;
+                padding: 6px 10px;
                 border-radius: 16px;
                 border: none;
                 background: transparent;
                 color: var(--muted);
-                font-size: 0.85rem;
+                font-size: 0.8rem;
                 font-weight: 700;
                 cursor: pointer;
                 display: flex;
                 align-items: center;
-                gap: 4px;
+                gap: 3px;
+                white-space: nowrap;
                 transition: all 0.2s;
               }
               .mode-btn.active {
@@ -115,10 +121,10 @@ jobs:
                 box-shadow: 0 2px 8px rgba(37,99,235,0.4);
               }
 
-              /* 카테고리 바 (생각서랍 전용) */
+              /* 카테고리 바 */
               .category-bar {
                 display: flex;
-                padding: 8px 14px;
+                padding: 8px 12px;
                 background: #121214;
                 gap: 6px;
                 overflow-x: auto;
@@ -195,7 +201,7 @@ jobs:
                 object-fit: cover;
                 border-radius: 8px;
                 border: 1px solid var(--border);
-                background: #fff;
+                background: #000;
               }
               .card-content { font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap; }
               .card-actions {
@@ -203,6 +209,7 @@ jobs:
                 justify-content: flex-end;
                 gap: 6px;
                 margin-top: 6px;
+                flex-wrap: wrap;
               }
               .card-btn {
                 background: var(--surface);
@@ -219,7 +226,7 @@ jobs:
               .card-btn.delete { color: var(--danger); }
               .card-btn.plan-send { color: var(--accent); }
 
-              /* 나의계획 2단 대시보드 UI */
+              /* 나의계획 2단 UI */
               .plan-section-title {
                 font-size: 0.95rem;
                 font-weight: 700;
@@ -246,17 +253,9 @@ jobs:
                 display: flex;
                 flex-direction: column;
                 gap: 8px;
-                transition: border-color 0.2s;
               }
-              .plan-card.completed {
-                opacity: 0.6;
-                border-color: #27272a;
-              }
-              .plan-card-top {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-              }
+              .plan-card.completed { opacity: 0.6; border-color: #27272a; }
+              .plan-card-top { display: flex; align-items: center; gap: 10px; }
               .status-tag {
                 font-size: 0.72rem;
                 font-weight: 700;
@@ -268,16 +267,8 @@ jobs:
               .status-tag.waiting { background: #3f3f46; color: #d4d4d8; }
               .status-tag.progress { background: #1e3a8a; color: #60a5fa; }
               .status-tag.done { background: #064e3b; color: #34d399; }
-              .plan-title {
-                flex: 1;
-                font-size: 0.95rem;
-                font-weight: 500;
-                color: #ffffff;
-              }
-              .plan-title.completed {
-                text-decoration: line-through;
-                color: var(--muted);
-              }
+              .plan-title { flex: 1; font-size: 0.95rem; font-weight: 500; color: #ffffff; }
+              .plan-title.completed { text-decoration: line-through; color: var(--muted); }
               .plan-notes-box {
                 background: #121214;
                 border-radius: 8px;
@@ -434,13 +425,13 @@ jobs:
                 font-size: 1rem;
               }
 
-              /* 모달 공통 */
+              /* 풀스크린 모달 공통 */
               .modal-full {
                 display: none;
                 position: fixed;
-                top: 0; left: 0; right: 0; bottom: 0;
+                top: 0; left: 0; width: 100vw; height: 100vh;
                 background: #000000;
-                z-index: 100;
+                z-index: 1000;
                 flex-direction: column;
               }
               .modal-full.active { display: flex; }
@@ -451,6 +442,7 @@ jobs:
                 align-items: center;
                 border-bottom: 1px solid var(--border);
                 background: var(--card);
+                flex-shrink: 0;
               }
               .modal-body {
                 flex: 1;
@@ -461,42 +453,35 @@ jobs:
                 overflow-y: auto;
               }
 
-              /* 수정창 내 미디어 툴바 */
-              .edit-media-toolbar {
-                display: none;
-                gap: 6px;
+              /* 풀스크린 노트 수정창 스타일 */
+              .fullscreen-editor-area {
+                flex: 1;
+                width: 100%;
+                height: 100%;
                 background: #121214;
-                padding: 8px 10px;
-                border-radius: 10px;
                 border: 1px solid var(--border);
-                overflow-x: auto;
-              }
-              .edit-add-btn {
-                background: var(--surface);
-                border: 1px solid var(--border);
+                border-radius: 14px;
+                padding: 16px 50px 16px 16px;
+                font-size: 1.05rem;
+                line-height: 1.6;
                 color: #ffffff;
-                padding: 6px 10px;
-                border-radius: 8px;
-                font-size: 0.78rem;
-                cursor: pointer;
-                white-space: nowrap;
-                display: flex;
-                align-items: center;
-                gap: 4px;
+                resize: none;
+                outline: none;
+                user-select: text;
               }
 
-              /* 수정창 내 마이크 입력 래퍼 */
+              /* 수정창 내 마이크 입력 버튼 */
               .edit-input-wrapper {
                 position: relative;
-                width: 100%;
+                flex: 1;
                 display: flex;
               }
               .edit-mic-btn {
                 position: absolute;
-                right: 12px;
-                bottom: 12px;
-                width: 38px;
-                height: 38px;
+                right: 14px;
+                bottom: 14px;
+                width: 44px;
+                height: 44px;
                 border-radius: 50%;
                 background: #192233;
                 border: 1px solid #2d3d5a;
@@ -504,9 +489,9 @@ jobs:
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.5);
               }
-              .edit-mic-btn svg { width: 20px; height: 20px; fill: #94a3b8; }
+              .edit-mic-btn svg { width: 22px; height: 22px; fill: #94a3b8; }
               .edit-mic-btn.listening {
                 background: var(--danger);
                 border-color: #f87171;
@@ -514,42 +499,175 @@ jobs:
               }
               .edit-mic-btn.listening svg { fill: #ffffff; }
 
-              /* 스케치 전용 */
-              .palette-bar { display: flex; gap: 8px; align-items: center; }
-              .color-dot { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
-              .color-dot.active { border-color: #ffffff; transform: scale(1.1); }
-              .canvas-container {
-                flex: 1; background: #ffffff; border-radius: 14px; touch-action: none; position: relative; min-height: 260px; margin: 10px;
+              /* ================== 암전 풀스크린 메모딱지 (떡메모지) ================== */
+              #memopad-screen {
+                display: none;
+                position: fixed;
+                top: 0; left: 0; width: 100vw; height: 100vh;
+                background: #000000;
+                z-index: 2000;
+                touch-action: none;
+                overflow: hidden;
               }
-              canvas { width: 100%; height: 100%; display: block; border-radius: 14px; background: #ffffff; }
+              #memopad-screen.active { display: block; }
+              #memopad-canvas {
+                width: 100vw;
+                height: 100vh;
+                display: block;
+                background: #000000;
+              }
+              
+              /* 더블탭 시 등장하는 슬림 상단 툴바 */
+              .memopad-toolbar {
+                display: none;
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                background: rgba(28, 28, 30, 0.95);
+                backdrop-filter: blur(10px);
+                border: 1px solid #3a3a3c;
+                border-radius: 20px;
+                padding: 8px 12px;
+                align-items: center;
+                gap: 8px;
+                z-index: 2100;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+                animation: slideDown 0.2s ease-out;
+              }
+              .memopad-toolbar.active { display: flex; }
+              @keyframes slideDown { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+
+              .pad-palette { display: flex; gap: 6px; align-items: center; }
+              .color-dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
+              .color-dot.active { border-color: #ffffff; transform: scale(1.15); }
+              .pad-eraser-btn {
+                background: transparent; border: none; font-size: 1.1rem; cursor: pointer; opacity: 0.6;
+              }
+              .pad-eraser-btn.active { opacity: 1; transform: scale(1.15); }
+
+              .pad-input-box {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                background: #121214;
+                border-radius: 14px;
+                padding: 4px 8px;
+                border: 1px solid #2c2c2e;
+              }
+              .pad-input-box input {
+                flex: 1;
+                background: transparent;
+                border: none;
+                color: #ffffff;
+                font-size: 0.85rem;
+                outline: none;
+                user-select: text;
+              }
+              .pad-mic-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                font-size: 1.05rem;
+              }
+              .pad-mic-btn.listening { animation: micPulse 1.2s infinite; }
+
+              /* 타이핑/음성 입력 텍스트 스티커 띠 */
+              .memopad-text-strip {
+                position: absolute;
+                top: 70px;
+                left: 14px;
+                right: 14px;
+                background: rgba(37, 99, 235, 0.85);
+                color: #ffffff;
+                padding: 8px 12px;
+                border-radius: 10px;
+                font-size: 0.9rem;
+                font-weight: bold;
+                z-index: 2050;
+                cursor: move;
+                touch-action: none;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+              }
+
+              /* 모서리 제스처 안내 힌트 (은은한 표시) */
+              .corner-guide {
+                position: absolute;
+                bottom: 12px;
+                font-size: 0.72rem;
+                color: #52525b;
+                pointer-events: none;
+                z-index: 2020;
+              }
+              .corner-guide.left { left: 14px; }
+              .corner-guide.right { right: 14px; }
+
+              /* 보관함 서브탭 */
+              .archive-subtabs {
+                display: flex;
+                gap: 6px;
+                border-bottom: 1px solid var(--border);
+                padding-bottom: 8px;
+              }
+              .subtab-btn {
+                padding: 6px 12px;
+                border-radius: 10px;
+                background: var(--surface);
+                border: none;
+                color: var(--muted);
+                font-size: 0.82rem;
+                font-weight: 600;
+                cursor: pointer;
+              }
+              .subtab-btn.active {
+                background: var(--primary);
+                color: #ffffff;
+              }
+
+              /* 매뉴얼 카드 */
+              .manual-card {
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: 14px;
+                padding: 14px;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+              }
+              .manual-title { font-size: 0.95rem; font-weight: bold; color: var(--accent); }
+              .manual-desc { font-size: 0.85rem; color: #d4d4d8; line-height: 1.5; }
             </style>
           </head>
           <body>
 
             <!-- 헤더 -->
             <header>
-              <button class="header-btn" onclick="resetToIdeaDrawer()">💡</button>
+              <button class="header-btn" onclick="resetToIdeaDrawer()" title="첫 생각">💡</button>
               
-              <!-- 상단 2분할 탭 -->
+              <!-- 상단 3분할 탭 -->
               <div class="main-mode-switch">
                 <button id="tab-btn-idea" class="mode-btn active" onclick="switchMainMode('idea')">💡 생각서랍</button>
                 <button id="tab-btn-plan" class="mode-btn" onclick="switchMainMode('plan')">📋 나의계획</button>
+                <button id="tab-btn-pad" class="mode-btn" onclick="openMemoPadDirect()">📑 메모딱지</button>
               </div>
 
-              <button class="header-btn" onclick="openArchiveModal()">📂</button>
+              <div style="display:flex; gap:6px;">
+                <button class="header-btn" onclick="openManualModal()" title="1분 사용 매뉴얼">❓</button>
+                <button class="header-btn" onclick="openArchiveModal()" title="보관함/휴지통/백업">📂</button>
+              </div>
             </header>
 
-            <!-- 1. 생각서랍 전용 카테고리 바 -->
+            <!-- 1. 생각서랍 카테고리 바 -->
             <div class="category-bar" id="idea-category-bar">
               <div class="category-pill active" onclick="selectCategory('첫 생각')">💡 첫 생각</div>
               <div class="category-pill" onclick="selectCategory('노트')">📝 노트</div>
+              <div class="category-pill" onclick="selectCategory('메모딱지')">📑 메모딱지</div>
               <div class="category-pill" onclick="selectCategory('사진')">📷 사진</div>
-              <div class="category-pill" onclick="selectCategory('스케치')">🎨 스케치</div>
               <div class="category-pill" onclick="selectCategory('동영상')">🎬 동영상</div>
               <div class="category-pill" onclick="selectCategory('전체')">📂 전체</div>
             </div>
 
-            <!-- 2. 메인 뷰: 생각서랍 피드 -->
+            <!-- 2. 생각서랍 피드 -->
             <div class="view-container" id="idea-feed-container">
               <div class="empty-canvas" id="empty-hint">
                 떠오르는 생각을 자유롭게 기록하세요.<br>
@@ -557,16 +675,14 @@ jobs:
               </div>
             </div>
 
-            <!-- 3. 메인 뷰: 나의계획 피드 (2단 실행형 구조) -->
+            <!-- 3. 나의계획 2단 실행 대시보드 -->
             <div class="view-container" id="plan-feed-container" style="display:none;">
-              <!-- 오늘 할 일 섹션 -->
               <div class="plan-section-title">
                 <span>⚡ 오늘 집중 (Today Focus)</span>
                 <span class="plan-count-badge" id="today-count-badge">0건</span>
               </div>
               <div id="today-plan-list" style="display:flex; flex-direction:column; gap:8px;"></div>
 
-              <!-- 진행 중 및 대기 섹션 -->
               <div class="plan-section-title" style="margin-top:16px;">
                 <span>🔄 진행 중 및 보관 (Backlog)</span>
                 <span class="plan-count-badge" id="backlog-count-badge">0건</span>
@@ -588,13 +704,13 @@ jobs:
                   <div class="menu-item-icon">🖼️</div>
                   <span>사진 선택 (다중)</span>
                 </div>
-                <div class="menu-item" onclick="openSketchModal('main')">
-                  <div class="menu-item-icon">🎨</div>
-                  <span>스케치 그려서 추가</span>
-                </div>
                 <div class="menu-item" onclick="triggerVideo('main')">
                   <div class="menu-item-icon">🎬</div>
                   <span>동영상 추가</span>
+                </div>
+                <div class="menu-item" onclick="openMemoPadDirect()">
+                  <div class="menu-item-icon">📑</div>
+                  <span>메모딱지 작성</span>
                 </div>
               </div>
 
@@ -621,29 +737,38 @@ jobs:
             <input type="file" id="camera-file" accept="image/*" capture="environment" style="display:none;" onchange="processMediaFiles(this, '사진')" />
             <input type="file" id="gallery-file" accept="image/*" multiple style="display:none;" onchange="processMediaFiles(this, '사진')" />
             <input type="file" id="video-file" accept="video/*" capture="environment" style="display:none;" onchange="processVideoFile(this)" />
+            <input type="file" id="backup-import-file" accept=".json" style="display:none;" onchange="importBackupData(this)" />
 
-            <!-- 스케치 모달 -->
-            <div id="sketch-modal" class="modal-full">
-              <div class="modal-top">
-                <div class="palette-bar">
-                  <div class="color-dot active" style="background:#000000;" onclick="setDrawColor('#000000', this)"></div>
-                  <div class="color-dot" style="background:#ef4444;" onclick="setDrawColor('#ef4444', this)"></div>
-                  <div class="color-dot" style="background:#2563eb;" onclick="setDrawColor('#2563eb', this)"></div>
-                  <div class="color-dot" style="background:#10b981;" onclick="setDrawColor('#10b981', this)"></div>
-                  <div class="color-dot" style="background:#f59e0b;" onclick="setDrawColor('#f59e0b', this)"></div>
+            <!-- ================== 암전 풀스크린 메모딱지 캔버스 ================== -->
+            <div id="memopad-screen">
+              <!-- 더블탭 1단계 툴바 -->
+              <div id="memopad-toolbar" class="memopad-toolbar">
+                <div class="pad-palette">
+                  <div class="color-dot active" style="background:#ffffff;" onclick="setPadColor('#ffffff', this)"></div>
+                  <div class="color-dot" style="background:#facc15;" onclick="setPadColor('#facc15', this)"></div>
+                  <div class="color-dot" style="background:#38bdf8;" onclick="setPadColor('#38bdf8', this)"></div>
+                  <button id="pad-eraser-btn" class="pad-eraser-btn" onclick="togglePadEraser()">🧹</button>
                 </div>
-                <div style="display:flex; gap:6px;">
-                  <button class="card-btn" style="background:var(--surface);" onclick="clearCanvas()">지우기</button>
-                  <button class="card-btn" style="background:var(--primary);" onclick="attachSketch()">＋ 스케치 첨부</button>
-                  <button class="card-btn" style="background:var(--danger);" onclick="closeSketchModal()">닫기</button>
+                <div class="pad-input-box">
+                  <input id="memopad-text-input" type="text" placeholder="글자 입력..." oninput="handlePadTextInput(this.value)" />
+                  <button id="memopad-mic-btn" class="pad-mic-btn" onclick="toggleContinuousVoice('pad')">🎙️</button>
                 </div>
+                <button class="card-btn" style="background:var(--primary);" onclick="saveMemoPadToDrawer()">💾 저장</button>
+                <button class="card-btn" style="background:var(--surface);" onclick="closeMemoPadDirect()">✕</button>
               </div>
-              <div class="canvas-container" id="canvas-wrapper">
-                <canvas id="sketch-board"></canvas>
+
+              <!-- 상단 텍스트 스티커 띠 -->
+              <div id="memopad-text-strip" class="memopad-text-strip" style="display:none;">
+                <span id="memopad-text-display"></span>
               </div>
+
+              <canvas id="memopad-canvas"></canvas>
+
+              <div class="corner-guide left">🗑️ 좌측 쓸어올려 버리기</div>
+              <div class="corner-guide right">💾 우측 쓸어올려 저장</div>
             </div>
 
-            <!-- 생각 수정 모달 -->
+            <!-- ================== 풀스크린 생각 수정 모달 (100vh) ================== -->
             <div id="edit-modal" class="modal-full">
               <div class="modal-top">
                 <span id="edit-modal-title" style="font-weight:bold; font-size:1rem;">✏️ 생각 수정</span>
@@ -652,11 +777,10 @@ jobs:
                   <button class="card-btn" style="background:var(--danger);" onclick="closeEditModal()">취소</button>
                 </div>
               </div>
-              <div class="modal-body">
-                <div id="edit-media-toolbar" class="edit-media-toolbar"></div>
-                <div id="edit-media-preview" class="card-media-grid"></div>
-                <div class="edit-input-wrapper">
-                  <textarea id="edit-input" class="main-input" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 50px 12px 14px; min-height:180px; width:100%;" placeholder="수정할 메모를 입력하거나 마이크로 이어서 말씀하세요..."
+              <div class="modal-body" style="padding:14px; display:flex; flex-direction:column; height:calc(100vh - 65px);">
+                <div id="edit-media-preview" class="card-media-grid" style="flex-shrink:0;"></div>
+                <div class="edit-input-wrapper" style="flex:1; margin-top:8px;">
+                  <textarea id="edit-input" class="fullscreen-editor-area" placeholder="수정할 내용을 자유롭게 입력하세요..."
                     oninput="trackCursor(this)" onkeyup="trackCursor(this)" onmouseup="trackCursor(this)" ontouchend="trackCursor(this)" onfocus="trackCursor(this)"></textarea>
                   <button id="edit-mic-btn" class="edit-mic-btn" onclick="toggleContinuousVoice('edit')">
                     <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
@@ -678,9 +802,9 @@ jobs:
                 <label style="font-size:0.8rem; color:var(--muted);">할 일 / 프로젝트 제목</label>
                 <input id="plan-edit-title" class="main-input" style="background:var(--card); border:1px solid var(--border); border-radius:10px; padding:10px; font-size:1rem; font-weight:bold;" />
 
-                <label style="font-size:0.8rem; color:var(--muted); margin-top:8px;">진행 메모 추가 (음성 입력 가능)</label>
+                <label style="font-size:0.8rem; color:var(--muted); margin-top:8px;">새로운 진행 메모 (음성 입력 가능)</label>
                 <div class="edit-input-wrapper">
-                  <textarea id="plan-edit-newnote" class="main-input" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 50px 12px 14px; min-height:100px; width:100%;" placeholder="새로운 진행상황을 말씀하시거나 입력하세요..."
+                  <textarea id="plan-edit-newnote" class="main-input" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 50px 12px 14px; min-height:90px; width:100%;" placeholder="새로운 진행상황을 말씀하시거나 입력하세요..."
                     oninput="trackCursor(this)" onkeyup="trackCursor(this)" onmouseup="trackCursor(this)" ontouchend="trackCursor(this)" onfocus="trackCursor(this)"></textarea>
                   <button id="plan-mic-btn" class="edit-mic-btn" onclick="toggleContinuousVoice('plan-edit')">
                     <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
@@ -692,17 +816,94 @@ jobs:
               </div>
             </div>
 
-            <!-- 보관함 모달 -->
+            <!-- 통합 보관함 / 휴지통 / 백업 모달 -->
             <div id="archive-modal" class="modal-full">
               <div class="modal-top">
-                <span style="font-weight:bold; font-size:1.05rem;">📂 생각보관함 (전체)</span>
+                <span style="font-weight:bold; font-size:1.05rem;">📂 생각보관함 & 관리</span>
                 <button class="card-btn" style="background:var(--danger);" onclick="closeArchiveModal()">닫기</button>
               </div>
+              <div style="padding:10px 14px; background:#141416;">
+                <div class="archive-subtabs">
+                  <button id="subtab-archive" class="subtab-btn active" onclick="switchArchiveTab('archive')">📂 보관함</button>
+                  <button id="subtab-trash" class="subtab-btn" onclick="switchArchiveTab('trash')">🗑️ 떡메모 휴지통</button>
+                  <button id="subtab-backup" class="subtab-btn" onclick="switchArchiveTab('backup')">💾 백업 및 복원</button>
+                </div>
+              </div>
+
+              <!-- 서브탭 1: 전체 생각 보관함 -->
               <div class="view-container" id="archive-feed"></div>
+
+              <!-- 서브탭 2: 떡메모 휴지통 -->
+              <div class="view-container" id="trash-feed" style="display:none;"></div>
+
+              <!-- 서브탭 3: 데이터 백업 및 복원 -->
+              <div class="view-container" id="backup-pane" style="display:none; gap:16px;">
+                <div class="thought-card">
+                  <div style="font-weight:bold; font-size:1rem; color:var(--accent);">📥 전체 데이터 백업 (파일 다운로드)</div>
+                  <div style="font-size:0.85rem; color:var(--muted); line-height:1.5;">
+                    현재까지 작성된 모든 생각, 계획표, 메모딱지를 하나의 백업 파일(`idea_drawer_backup.json`)로 스마트폰에 안전하게 저장합니다.
+                  </div>
+                  <button class="card-btn" style="background:var(--primary); padding:10px; justify-content:center; margin-top:6px;" onclick="exportBackupData()">
+                    💾 백업 파일 다운로드
+                  </button>
+                </div>
+
+                <div class="thought-card">
+                  <div style="font-weight:bold; font-size:1rem; color:var(--success);">📤 데이터 복원 (기기 변경 시)</div>
+                  <div style="font-size:0.85rem; color:var(--muted); line-height:1.5;">
+                    새 스마트폰이나 다른 기기에서 백업 파일을 불러와 기존의 모든 생각과 계획을 1초 만에 원상 복원합니다.
+                  </div>
+                  <button class="card-btn" style="background:var(--surface); border:1px solid var(--border); padding:10px; justify-content:center; margin-top:6px;" onclick="document.getElementById('backup-import-file').click()">
+                    📂 백업 파일 선택하여 복원
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 1분 사용 매뉴얼 모달 -->
+            <div id="manual-modal" class="modal-full">
+              <div class="modal-top">
+                <span style="font-weight:bold; font-size:1.05rem;">💡 생각서랍 활용 1분 가이드</span>
+                <button class="card-btn" style="background:var(--danger);" onclick="closeManualModal()">닫기</button>
+              </div>
+              <div class="modal-body" style="gap:12px;">
+                <div class="manual-card">
+                  <div class="manual-title">1. 노란 전구(💡) 플로팅 버튼</div>
+                  <div class="manual-desc">
+                    다른 앱(유튜브, 지도 등)을 보는 중에도 화면 밖의 노란 전구를 터치하고 편하게 말씀하세요. 녹음된 음성은 자동으로 **[생각서랍]**에 깨끗하게 저장됩니다.
+                  </div>
+                </div>
+
+                <div class="manual-card">
+                  <div class="manual-title">2. 상단 3분할 모드 전환</div>
+                  <div class="manual-desc">
+                    • **💡 생각서랍**: 떠오르는 아이디어를 음성, 타이핑, 사진으로 낚아채는 빈 도화지<br>
+                    • **📋 나의계획**: `⚡ 오늘 집중`과 `🔄 진행/보관`으로 나뉜 2단 실행 대시보드 (원터치 상태 순환)<br>
+                    • **📑 메모딱지**: 버튼 없는 암전 화면에서 자유롭게 손글씨를 쓰고 찢어버리는 아날로그 낙서장
+                  </div>
+                </div>
+
+                <div class="manual-card">
+                  <div class="manual-title">3. 📑 메모딱지 제스처 (핵심 손맛)</div>
+                  <div class="manual-desc">
+                    • **더블탭 1단계 (톡톡)**: 화면을 두 번 두드리면 상단에 펜 색상, 지우개, 음성/자판 입력바 등장<br>
+                    • **더블탭 2단계 (톡톡)**: 상단 바가 열린 상태에서 빈 화면을 다시 두 번 치면 **생각서랍에 자동 저장 후 복귀**<br>
+                    • **좌측 하단 쓸어올리기**: 메모지를 구겨 **휴지통으로 직행**<br>
+                    • **우측 하단 쓸어올리기**: 즉시 **생각서랍에 저장 후 복귀**
+                  </div>
+                </div>
+
+                <div class="manual-card">
+                  <div class="manual-title">4. 데이터 백업 및 휴지통 복원</div>
+                  <div class="manual-desc">
+                    우측 상단 보관함(`📂`)을 열면 실수로 버린 메모딱지를 되살리는 **휴지통**과 스마트폰을 바꿀 때 데이터를 안전하게 보존하는 **원터치 백업/복원** 기능이 있습니다.
+                  </div>
+                </div>
+              </div>
             </div>
 
             <script>
-              let currentMainMode = 'idea'; // 'idea' 또는 'plan'
+              let currentMainMode = 'idea';
               let currentCategory = '첫 생각';
               let currentAttachments = [];
               let editingThoughtId = null;
@@ -728,11 +929,12 @@ jobs:
               let lastProcessedVoice = '';
               let lastProcessedTime = 0;
 
-              /* 상단 모드 전환 (생각서랍 ↔ 나의계획) */
+              /* 상단 모드 전환 */
               function switchMainMode(mode) {
                 currentMainMode = mode;
                 document.getElementById('tab-btn-idea').classList.toggle('active', mode === 'idea');
                 document.getElementById('tab-btn-plan').classList.toggle('active', mode === 'plan');
+                document.getElementById('tab-btn-pad').classList.remove('active');
 
                 const ideaCategoryBar = document.getElementById('idea-category-bar');
                 const ideaFeed = document.getElementById('idea-feed-container');
@@ -747,11 +949,11 @@ jobs:
                   plusBtn.style.display = 'flex';
                   input.placeholder = '생각을 입력하거나 사진·영상을 덧붙이세요...';
                   renderFeed();
-                } else {
+                } else if (mode === 'plan') {
                   ideaCategoryBar.style.display = 'none';
                   ideaFeed.style.display = 'none';
                   planFeed.style.display = 'flex';
-                  plusBtn.style.display = 'none'; // 계획 모드에서는 간결성을 위해 미디어 버튼 숨김
+                  plusBtn.style.display = 'none';
                   input.placeholder = '⚡ 오늘 할 일 또는 새로운 계획을 등록하세요...';
                   renderPlanView();
                 }
@@ -894,7 +1096,6 @@ jobs:
                 }
               }
 
-              /* 하단 전송 처리 (생각서랍 / 나의계획 자동 분기) */
               function handleSendAction() {
                 const input = document.getElementById('prompt-input');
                 const text = input.value.trim();
@@ -907,16 +1108,13 @@ jobs:
                     let category = '노트';
                     if (hasAttachments) {
                       const hasVideo = currentAttachments.some(a => a.type === '동영상');
-                      const hasSketch = currentAttachments.some(a => a.type === '스케치');
                       const hasPhoto = currentAttachments.some(a => a.type === '사진');
                       if (hasVideo) category = '동영상';
-                      else if (hasSketch) category = '스케치';
                       else if (hasPhoto) category = '사진';
                     }
                     saveThought(category, text, [...currentAttachments]);
                     selectCategory('첫 생각');
                   } else {
-                    // 나의계획 모드: '오늘 할 일'로 즉시 등록
                     savePlan(text, true);
                     renderPlanView();
                   }
@@ -940,6 +1138,7 @@ jobs:
                 let targetId = 'prompt-input';
                 if (target === 'edit') targetId = 'edit-input';
                 else if (target === 'plan-edit') targetId = 'plan-edit-newnote';
+                else if (target === 'pad') targetId = 'memopad-text-input';
 
                 const el = document.getElementById(targetId);
                 if (el) trackCursor(el);
@@ -975,6 +1174,7 @@ jobs:
                 const btnMicMain = document.getElementById('btn-mic-main');
                 const btnMicEdit = document.getElementById('edit-mic-btn');
                 const btnMicPlan = document.getElementById('plan-mic-btn');
+                const btnMicPad = document.getElementById('memopad-mic-btn');
 
                 [btnWave, btnMicMain, btnMicEdit, btnMicPlan].forEach(btn => {
                   if (btn) {
@@ -982,6 +1182,11 @@ jobs:
                     else btn.classList.remove('listening');
                   }
                 });
+
+                if (btnMicPad) {
+                  if (listening) btnMicPad.classList.add('listening');
+                  else btnMicPad.classList.remove('listening');
+                }
               }
 
               let webSpeechInstance = null;
@@ -1013,6 +1218,13 @@ jobs:
                 if (clean === lastProcessedVoice && (now - lastProcessedTime < 1800)) return;
                 lastProcessedVoice = clean;
                 lastProcessedTime = now;
+
+                if (activeVoiceTarget === 'pad') {
+                  const padInput = document.getElementById('memopad-text-input');
+                  padInput.value = (padInput.value ? padInput.value + ' ' : '') + clean;
+                  handlePadTextInput(padInput.value);
+                  return;
+                }
 
                 let targetId = 'prompt-input';
                 if (activeVoiceTarget === 'edit') targetId = 'edit-input';
@@ -1068,7 +1280,7 @@ jobs:
               setInterval(pollFloatingVoiceText, 300);
               window.addEventListener('DOMContentLoaded', pollFloatingVoiceText);
 
-              /* 저장소 관리: 생각서랍 */
+              /* ================== 생각서랍 스토리지 ================== */
               function getThoughtStorage() {
                 const data = localStorage.getItem('idea_drawer_storage') || '[]';
                 try { return JSON.parse(data); } catch (e) { return []; }
@@ -1089,7 +1301,7 @@ jobs:
                 setThoughtStorage(list);
               }
 
-              /* 저장소 관리: 나의계획 */
+              /* ================== 나의계획 스토리지 ================== */
               function getPlanStorage() {
                 const data = localStorage.getItem('plan_drawer_storage') || '[]';
                 try { return JSON.parse(data); } catch (e) { return []; }
@@ -1104,7 +1316,7 @@ jobs:
                 list.unshift({
                   id: Date.now(),
                   title: title.trim(),
-                  status: '대기', // '대기' | '진행중' | '완료'
+                  status: '대기',
                   isToday: isToday,
                   notes: [],
                   updatedAt: new Date().toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })
@@ -1112,7 +1324,15 @@ jobs:
                 setPlanStorage(list);
               }
 
-              /* 생각서랍 카드 -> 나의계획으로 전송 */
+              /* ================== 떡메모 전용 휴지통 스토리지 ================== */
+              function getPadTrashStorage() {
+                const data = localStorage.getItem('memopad_trash_storage') || '[]';
+                try { return JSON.parse(data); } catch (e) { return []; }
+              }
+              function setPadTrashStorage(arr) {
+                try { localStorage.setItem('memopad_trash_storage', JSON.stringify(arr)); } catch (e) {}
+              }
+
               function sendThoughtToPlan(id) {
                 const thought = getThoughtStorage().find(t => t.id === id);
                 if (thought) {
@@ -1122,7 +1342,7 @@ jobs:
                 }
               }
 
-              /* 생각서랍 피드 렌더링 */
+              /* ================== 피드 렌더링 ================== */
               function renderFeed() {
                 const list = getThoughtStorage();
                 const feed = document.getElementById('idea-feed-container');
@@ -1180,7 +1400,7 @@ jobs:
                 }
               }
 
-              /* 나의계획 피드 렌더링 (2단 구조) */
+              /* ================== 나의계획 렌더링 ================== */
               function renderPlanView() {
                 const list = getPlanStorage();
                 const todayList = list.filter(p => p.isToday);
@@ -1232,7 +1452,6 @@ jobs:
                 `;
               }
 
-              /* 원터치 상태 순환 (대기 -> 진행중 -> 완료) */
               function cyclePlanStatus(id) {
                 const list = getPlanStorage();
                 const item = list.find(p => p.id === id);
@@ -1260,7 +1479,57 @@ jobs:
                 }
               }
 
-              /* 나의계획 상세 수정 모달 */
+              /* ================== 풀스크린 생각 수정창 ================== */
+              function openEditModal(id) {
+                const item = getThoughtStorage().find(i => i.id === id);
+                if (item) {
+                  editingThoughtId = id;
+                  editingMediaList = JSON.parse(JSON.stringify(item.mediaList || []));
+                  const editArea = document.getElementById('edit-input');
+                  editArea.value = item.content || '';
+                  cursorPositions['edit-input'] = { start: editArea.value.length, end: editArea.value.length };
+                  
+                  const cat = item.category || item.type || '노트';
+                  document.getElementById('edit-modal-title').innerText = `✏️ [${cat}] 풀스크린 수정`;
+                  renderEditMediaPreview();
+                  document.getElementById('edit-modal').classList.add('active');
+                }
+              }
+
+              function renderEditMediaPreview() {
+                const mediaBox = document.getElementById('edit-media-preview');
+                if (editingMediaList.length === 0) { mediaBox.innerHTML = ''; return; }
+                mediaBox.innerHTML = editingMediaList.map((m, idx) => `
+                  <div style="position:relative; width:100%; height:110px;">
+                    <img src="${m.data}" class="media-thumb-item" style="width:100%; height:100%; object-fit:cover;" />
+                    <button onclick="removeEditMedia(${idx})" style="position:absolute; top:4px; right:4px; width:22px; height:22px; border-radius:50%; background:var(--danger); color:#fff; border:none; font-size:0.75rem; cursor:pointer;">✕</button>
+                  </div>
+                `).join('');
+              }
+              function removeEditMedia(idx) { editingMediaList.splice(idx, 1); renderEditMediaPreview(); }
+
+              function closeEditModal() {
+                if (isListeningContinuous) stopContinuousVoice();
+                document.getElementById('edit-modal').classList.remove('active');
+                editingThoughtId = null;
+                editingMediaList = [];
+              }
+
+              function confirmEditThought() {
+                if (isListeningContinuous) stopContinuousVoice();
+                const text = document.getElementById('edit-input').value.trim();
+                const list = getThoughtStorage();
+                const target = list.find(i => i.id === editingThoughtId);
+                if (target) {
+                  target.content = text;
+                  target.mediaList = editingMediaList;
+                  target.time = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) + ' (수정됨)';
+                  setThoughtStorage(list);
+                }
+                closeEditModal();
+              }
+
+              /* 계획 수정 모달 */
               function openPlanEditModal(id) {
                 const item = getPlanStorage().find(p => p.id === id);
                 if (item) {
@@ -1302,137 +1571,221 @@ jobs:
                 closePlanEditModal();
               }
 
-              /* 생각서랍 수정 모달 */
-              function openEditModal(id) {
-                const item = getThoughtStorage().find(i => i.id === id);
-                if (item) {
-                  editingThoughtId = id;
-                  editingMediaList = JSON.parse(JSON.stringify(item.mediaList || []));
-                  const editArea = document.getElementById('edit-input');
-                  editArea.value = item.content || '';
-                  cursorPositions['edit-input'] = { start: editArea.value.length, end: editArea.value.length };
-                  
-                  const cat = item.category || item.type || '노트';
-                  document.getElementById('edit-modal-title').innerText = `✏️ [${cat}] 수정`;
+              /* ================== 암전 풀스크린 메모딱지 엔진 ================== */
+              const padScreen = document.getElementById('memopad-screen');
+              const padCanvas = document.getElementById('memopad-canvas');
+              const padCtx = padCanvas.getContext('2d');
+              const padToolbar = document.getElementById('memopad-toolbar');
+              const padTextStrip = document.getElementById('memopad-text-strip');
+              const padTextDisplay = document.getElementById('memopad-text-display');
 
-                  renderCustomEditToolbar(cat, editingMediaList);
-                  renderEditMediaPreview();
-                  document.getElementById('edit-modal').classList.add('active');
-                }
+              let padDrawing = false;
+              let padColor = '#ffffff';
+              let isPadEraser = false;
+              let padStrokeCount = 0;
+
+              let lastTapTime = 0;
+              let lastTapX = 0, lastTapY = 0;
+
+              let touchStartX = 0, touchStartY = 0;
+              let isCornerGesture = null; // 'left' | 'right' | null
+
+              function openMemoPadDirect() {
+                closePlusMenu();
+                padScreen.classList.add('active');
+                padToolbar.classList.remove('active');
+                padTextStrip.style.display = 'none';
+                document.getElementById('memopad-text-input').value = '';
+                padTextDisplay.innerText = '';
+                padStrokeCount = 0;
+
+                setTimeout(() => {
+                  padCanvas.width = window.innerWidth;
+                  padCanvas.height = window.innerHeight;
+                  padCtx.fillStyle = '#000000';
+                  padCtx.fillRect(0, 0, padCanvas.width, padCanvas.height);
+                  setPadColor('#ffffff');
+                }, 30);
               }
 
-              function renderCustomEditToolbar(category, mediaList) {
-                const toolbar = document.getElementById('edit-media-toolbar');
-                let buttons = '';
-                if (category.includes('스케치') || mediaList.some(m => m.type === '스케치')) {
-                  buttons += `<button class="edit-add-btn" onclick="openSketchModal('edit')">🎨 스케치 추가</button>`;
-                } else if (category.includes('사진') || mediaList.some(m => m.type === '사진')) {
-                  buttons += `<button class="edit-add-btn" onclick="triggerCamera('edit')">📷 촬영 추가</button><button class="edit-add-btn" onclick="triggerGallery('edit')">🖼️ 사진 추가</button>`;
-                } else if (category.includes('동영상') || mediaList.some(m => m.type === '동영상')) {
-                  buttons += `<button class="edit-add-btn" onclick="triggerVideo('edit')">🎬 영상 추가</button>`;
-                }
-                toolbar.style.display = buttons ? 'flex' : 'none';
-                toolbar.innerHTML = buttons;
-              }
-
-              function renderEditMediaPreview() {
-                const mediaBox = document.getElementById('edit-media-preview');
-                mediaBox.innerHTML = editingMediaList.map((m, idx) => `
-                  <div style="position:relative; width:100%; height:110px;">
-                    <img src="${m.data}" class="media-thumb-item" style="width:100%; height:100%; object-fit:cover;" />
-                    <button onclick="removeEditMedia(${idx})" style="position:absolute; top:4px; right:4px; width:22px; height:22px; border-radius:50%; background:var(--danger); color:#fff; border:none; font-size:0.75rem; cursor:pointer;">✕</button>
-                  </div>
-                `).join('');
-              }
-              function removeEditMedia(idx) { editingMediaList.splice(idx, 1); renderEditMediaPreview(); }
-
-              function closeEditModal() {
+              function closeMemoPadDirect() {
                 if (isListeningContinuous) stopContinuousVoice();
-                document.getElementById('edit-modal').classList.remove('active');
-                editingThoughtId = null;
-                editingMediaList = [];
+                padScreen.classList.remove('active');
+                padToolbar.classList.remove('active');
               }
 
-              function confirmEditThought() {
-                if (isListeningContinuous) stopContinuousVoice();
-                const text = document.getElementById('edit-input').value.trim();
-                const list = getThoughtStorage();
-                const target = list.find(i => i.id === editingThoughtId);
-                if (target) {
-                  target.content = text;
-                  target.mediaList = editingMediaList;
-                  if (editingMediaList.length > 0) {
-                    if (editingMediaList.some(a => a.type === '동영상')) target.category = '동영상';
-                    else if (editingMediaList.some(a => a.type === '스케치')) target.category = '스케치';
-                    else if (editingMediaList.some(a => a.type === '사진')) target.category = '사진';
-                  } else {
-                    target.category = '노트';
-                  }
-                  target.time = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) + ' (수정됨)';
-                  setThoughtStorage(list);
-                }
-                closeEditModal();
-              }
-
-              /* 스케치 모달 */
-              const canvas = document.getElementById('sketch-board');
-              const ctx = canvas.getContext('2d');
-              let isDrawing = false;
-              let currentColor = '#000000';
-
-              function setDrawColor(color, el) {
-                currentColor = color;
+              function setPadColor(color, el) {
+                padColor = color;
+                isPadEraser = false;
                 document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
                 if (el) el.classList.add('active');
-                ctx.strokeStyle = currentColor;
+                document.getElementById('pad-eraser-btn').classList.remove('active');
+                padCtx.strokeStyle = padColor;
+                padCtx.lineWidth = 3.5;
+                padCtx.lineCap = 'round';
+                padCtx.lineJoin = 'round';
               }
 
-              function openSketchModal(context = 'main') {
-                activeTargetContext = context;
-                closePlusMenu();
-                document.getElementById('sketch-modal').classList.add('active');
-                setTimeout(() => {
-                  const box = document.getElementById('canvas-wrapper');
-                  canvas.width = box.clientWidth || 300;
-                  canvas.height = box.clientHeight || 300;
-                  ctx.fillStyle = '#ffffff';
-                  ctx.fillRect(0, 0, canvas.width, canvas.height);
-                  ctx.lineWidth = 4;
-                  ctx.lineCap = 'round';
-                  ctx.strokeStyle = currentColor;
-                }, 50);
-              }
-              function closeSketchModal() { document.getElementById('sketch-modal').classList.remove('active'); }
-              function clearCanvas() { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
-
-              function attachSketch() {
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-                const item = { type: '스케치', data: dataUrl, isVideo: false };
-                if (activeTargetContext === 'edit') {
-                  editingMediaList.push(item);
-                  renderEditMediaPreview();
+              function togglePadEraser() {
+                isPadEraser = !isPadEraser;
+                document.getElementById('pad-eraser-btn').classList.toggle('active', isPadEraser);
+                if (isPadEraser) {
+                  padCtx.strokeStyle = '#000000';
+                  padCtx.lineWidth = 22;
                 } else {
-                  currentAttachments.push(item);
-                  renderAttachmentTray();
-                  updateSendButtonState();
+                  setPadColor(padColor);
                 }
-                closeSketchModal();
               }
 
-              function getPos(e) {
-                const r = canvas.getBoundingClientRect();
-                const t = e.touches ? e.touches[0] : e;
-                return { x: t.clientX - r.left, y: t.clientY - r.top };
+              function handlePadTextInput(val) {
+                if (val && val.trim().length > 0) {
+                  padTextStrip.style.display = 'block';
+                  padTextDisplay.innerText = val.trim();
+                } else {
+                  padTextStrip.style.display = 'none';
+                }
               }
-              canvas.addEventListener('mousedown', (e) => { isDrawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
-              canvas.addEventListener('mousemove', (e) => { if (!isDrawing) return; ctx.strokeStyle = currentColor; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
-              canvas.addEventListener('mouseup', () => { isDrawing = false; });
-              canvas.addEventListener('touchstart', (e) => { e.preventDefault(); isDrawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); }, { passive: false });
-              canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (!isDrawing) return; ctx.strokeStyle = currentColor; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }, { passive: false });
-              canvas.addEventListener('touchend', () => { isDrawing = false; });
 
+              /* 캔버스 터치 이벤트 (필기, 2단계 더블탭, 모서리 쓸어올리기) */
+              padCanvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const t = e.touches[0];
+                const x = t.clientX, y = t.clientY;
+                const winW = window.innerWidth, winH = window.innerHeight;
+
+                // 좌/우측 하단 모서리 스와이프 감지 준비
+                if (y > winH - 120 && x < 120) {
+                  isCornerGesture = 'left';
+                  touchStartX = x; touchStartY = y;
+                  return;
+                } else if (y > winH - 120 && x > winW - 120) {
+                  isCornerGesture = 'right';
+                  touchStartX = x; touchStartY = y;
+                  return;
+                }
+
+                // 2단계 더블탭 감지 (320ms 이내)
+                const now = Date.now();
+                if (now - lastTapTime < 320 && Math.abs(x - lastTapX) < 25 && Math.abs(y - lastTapY) < 25) {
+                  if (padToolbar.classList.contains('active')) {
+                    // 2단계: 툴바 열린 상태에서 빈 캔버스 더블탭 -> 생각서랍 자동 저장 후 복귀
+                    saveMemoPadToDrawer();
+                    lastTapTime = 0;
+                    return;
+                  } else {
+                    // 1단계: 툴바 호출
+                    padToolbar.classList.add('active');
+                    lastTapTime = 0;
+                    return;
+                  }
+                }
+                lastTapTime = now;
+                lastTapX = x;
+                lastTapY = y;
+
+                // 일반 필기 시작
+                padDrawing = true;
+                padStrokeCount++;
+                padCtx.beginPath();
+                padCtx.moveTo(x, y);
+              }, { passive: false });
+
+              padCanvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                const t = e.touches[0];
+                const x = t.clientX, y = t.clientY;
+
+                // 모서리 쓸어올리기 제스처 판정
+                if (isCornerGesture) {
+                  const dy = touchStartY - y;
+                  if (dy > 80) {
+                    if (isCornerGesture === 'left') {
+                      trashMemoPad();
+                    } else if (isCornerGesture === 'right') {
+                      saveMemoPadToDrawer();
+                    }
+                    isCornerGesture = null;
+                  }
+                  return;
+                }
+
+                if (!padDrawing) return;
+                padCtx.lineTo(x, y);
+                padCtx.stroke();
+              }, { passive: false });
+
+              padCanvas.addEventListener('touchend', () => {
+                padDrawing = false;
+                isCornerGesture = null;
+              });
+
+              /* 메모딱지 -> 휴지통 직행 */
+              function trashMemoPad() {
+                const dataUrl = padCanvas.toDataURL('image/jpeg', 0.8);
+                const text = document.getElementById('memopad-text-input').value.trim();
+                const trashList = getPadTrashStorage();
+
+                trashList.unshift({
+                  id: Date.now(),
+                  imageData: dataUrl,
+                  text: text,
+                  time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+                  date: new Date().toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })
+                });
+                setPadTrashStorage(trashList);
+
+                closeMemoPadDirect();
+                alert('🗑️ 메모딱지가 휴지통으로 버려졌습니다.');
+              }
+
+              /* 메모딱지 -> 생각서랍 보관 완료 */
+              function saveMemoPadToDrawer() {
+                const text = document.getElementById('memopad-text-input').value.trim();
+                
+                // 텍스트 스티커가 있으면 캔버스 상단에 렌더링
+                if (text) {
+                  padCtx.fillStyle = '#2563eb';
+                  padCtx.fillRect(10, 10, padCanvas.width - 20, 44);
+                  padCtx.fillStyle = '#ffffff';
+                  padCtx.font = 'bold 16px -apple-system, BlinkMacSystemFont, sans-serif';
+                  padCtx.fillText(text, 22, 38);
+                }
+
+                const dataUrl = padCanvas.toDataURL('image/jpeg', 0.85);
+                const item = { type: '메모딱지', data: dataUrl, isVideo: false };
+
+                saveThought('메모딱지', text, [item]);
+                closeMemoPadDirect();
+                switchMainMode('idea');
+                selectCategory('메모딱지');
+                alert('💾 메모딱지가 생각서랍에 안전하게 보관되었습니다!');
+              }
+
+              /* ================== 보관함 / 휴지통 / 백업 관리 ================== */
               function openArchiveModal() {
                 document.getElementById('archive-modal').classList.add('active');
+                switchArchiveTab('archive');
+              }
+              function closeArchiveModal() { document.getElementById('archive-modal').classList.remove('active'); }
+
+              function switchArchiveTab(tab) {
+                document.getElementById('subtab-archive').classList.toggle('active', tab === 'archive');
+                document.getElementById('subtab-trash').classList.toggle('active', tab === 'trash');
+                document.getElementById('subtab-backup').classList.toggle('active', tab === 'backup');
+
+                const archiveFeed = document.getElementById('archive-feed');
+                const trashFeed = document.getElementById('trash-feed');
+                const backupPane = document.getElementById('backup-pane');
+
+                archiveFeed.style.display = (tab === 'archive') ? 'flex' : 'none';
+                trashFeed.style.display = (tab === 'trash') ? 'flex' : 'none';
+                backupPane.style.display = (tab === 'backup') ? 'flex' : 'none';
+
+                if (tab === 'archive') renderArchiveFeed();
+                else if (tab === 'trash') renderTrashFeed();
+              }
+
+              function renderArchiveFeed() {
                 const list = getThoughtStorage();
                 const feed = document.getElementById('archive-feed');
                 if (list.length === 0) {
@@ -1454,12 +1807,115 @@ jobs:
                     <div class="card-actions">
                       <button class="card-btn plan-send" onclick="sendThoughtToPlan(${item.id})">📋 계획으로</button>
                       <button class="card-btn" onclick="openEditModal(${item.id})">✏️ 수정</button>
-                      <button class="card-btn delete" onclick="deleteThought(${item.id}); openArchiveModal();">🗑️ 삭제</button>
+                      <button class="card-btn delete" onclick="deleteThought(${item.id}); renderArchiveFeed();">🗑️ 삭제</button>
                     </div>
                   </div>
                 `).join('');
               }
-              function closeArchiveModal() { document.getElementById('archive-modal').classList.remove('active'); }
+
+              function renderTrashFeed() {
+                const list = getPadTrashStorage();
+                const feed = document.getElementById('trash-feed');
+                if (list.length === 0) {
+                  feed.innerHTML = '<p style="color:#55555c; text-align:center; margin-top:40px;">휴지통이 비어 있습니다.</p>';
+                  return;
+                }
+
+                feed.innerHTML = `
+                  <div style="display:flex; justify-content:flex-end; margin-bottom:4px;">
+                    <button class="card-btn delete" onclick="clearAllTrash()">🗑️ 휴지통 전체 비우기</button>
+                  </div>
+                ` + list.map(item => `
+                  <div class="thought-card">
+                    <div class="card-header">
+                      <span class="card-badge" style="color:var(--danger);">🗑️ 버려진 떡메모</span>
+                      <span class="card-time">${item.date} ${item.time}</span>
+                    </div>
+                    <img src="${item.imageData}" style="width:100%; max-height:180px; object-fit:contain; border-radius:8px; border:1px solid var(--border); background:#000;" />
+                    ${item.text ? `<div class="card-content">${item.text}</div>` : ''}
+                    <div class="card-actions">
+                      <button class="card-btn" style="background:var(--primary);" onclick="restoreTrashItem(${item.id})">↩️ 다시 꺼내기 (복원)</button>
+                      <button class="card-btn delete" onclick="deleteTrashItemPermanently(${item.id})">영구 삭제</button>
+                    </div>
+                  </div>
+                `).join('');
+              }
+
+              function restoreTrashItem(id) {
+                const trashList = getPadTrashStorage();
+                const item = trashList.find(t => t.id === id);
+                if (item) {
+                  saveThought('메모딱지', item.text || '', [{ type: '메모딱지', data: item.imageData, isVideo: false }]);
+                  setPadTrashStorage(trashList.filter(t => t.id !== id));
+                  renderTrashFeed();
+                  alert('✨ 메모딱지가 생각서랍으로 복원되었습니다!');
+                }
+              }
+
+              function deleteTrashItemPermanently(id) {
+                if (confirm('이 메모딱지를 완전히 영구 삭제하시겠습니까?')) {
+                  const list = getPadTrashStorage().filter(t => t.id !== id);
+                  setPadTrashStorage(list);
+                  renderTrashFeed();
+                }
+              }
+
+              function clearAllTrash() {
+                if (confirm('휴지통을 완전히 비우시겠습니까? 복원할 수 없습니다.')) {
+                  setPadTrashStorage([]);
+                  renderTrashFeed();
+                }
+              }
+
+              /* 데이터 백업 & 복원 */
+              function exportBackupData() {
+                const backupObj = {
+                  version: '1.0',
+                  exportDate: new Date().toISOString(),
+                  thoughts: getThoughtStorage(),
+                  plans: getPlanStorage(),
+                  trash: getPadTrashStorage()
+                };
+
+                const blob = new Blob([JSON.stringify(backupObj, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `idea_drawer_backup_${new Date().toISOString().slice(0,10)}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }
+
+              function importBackupData(input) {
+                const file = input.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                  try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed.thoughts && Array.isArray(parsed.thoughts)) {
+                      setThoughtStorage(parsed.thoughts);
+                    }
+                    if (parsed.plans && Array.isArray(parsed.plans)) {
+                      setPlanStorage(parsed.plans);
+                    }
+                    if (parsed.trash && Array.isArray(parsed.trash)) {
+                      setPadTrashStorage(parsed.trash);
+                    }
+                    alert('🎉 모든 데이터가 성공적으로 완벽 복원되었습니다!');
+                    location.reload();
+                  } catch (err) {
+                    alert('잘못된 백업 파일 형식입니다.');
+                  }
+                };
+                reader.readAsText(file);
+                input.value = '';
+              }
+
+              /* 1분 사용 매뉴얼 모달 */
+              function openManualModal() { document.getElementById('manual-modal').classList.add('active'); }
+              function closeManualModal() { document.getElementById('manual-modal').classList.remove('active'); }
 
               selectCategory('첫 생각');
             </script>
@@ -1960,14 +2416,14 @@ jobs:
 
           npx cap sync android
 
-      - name: 6. APK 파일 빌드
+      - name: 6. APK 빌드 실행
         run: |
           cd android
           chmod +x ./gradlew
           ./gradlew assembleDebug --no-daemon
 
-      - name: 7. 완성된 APK 업로드
+      - name: 7. 완성된 APK 배포 업로드
         uses: actions/upload-artifact@v4
         with:
-          name: 생각서랍-설치파일-APK
+          name: 생각서랍-통합완성판-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
