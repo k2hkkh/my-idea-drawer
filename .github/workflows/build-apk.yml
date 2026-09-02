@@ -88,7 +88,6 @@ jobs:
                 flex-shrink: 0;
               }
 
-              /* 상단 3분할 모드 전환 탭 */
               .main-mode-switch {
                 display: flex;
                 background: #141416;
@@ -121,7 +120,6 @@ jobs:
                 box-shadow: 0 2px 8px rgba(37,99,235,0.4);
               }
 
-              /* 카테고리 바 */
               .category-bar {
                 display: flex;
                 padding: 8px 12px;
@@ -148,7 +146,6 @@ jobs:
                 border-color: var(--primary);
               }
 
-              /* 뷰 컨테이너 */
               .view-container {
                 flex: 1;
                 overflow-y: auto;
@@ -165,7 +162,6 @@ jobs:
                 line-height: 1.6;
               }
 
-              /* 생각 카드 */
               .thought-card {
                 background: var(--card);
                 border: 1px solid var(--border);
@@ -226,7 +222,6 @@ jobs:
               .card-btn.delete { color: var(--danger); }
               .card-btn.plan-send { color: var(--accent); }
 
-              /* 나의계획 2단 UI */
               .plan-section-title {
                 font-size: 0.95rem;
                 font-weight: 700;
@@ -282,7 +277,6 @@ jobs:
               }
               .plan-note-item { line-height: 1.4; }
 
-              /* 첨부 미디어 트레이 */
               .attachment-tray {
                 display: none;
                 padding: 8px 14px;
@@ -301,7 +295,6 @@ jobs:
                 background: var(--danger); color: #fff; font-size: 0.7rem; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer;
               }
 
-              /* 하단 캡슐 바 */
               .bottom-bar-wrapper {
                 padding: 8px 14px 14px 14px;
                 background: var(--bg);
@@ -385,7 +378,6 @@ jobs:
               @keyframes pulseWave { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
               @keyframes micPulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
-              /* + 팝업 메뉴 */
               .plus-menu-popover {
                 display: none;
                 position: absolute;
@@ -426,7 +418,6 @@ jobs:
                 font-size: 1rem;
               }
 
-              /* 풀스크린 모달 공통 */
               .modal-full {
                 display: none;
                 position: fixed;
@@ -454,7 +445,6 @@ jobs:
                 overflow-y: auto;
               }
 
-              /* 풀스크린 노트 수정창 */
               .fullscreen-editor-area {
                 flex: 1;
                 width: 100%;
@@ -520,11 +510,11 @@ jobs:
               .memopad-toolbar {
                 display: none;
                 position: absolute;
-                top: 10px;
-                left: 8px;
-                right: 8px;
-                width: calc(100vw - 16px);
-                max-width: calc(100vw - 16px);
+                top: 8px;
+                left: 6px;
+                right: 6px;
+                width: calc(100vw - 12px);
+                max-width: calc(100vw - 12px);
                 box-sizing: border-box;
                 background: rgba(28, 28, 30, 0.96);
                 backdrop-filter: blur(12px);
@@ -541,12 +531,24 @@ jobs:
               @keyframes slideDown { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
 
               .pad-palette { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
-              .color-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
+              .color-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
               .color-dot.active { border-color: #ffffff; transform: scale(1.15); }
-              .pad-eraser-btn {
-                background: transparent; border: none; font-size: 1.05rem; cursor: pointer; opacity: 0.6;
+              
+              /* 지우개 및 취소 도구 버튼 */
+              .pad-tool-btn {
+                background: transparent;
+                border: none;
+                font-size: 1.05rem;
+                cursor: pointer;
+                opacity: 0.75;
+                padding: 2px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
               }
-              .pad-eraser-btn.active { opacity: 1; transform: scale(1.15); }
+              .pad-tool-btn:active { transform: scale(1.2); opacity: 1; }
+              .pad-tool-btn.active { opacity: 1; filter: drop-shadow(0 0 3px #ffffff); }
 
               .pad-input-box {
                 flex: 1;
@@ -674,11 +676,9 @@ jobs:
           </head>
           <body>
 
-            <!-- 헤더 -->
             <header>
               <button class="header-btn" onclick="resetToIdeaDrawer()" title="첫 생각">💡</button>
               
-              <!-- 상단 3분할 탭 -->
               <div class="main-mode-switch">
                 <button id="tab-btn-idea" class="mode-btn active" onclick="switchMainMode('idea')">💡 생각서랍</button>
                 <button id="tab-btn-plan" class="mode-btn" onclick="switchMainMode('plan')">📋 나의계획</button>
@@ -691,7 +691,6 @@ jobs:
               </div>
             </header>
 
-            <!-- 1. 생각서랍 카테고리 바 -->
             <div class="category-bar" id="idea-category-bar">
               <div class="category-pill active" onclick="selectCategory('첫 생각')">💡 첫 생각</div>
               <div class="category-pill" onclick="selectCategory('노트')">📝 노트</div>
@@ -700,7 +699,6 @@ jobs:
               <div class="category-pill" onclick="selectCategory('전체')">📂 전체</div>
             </div>
 
-            <!-- 2. 생각서랍 피드 -->
             <div class="view-container" id="idea-feed-container">
               <div class="empty-canvas" id="empty-hint">
                 떠오르는 생각을 자유롭게 기록하세요.<br>
@@ -708,7 +706,6 @@ jobs:
               </div>
             </div>
 
-            <!-- 3. 나의계획 2단 실행 대시보드 -->
             <div class="view-container" id="plan-feed-container" style="display:none;">
               <div class="plan-section-title">
                 <span>⚡ 오늘 집중 (Today Focus)</span>
@@ -723,10 +720,8 @@ jobs:
               <div id="backlog-plan-list" style="display:flex; flex-direction:column; gap:8px;"></div>
             </div>
 
-            <!-- 첨부된 미디어 트레이 -->
             <div class="attachment-tray" id="attachment-tray"></div>
 
-            <!-- 하단 캡슐 입력 바 (커서 정밀 추적 이벤트 추가) -->
             <div class="bottom-bar-wrapper">
               <div class="plus-menu-popover" id="plus-menu">
                 <div class="menu-item" onclick="triggerCamera('main')">
@@ -754,12 +749,13 @@ jobs:
                   onclick="trackCursor(this)"
                   onkeyup="trackCursor(this)" 
                   onmouseup="trackCursor(this)" 
-                  ontouchend="setTimeout(() => trackCursor(this), 60)" 
-                  onfocus="setTimeout(() => trackCursor(this), 60)"></textarea>
-                <button id="btn-mic-main" class="btn-mic" onclick="toggleContinuousVoice('main')">
+                  ontouchend="setTimeout(() => trackCursor(this), 50)" 
+                  onfocus="setTimeout(() => trackCursor(this), 50)"></textarea>
+                <!-- 마이크 터치 시 포커스 풀림 방지 -->
+                <button id="btn-mic-main" class="btn-mic" onpointerdown="event.preventDefault()" onclick="toggleContinuousVoice('main')">
                   <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                 </button>
-                <button id="btn-wave" class="btn-action-send" onclick="handleSendAction()">
+                <button id="btn-wave" class="btn-action-send" onpointerdown="event.preventDefault()" onclick="handleSendAction()">
                   <div class="wave-bar"></div>
                   <div class="wave-bar"></div>
                   <div class="wave-bar"></div>
@@ -767,7 +763,6 @@ jobs:
               </div>
             </div>
 
-            <!-- 숨김 파일 인풋 -->
             <input type="file" id="camera-file" accept="image/*" capture="environment" style="display:none;" onchange="processMediaFiles(this, '사진')" />
             <input type="file" id="gallery-file" accept="image/*" multiple style="display:none;" onchange="processMediaFiles(this, '사진')" />
             <input type="file" id="video-file" accept="video/*" capture="environment" style="display:none;" onchange="processVideoFile(this)" />
@@ -780,11 +775,17 @@ jobs:
                   <div class="color-dot active" style="background:#ffffff;" onclick="setPadColor('#ffffff', this)"></div>
                   <div class="color-dot" style="background:#facc15;" onclick="setPadColor('#facc15', this)"></div>
                   <div class="color-dot" style="background:#38bdf8;" onclick="setPadColor('#38bdf8', this)"></div>
-                  <button id="pad-eraser-btn" class="pad-eraser-btn" onclick="togglePadEraser()">🧹</button>
+                  <button id="pad-eraser-btn" class="pad-tool-btn" onclick="togglePadEraser()" title="지우개">🧹</button>
+                  <button class="pad-tool-btn" onclick="undoPadStroke()" title="직전 획 취소">↩️</button>
+                  <button class="pad-tool-btn" onclick="clearPadCanvas()" title="도화지 전체 싹 지우기">🔄</button>
                 </div>
                 <div class="pad-input-box">
-                  <input id="memopad-text-input" type="text" placeholder="글자 입력..." oninput="handlePadTextInput(this.value)" />
-                  <button id="memopad-mic-btn" class="pad-mic-btn" onclick="toggleContinuousVoice('pad')">
+                  <input id="memopad-text-input" type="text" placeholder="글자 입력..." 
+                    oninput="handlePadTextInput(this.value); trackCursor(this);" 
+                    onclick="trackCursor(this)"
+                    onkeyup="trackCursor(this)"
+                    ontouchend="setTimeout(() => trackCursor(this), 50)" />
+                  <button id="memopad-mic-btn" class="pad-mic-btn" onpointerdown="event.preventDefault()" onclick="toggleContinuousVoice('pad')">
                     <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                   </button>
                 </div>
@@ -802,7 +803,7 @@ jobs:
               <div class="corner-guide right">💾 우측 쓸어올려 저장</div>
             </div>
 
-            <!-- 풀스크린 생각 수정 모달 (커서 정밀 추적 추가) -->
+            <!-- 풀스크린 생각 수정 모달 -->
             <div id="edit-modal" class="modal-full">
               <div class="modal-top">
                 <span id="edit-modal-title" style="font-weight:bold; font-size:1rem;">✏️ 생각 수정</span>
@@ -819,16 +820,16 @@ jobs:
                     onclick="trackCursor(this)"
                     onkeyup="trackCursor(this)" 
                     onmouseup="trackCursor(this)" 
-                    ontouchend="setTimeout(() => trackCursor(this), 60)" 
-                    onfocus="setTimeout(() => trackCursor(this), 60)"></textarea>
-                  <button id="edit-mic-btn" class="edit-mic-btn" onclick="toggleContinuousVoice('edit')">
+                    ontouchend="setTimeout(() => trackCursor(this), 50)" 
+                    onfocus="setTimeout(() => trackCursor(this), 50)"></textarea>
+                  <button id="edit-mic-btn" class="edit-mic-btn" onpointerdown="event.preventDefault()" onclick="toggleContinuousVoice('edit')">
                     <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                   </button>
                 </div>
               </div>
             </div>
 
-            <!-- 나의계획 상세/진행메모 수정 모달 -->
+            <!-- 나의계획 상세 수정 모달 -->
             <div id="plan-edit-modal" class="modal-full">
               <div class="modal-top">
                 <span style="font-weight:bold; font-size:1rem;">📋 계획 및 진행상황 기록</span>
@@ -848,9 +849,9 @@ jobs:
                     onclick="trackCursor(this)"
                     onkeyup="trackCursor(this)" 
                     onmouseup="trackCursor(this)" 
-                    ontouchend="setTimeout(() => trackCursor(this), 60)" 
-                    onfocus="setTimeout(() => trackCursor(this), 60)"></textarea>
-                  <button id="plan-mic-btn" class="edit-mic-btn" onclick="toggleContinuousVoice('plan-edit')">
+                    ontouchend="setTimeout(() => trackCursor(this), 50)" 
+                    onfocus="setTimeout(() => trackCursor(this), 50)"></textarea>
+                  <button id="plan-mic-btn" class="edit-mic-btn" onpointerdown="event.preventDefault()" onclick="toggleContinuousVoice('plan-edit')">
                     <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                   </button>
                 </div>
@@ -923,9 +924,10 @@ jobs:
                 </div>
 
                 <div class="manual-card">
-                  <div class="manual-title">3. 📑 메모딱지 제스처</div>
+                  <div class="manual-title">3. 📑 메모딱지 손글씨 지우기 & 제스처</div>
                   <div class="manual-desc">
-                    • **더블탭 1단계 (톡톡)**: 화면을 두 번 두드리면 상단에 펜 색상, 지우개, 음성/자판 입력바 등장<br>
+                    • **↩️ 한 획 취소**: 방금 잘못 그은 선이나 글씨를 터치 한 번으로 되돌리기<br>
+                    • **🔄 도화지 싹 지우기**: 전체 화면을 깨끗한 검정 도화지로 완전 리셋<br>
                     • **더블탭 2단계 (톡톡)**: 상단 바가 열린 상태에서 빈 화면을 다시 두 번 치면 **생각서랍에 자동 저장 후 복귀**<br>
                     • **좌측 하단 쓸어올리기**: 메모지를 구겨 **휴지통으로 직행**<br>
                     • **우측 하단 쓸어올리기**: 즉시 **생각서랍에 저장 후 복귀**
@@ -956,7 +958,8 @@ jobs:
               let cursorPositions = {
                 'prompt-input': { start: 0, end: 0 },
                 'edit-input': { start: 0, end: 0 },
-                'plan-edit-newnote': { start: 0, end: 0 }
+                'plan-edit-newnote': { start: 0, end: 0 },
+                'memopad-text-input': { start: 0, end: 0 }
               };
 
               function trackCursor(el) {
@@ -967,7 +970,6 @@ jobs:
                 }
               }
 
-              /* 전역 커서 감지: 손가락으로 글자 중간을 찍거나 드래그하는 0.001초 순간 즉각 갱신 */
               document.addEventListener('selectionchange', () => {
                 const el = document.activeElement;
                 if (el && el.id && cursorPositions.hasOwnProperty(el.id)) {
@@ -1188,7 +1190,7 @@ jobs:
                 else if (target === 'pad') targetId = 'memopad-text-input';
 
                 const el = document.getElementById(targetId);
-                if (el && document.activeElement === el) {
+                if (el && typeof el.selectionStart === 'number') {
                   trackCursor(el);
                 }
 
@@ -1259,7 +1261,7 @@ jobs:
                 webSpeechInstance.start();
               }
 
-              /* 정밀 커서 중간 삽입 로직 */
+              /* 모든 영역 공통 커서 중간 삽입 로직 */
               function appendVoiceResult(text) {
                 if (!text || !text.trim()) return;
                 const clean = text.trim();
@@ -1269,23 +1271,13 @@ jobs:
                 lastProcessedVoice = clean;
                 lastProcessedTime = now;
 
-                if (activeVoiceTarget === 'pad') {
-                  const padInput = document.getElementById('memopad-text-input');
-                  padInput.value = (padInput.value ? padInput.value + ' ' : '') + clean;
-                  handlePadTextInput(padInput.value);
-                  return;
-                }
-
                 let targetId = 'prompt-input';
                 if (activeVoiceTarget === 'edit') targetId = 'edit-input';
                 else if (activeVoiceTarget === 'plan-edit') targetId = 'plan-edit-newnote';
+                else if (activeVoiceTarget === 'pad') targetId = 'memopad-text-input';
 
                 const el = document.getElementById(targetId);
                 if (!el) return;
-
-                if (document.activeElement === el && typeof el.selectionStart === 'number') {
-                  trackCursor(el);
-                }
 
                 let pos = cursorPositions[targetId];
                 let start = (pos && typeof pos.start === 'number' && pos.start >= 0 && pos.start <= el.value.length) 
@@ -1308,13 +1300,11 @@ jobs:
                 const nextPos = start + insertChunk.length;
                 if (typeof el.setSelectionRange === 'function') {
                   el.setSelectionRange(nextPos, nextPos);
-                } else {
-                  el.selectionStart = nextPos;
-                  el.selectionEnd = nextPos;
                 }
                 cursorPositions[targetId] = { start: nextPos, end: nextPos };
 
                 if (targetId === 'prompt-input') handleInputChange(el);
+                if (targetId === 'memopad-text-input') handlePadTextInput(el.value);
               }
 
               window.receiveVoiceResult = function(text) {
@@ -1645,6 +1635,32 @@ jobs:
               let touchStartX = 0, touchStartY = 0;
               let isCornerGesture = null;
 
+              /* 실행 취소(Undo) 히스토리 스택 */
+              let padHistory = [];
+
+              function savePadState() {
+                if (padHistory.length > 20) padHistory.shift();
+                padHistory.push(padCtx.getImageData(0, 0, padCanvas.width, padCanvas.height));
+              }
+
+              function undoPadStroke() {
+                if (padHistory.length > 0) {
+                  const prevState = padHistory.pop();
+                  padCtx.putImageData(prevState, 0, 0);
+                } else {
+                  padCtx.fillStyle = '#000000';
+                  padCtx.fillRect(0, 0, padCanvas.width, padCanvas.height);
+                }
+              }
+
+              function clearPadCanvas() {
+                if (confirm('도화지를 깨끗하게 모두 지우시겠습니까?')) {
+                  savePadState();
+                  padCtx.fillStyle = '#000000';
+                  padCtx.fillRect(0, 0, padCanvas.width, padCanvas.height);
+                }
+              }
+
               function openMemoPadDirect() {
                 closePlusMenu();
                 padScreen.classList.add('active');
@@ -1652,6 +1668,7 @@ jobs:
                 padTextStrip.style.display = 'none';
                 document.getElementById('memopad-text-input').value = '';
                 padTextDisplay.innerText = '';
+                padHistory = [];
 
                 setTimeout(() => {
                   padCanvas.width = window.innerWidth;
@@ -1685,7 +1702,7 @@ jobs:
                 document.getElementById('pad-eraser-btn').classList.toggle('active', isPadEraser);
                 if (isPadEraser) {
                   padCtx.strokeStyle = '#000000';
-                  padCtx.lineWidth = 24;
+                  padCtx.lineWidth = 26;
                 } else {
                   setPadColor(padColor);
                 }
@@ -1756,6 +1773,7 @@ jobs:
                 if (!isMoving) {
                   const dist = Math.hypot(x - touchStartX, y - touchStartY);
                   if (dist > MOVE_THRESHOLD) {
+                    savePadState(); // 새 획 시작 직전 상태 저장
                     isMoving = true;
                     padDrawing = true;
                     padCtx.beginPath();
