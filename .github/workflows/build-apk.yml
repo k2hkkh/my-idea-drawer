@@ -507,7 +507,6 @@ jobs:
                 background: #000000;
               }
               
-              /* 여유로운 2단 슬림 툴바 설계 */
               .memopad-toolbar {
                 display: none;
                 position: absolute;
@@ -517,10 +516,10 @@ jobs:
                 background: rgba(28, 28, 30, 0.97);
                 backdrop-filter: blur(14px);
                 border: 1px solid #3a3a3c;
-                border-radius: 20px;
-                padding: 8px 10px;
+                border-radius: 18px;
+                padding: 7px 9px;
                 flex-direction: column;
-                gap: 7px;
+                gap: 6px;
                 z-index: 2100;
                 box-shadow: 0 8px 24px rgba(0,0,0,0.7);
                 animation: slideDown 0.2s ease-out;
@@ -533,6 +532,7 @@ jobs:
                 align-items: center;
                 justify-content: space-between;
                 width: 100%;
+                gap: 4px;
               }
               .pad-toolbar-row2 {
                 display: flex;
@@ -541,22 +541,25 @@ jobs:
                 gap: 6px;
               }
 
-              .pad-palette { display: flex; gap: 6px; align-items: center; }
-              .color-dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
+              .pad-palette { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
+              .color-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
               .color-dot.active { border-color: #ffffff; transform: scale(1.15); }
               
               .pad-tool-btn {
                 background: var(--surface);
                 border: 1px solid #3a3a3c;
-                border-radius: 8px;
-                font-size: 0.9rem;
+                border-radius: 7px;
+                font-size: 0.74rem;
                 color: #ffffff;
                 cursor: pointer;
-                padding: 4px 7px;
-                display: flex;
+                padding: 4px 6px;
+                display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                gap: 3px;
+                white-space: nowrap;
+                line-height: 1;
+                gap: 2px;
+                flex-shrink: 0;
               }
               .pad-tool-btn:active { transform: scale(0.95); }
               .pad-tool-btn.active { background: #3b82f6; border-color: #60a5fa; }
@@ -598,9 +601,9 @@ jobs:
                 background: var(--primary);
                 border: none;
                 color: #ffffff;
-                padding: 5px 10px;
-                border-radius: 8px;
-                font-size: 0.8rem;
+                padding: 5px 9px;
+                border-radius: 7px;
+                font-size: 0.78rem;
                 font-weight: bold;
                 cursor: pointer;
                 white-space: nowrap;
@@ -610,23 +613,23 @@ jobs:
                 background: var(--surface);
                 border: none;
                 color: #ffffff;
-                width: 28px;
-                height: 28px;
+                width: 26px;
+                height: 26px;
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 0.85rem;
+                font-size: 0.8rem;
                 cursor: pointer;
                 flex-shrink: 0;
               }
 
               .memopad-text-strip {
                 position: absolute;
-                top: 96px;
+                top: 110px;
                 left: 12px;
                 right: 12px;
-                background: rgba(37, 99, 235, 0.88);
+                background: rgba(37, 99, 235, 0.92);
                 color: #ffffff;
                 padding: 8px 12px;
                 border-radius: 10px;
@@ -635,7 +638,13 @@ jobs:
                 z-index: 2050;
                 cursor: move;
                 touch-action: none;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+                word-break: break-word;
+                white-space: pre-wrap;
+                line-height: 1.4;
+                max-height: 100px;
+                overflow-y: auto;
+                box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+                transition: top 0.15s ease-out;
               }
 
               .corner-guide {
@@ -779,24 +788,22 @@ jobs:
             <!-- ================== 암전 풀스크린 메모딱지 ================== -->
             <div id="memopad-screen">
               <div id="memopad-toolbar" class="memopad-toolbar">
-                <!-- 1단: 색상 3종 + 부분지우개 + 1획취소 + 전체삭제 + 저장/닫기 -->
                 <div class="pad-toolbar-row1">
                   <div class="pad-palette">
                     <div class="color-dot active" style="background:#ffffff;" onclick="setPadColor('#ffffff', this)"></div>
                     <div class="color-dot" style="background:#facc15;" onclick="setPadColor('#facc15', this)"></div>
                     <div class="color-dot" style="background:#38bdf8;" onclick="setPadColor('#38bdf8', this)"></div>
                     <div style="width:1px; height:18px; background:#3a3a3c; margin:0 2px;"></div>
-                    <button id="pad-eraser-btn" class="pad-tool-btn" onclick="togglePadEraser()" title="부분 지우개">🧹 지우개</button>
-                    <button class="pad-tool-btn" onclick="undoPadStroke()" title="1획 취소">↩️ 취소</button>
-                    <button class="pad-tool-btn" onclick="clearPadCanvas()" title="도화지 전체 삭제">🔄 싹지우기</button>
+                    <button id="pad-eraser-btn" class="pad-tool-btn" onclick="togglePadEraser()">🧹 지우개</button>
+                    <button class="pad-tool-btn" onclick="undoPadStroke()">↩️ 취소</button>
+                    <button class="pad-tool-btn" onclick="clearPadCanvas()">🔄 싹지우기</button>
                   </div>
-                  <div style="display:flex; align-items:center; gap:6px;">
+                  <div style="display:flex; align-items:center; gap:5px;">
                     <button class="pad-action-btn" onclick="saveMemoPadToDrawer()">💾 저장</button>
                     <button class="pad-close-btn" onclick="closeMemoPadDirect()">✕</button>
                   </div>
                 </div>
 
-                <!-- 2단: 넓어진 텍스트 & 음성 입력창 (커서 찍기 최적화) -->
                 <div class="pad-toolbar-row2">
                   <div class="pad-input-box">
                     <input id="memopad-text-input" type="text" placeholder="글자 중간 터치 후 말씀하세요..." 
@@ -823,7 +830,7 @@ jobs:
               <div class="corner-guide right">💾 우측 쓸어올려 저장</div>
             </div>
 
-            <!-- 풀스크린 생각 수정 모달 -->
+            <!-- 풀스크린 생각 수정 모달 (그림 전체 비율 온전 표시) -->
             <div id="edit-modal" class="modal-full">
               <div class="modal-top">
                 <span id="edit-modal-title" style="font-weight:bold; font-size:1rem;">✏️ 생각 수정</span>
@@ -833,7 +840,8 @@ jobs:
                 </div>
               </div>
               <div class="modal-body" style="padding:14px; display:flex; flex-direction:column; height:calc(100vh - 65px);">
-                <div id="edit-media-preview" class="card-media-grid" style="flex-shrink:0;"></div>
+                <!-- 그림 전체가 잘림 없이 보이는 전용 뷰어 컨테이너 -->
+                <div id="edit-media-preview" style="flex-shrink:0; display:flex; flex-direction:column; gap:8px;"></div>
                 <div class="edit-input-wrapper" style="flex:1; margin-top:8px;">
                   <textarea id="edit-input" class="fullscreen-editor-area" placeholder="수정할 내용을 자유롭게 입력하세요..."
                     oninput="trackCursor(this)"
@@ -946,7 +954,7 @@ jobs:
                 <div class="manual-card">
                   <div class="manual-title">3. 📑 메모딱지 지우개 3종 & 제스처</div>
                   <div class="manual-desc">
-                    • **🧹 부분 지우개**: 원하는 선만 문질러서 지우기<br>
+                    • **🧹 지우개**: 원하는 선만 문질러서 지우기<br>
                     • **↩️ 취소**: 방금 그은 선이나 글씨 1획 되돌리기<br>
                     • **🔄 싹지우기**: 화면 전체를 검정 도화지로 즉시 완전 리셋<br>
                     • **더블탭 2단계 (톡톡)**: 상단 바 열린 상태에서 빈 화면을 다시 치면 **생각서랍 자동 저장 후 복귀**<br>
@@ -1280,7 +1288,6 @@ jobs:
                 webSpeechInstance.start();
               }
 
-              /* 모든 영역 공통 커서 중간 삽입 로직 */
               function appendVoiceResult(text) {
                 if (!text || !text.trim()) return;
                 const clean = text.trim();
@@ -1442,26 +1449,32 @@ jobs:
                   return;
                 }
 
-                feed.innerHTML = filtered.map(item => `
-                  <div class="thought-card">
-                    <div class="card-header">
-                      <span class="card-badge">${item.category || item.type || '노트'}</span>
-                      <span class="card-time">${item.time}</span>
-                    </div>
-                    ${item.mediaList && item.mediaList.length > 0 ? `
-                      <div class="card-media-grid">
-                        ${item.mediaList.map(m => `<img src="${m.data}" class="media-thumb-item" />`).join('')}
+                feed.innerHTML = filtered.map(item => {
+                  const isPad = (item.category === '메모딱지' || item.type === '메모딱지');
+                  return `
+                    <div class="thought-card">
+                      <div class="card-header">
+                        <span class="card-badge">${item.category || item.type || '노트'}</span>
+                        <span class="card-time">${item.time}</span>
                       </div>
-                    ` : ''}
-                    ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
-                    <div class="card-actions">
-                      <button class="card-btn plan-send" onclick="sendThoughtToPlan(${item.id})">📋 계획으로</button>
-                      <button class="card-btn" onclick="openEditModal(${item.id})">✏️ 수정</button>
-                      <button class="card-btn" onclick="copyThought('${encodeURIComponent(item.content || '')}')">📋 복사</button>
-                      <button class="card-btn delete" onclick="deleteThought(${item.id})">🗑️ 삭제</button>
+                      ${item.mediaList && item.mediaList.length > 0 ? `
+                        <div class="${isPad ? '' : 'card-media-grid'}">
+                          ${item.mediaList.map(m => `
+                            <img src="${m.data}" class="${isPad ? '' : 'media-thumb-item'}" 
+                              style="${isPad ? 'width:100%; max-height:220px; object-fit:contain; border-radius:8px; border:1px solid var(--border); background:#000; display:block;' : ''}" />
+                          `).join('')}
+                        </div>
+                      ` : ''}
+                      ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
+                      <div class="card-actions">
+                        <button class="card-btn plan-send" onclick="sendThoughtToPlan(${item.id})">📋 계획으로</button>
+                        <button class="card-btn" onclick="openEditModal(${item.id})">✏️ 수정</button>
+                        <button class="card-btn" onclick="copyThought('${encodeURIComponent(item.content || '')}')">📋 복사</button>
+                        <button class="card-btn delete" onclick="deleteThought(${item.id})">🗑️ 삭제</button>
+                      </div>
                     </div>
-                  </div>
-                `).join('');
+                  `;
+                }).join('');
               }
 
               function copyThought(encoded) {
@@ -1570,13 +1583,14 @@ jobs:
                 }
               }
 
+              /* 수정창 이미지 뷰어: 전체 비율 온전 표시 */
               function renderEditMediaPreview() {
                 const mediaBox = document.getElementById('edit-media-preview');
                 if (editingMediaList.length === 0) { mediaBox.innerHTML = ''; return; }
                 mediaBox.innerHTML = editingMediaList.map((m, idx) => `
-                  <div style="position:relative; width:100%; height:110px;">
-                    <img src="${m.data}" class="media-thumb-item" style="width:100%; height:100%; object-fit:cover;" />
-                    <button onclick="removeEditMedia(${idx})" style="position:absolute; top:4px; right:4px; width:22px; height:22px; border-radius:50%; background:var(--danger); color:#fff; border:none; font-size:0.75rem; cursor:pointer;">✕</button>
+                  <div style="position:relative; width:100%; max-height:280px; background:#000000; border:1px solid var(--border); border-radius:10px; overflow:hidden; display:flex; justify-content:center; align-items:center;">
+                    <img src="${m.data}" style="width:100%; max-height:280px; object-fit:contain; display:block;" />
+                    <button onclick="removeEditMedia(${idx})" style="position:absolute; top:6px; right:6px; width:26px; height:26px; border-radius:50%; background:var(--danger); color:#fff; border:none; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,0.5);">✕</button>
                   </div>
                 `).join('');
               }
@@ -1665,6 +1679,7 @@ jobs:
               let isCornerGesture = null;
 
               let padHistory = [];
+              let customStripPosition = null;
 
               function savePadState() {
                 if (padHistory.length > 25) padHistory.shift();
@@ -1696,6 +1711,9 @@ jobs:
                 padScreen.classList.add('active');
                 padToolbar.classList.remove('active');
                 padTextStrip.style.display = 'none';
+                padTextStrip.style.left = '12px';
+                padTextStrip.style.right = '12px';
+                customStripPosition = null;
                 document.getElementById('memopad-text-input').value = '';
                 padTextDisplay.innerText = '';
                 padHistory = [];
@@ -1742,10 +1760,50 @@ jobs:
                 if (val && val.trim().length > 0) {
                   padTextStrip.style.display = 'block';
                   padTextDisplay.innerText = val.trim();
+                  updateStripPosition();
                 } else {
                   padTextStrip.style.display = 'none';
                 }
               }
+
+              function updateStripPosition() {
+                if (!customStripPosition) {
+                  if (padToolbar.classList.contains('active')) {
+                    const rect = padToolbar.getBoundingClientRect();
+                    padTextStrip.style.top = (rect.bottom + 10) + 'px';
+                  } else {
+                    padTextStrip.style.top = '14px';
+                  }
+                }
+              }
+
+              let stripDragStartX = 0, stripDragStartY = 0;
+              let stripInitTop = 0, stripInitLeft = 0;
+              let isStripDragging = false;
+
+              padTextStrip.addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+                const t = e.touches[0];
+                stripDragStartX = t.clientX;
+                stripDragStartY = t.clientY;
+                const r = padTextStrip.getBoundingClientRect();
+                stripInitTop = r.top;
+                stripInitLeft = r.left;
+                isStripDragging = true;
+              }, { passive: false });
+
+              padTextStrip.addEventListener('touchmove', (e) => {
+                if (!isStripDragging) return;
+                e.preventDefault();
+                e.stopPropagation();
+                const t = e.touches[0];
+                const dy = t.clientY - stripDragStartY;
+                const newTop = Math.max(10, Math.min(window.innerHeight - 80, stripInitTop + dy));
+                padTextStrip.style.top = newTop + 'px';
+                customStripPosition = { y: newTop };
+              }, { passive: false });
+
+              padTextStrip.addEventListener('touchend', () => { isStripDragging = false; });
 
               padCanvas.addEventListener('touchstart', (e) => {
                 e.preventDefault();
@@ -1771,6 +1829,7 @@ jobs:
                     return;
                   } else {
                     padToolbar.classList.add('active');
+                    updateStripPosition();
                     lastTapTime = 0;
                     return;
                   }
@@ -1845,11 +1904,14 @@ jobs:
                 const text = document.getElementById('memopad-text-input').value.trim();
                 
                 if (text) {
+                  let drawY = customStripPosition ? customStripPosition.y : 14;
+                  if (drawY > padCanvas.height - 60) drawY = padCanvas.height - 60;
+
                   padCtx.fillStyle = '#2563eb';
-                  padCtx.fillRect(10, 10, padCanvas.width - 20, 44);
+                  padCtx.fillRect(10, drawY, padCanvas.width - 20, 46);
                   padCtx.fillStyle = '#ffffff';
                   padCtx.font = 'bold 16px -apple-system, BlinkMacSystemFont, sans-serif';
-                  padCtx.fillText(text, 22, 38);
+                  padCtx.fillText(text, 20, drawY + 29);
                 }
 
                 const dataUrl = padCanvas.toDataURL('image/jpeg', 0.85);
@@ -1892,25 +1954,31 @@ jobs:
                   feed.innerHTML = '<p style="color:#55555c; text-align:center; margin-top:40px;">보관된 생각이 없습니다.</p>';
                   return;
                 }
-                feed.innerHTML = list.map(item => `
-                  <div class="thought-card">
-                    <div class="card-header">
-                      <span class="card-badge">${item.category || item.type || '노트'}</span>
-                      <span class="card-time">${item.time}</span>
-                    </div>
-                    ${item.mediaList && item.mediaList.length > 0 ? `
-                      <div class="card-media-grid">
-                        ${item.mediaList.map(m => `<img src="${m.data}" class="media-thumb-item" />`).join('')}
+                feed.innerHTML = list.map(item => {
+                  const isPad = (item.category === '메모딱지' || item.type === '메모딱지');
+                  return `
+                    <div class="thought-card">
+                      <div class="card-header">
+                        <span class="card-badge">${item.category || item.type || '노트'}</span>
+                        <span class="card-time">${item.time}</span>
                       </div>
-                    ` : ''}
-                    ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
-                    <div class="card-actions">
-                      <button class="card-btn plan-send" onclick="sendThoughtToPlan(${item.id})">📋 계획으로</button>
-                      <button class="card-btn" onclick="openEditModal(${item.id})">✏️ 수정</button>
-                      <button class="card-btn delete" onclick="deleteThought(${item.id}); renderArchiveFeed();">🗑️ 삭제</button>
+                      ${item.mediaList && item.mediaList.length > 0 ? `
+                        <div class="${isPad ? '' : 'card-media-grid'}">
+                          ${item.mediaList.map(m => `
+                            <img src="${m.data}" class="${isPad ? '' : 'media-thumb-item'}" 
+                              style="${isPad ? 'width:100%; max-height:220px; object-fit:contain; border-radius:8px; border:1px solid var(--border); background:#000; display:block;' : ''}" />
+                          `).join('')}
+                        </div>
+                      ` : ''}
+                      ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
+                      <div class="card-actions">
+                        <button class="card-btn plan-send" onclick="sendThoughtToPlan(${item.id})">📋 계획으로</button>
+                        <button class="card-btn" onclick="openEditModal(${item.id})">✏️ 수정</button>
+                        <button class="card-btn delete" onclick="deleteThought(${item.id}); renderArchiveFeed();">🗑️ 삭제</button>
+                      </div>
                     </div>
-                  </div>
-                `).join('');
+                  `;
+                }).join('');
               }
 
               function renderTrashFeed() {
