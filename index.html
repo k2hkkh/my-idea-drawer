@@ -231,32 +231,7 @@
     .plan-time-tab.active { background: #1e3a8a; color: #60a5fa; border-color: #3b82f6; }
     .plan-time-tab.focus-tab.active { background: #9a3412; color: #fdba74; border-color: #f97316; }
 
-    /* 우측 하단 상시 플로팅 액션 버튼 (FAB) */
-    .floating-action-btn {
-      position: fixed;
-      right: 16px;
-      bottom: calc(74px + env(safe-area-inset-bottom, 0px));
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: #2563eb;
-      color: #ffffff;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      font-size: 1.3rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.5);
-      cursor: pointer;
-      z-index: 90;
-      transition: transform 0.15s ease, background 0.2s ease;
-    }
-    .floating-action-btn:active {
-      transform: scale(0.92);
-      background: #1d4ed8;
-    }
-
-    /* 하단 입력바 및 ＋ 버튼 */
+    /* 하단 입력바 */
     .bottom-bar-wrapper {
       padding: 8px 14px calc(12px + env(safe-area-inset-bottom, 0px)) 14px;
       background: var(--bg);
@@ -525,9 +500,6 @@
   <input type="file" id="input-camera-photo" accept="image/*" capture="environment" onchange="handleDirectCapture(event, '사진')" style="position:absolute; width:1px; height:1px; opacity:0; clip:rect(0,0,0,0);" />
   <input type="file" id="input-camera-video" accept="video/*" capture="environment" onchange="handleDirectCapture(event, '동영상')" style="position:absolute; width:1px; height:1px; opacity:0; clip:rect(0,0,0,0);" />
   <input type="file" id="input-album-file" accept="image/*,video/*" multiple onchange="handleDirectCapture(event, null)" style="position:absolute; width:1px; height:1px; opacity:0; clip:rect(0,0,0,0);" />
-
-  <!-- 우측 하단 빠른 메모딱지 플로팅 버튼 -->
-  <button class="floating-action-btn" type="button" onclick="openMemoPadDirect()" title="빠른 메모딱지">📑</button>
 
   <!-- 하단 입력바 -->
   <div class="bottom-bar-wrapper">
