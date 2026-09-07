@@ -302,8 +302,18 @@
       justify-content: center;
       cursor: pointer;
       flex-shrink: 0;
+      transition: all 0.2s;
     }
-    .btn-mic svg { width: 22px; height: 22px; fill: #8e8e93; }
+    .btn-mic svg { width: 22px; height: 22px; fill: #8e8e93; transition: fill 0.2s; }
+    .btn-mic.recording svg {
+      fill: #ef4444;
+      animation: pulse-mic 0.9s infinite alternate;
+    }
+    @keyframes pulse-mic {
+      0% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(239,68,68,0.4)); }
+      100% { transform: scale(1.22); filter: drop-shadow(0 0 8px rgba(239,68,68,0.9)); }
+    }
+
     .btn-action-send {
       width: 34px;
       height: 34px;
@@ -459,7 +469,7 @@
       flex-shrink: 0;
     }
     .pad-tool-btn.active { background: #3b82f6; border-color: #60a5fa; }
-    #memopad-canvas-container { flex: 1; position: relative; width: 100%; overflow: hidden; background: #000000; }
+    #memopad-canvas-container { flex: 1; position: relative; width: 100%; height: 100%; overflow: hidden; background: #000000; }
     #memopad-canvas { width: 100%; height: 100%; display: block; touch-action: none; }
   </style>
 </head>
@@ -495,7 +505,7 @@
     <div id="plan-card-list" style="display:flex; flex-direction:column; gap:12px;"></div>
   </div>
 
-  <!-- 브라우저 표준 파일 입력기 (화면 밖 안전 배치) -->
+  <!-- 브라우저 표준 파일 입력기 -->
   <input type="file" id="input-camera-photo" accept="image/*" capture="environment" onchange="handleDirectCapture(event, '사진')" style="position:absolute; width:1px; height:1px; opacity:0; clip:rect(0,0,0,0);" />
   <input type="file" id="input-camera-video" accept="video/*" capture="environment" onchange="handleDirectCapture(event, '동영상')" style="position:absolute; width:1px; height:1px; opacity:0; clip:rect(0,0,0,0);" />
   <input type="file" id="input-album-file" accept="image/*,video/*" multiple onchange="handleDirectCapture(event, null)" style="position:absolute; width:1px; height:1px; opacity:0; clip:rect(0,0,0,0);" />
@@ -518,10 +528,9 @@
     </div>
     <div class="capsule-box">
       <button id="btn-plus" class="btn-plus" onclick="togglePlusMenu()">＋</button>
-      <!-- 원터치 즉시 카메라 실행 버튼 -->
       <label for="input-camera-photo" class="btn-quick-cam" title="사진 바로촬영">📷</label>
       <textarea id="prompt-input" class="main-input" placeholder="생각을 입력하세요..." rows="1" oninput="handleInputChange(this);"></textarea>
-      <button class="btn-mic" onpointerdown="event.preventDefault()" onclick="triggerVoiceInput()">
+      <button id="btn-mic" class="btn-mic" onpointerdown="event.preventDefault()" onclick="toggleVoiceInput()">
         <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
       </button>
       <button id="btn-wave" class="btn-action-send" onpointerdown="event.preventDefault()" onclick="handleSendAction()">↑</button>
@@ -577,8 +586,12 @@
         <button class="pad-tool-btn" onclick="undoPadStroke()">↩️ 되돌리기</button>
         <button class="pad-tool-btn" onclick="clearPadCanvas()">🔄 전체삭제</button>
       </div>
-      <div style="display:flex; align-items:center; background:#121214; border-radius:10px; padding:6px 10px; border:1px solid #3a3a3c;">
+      <!-- 메모딱지 텍스트 입력창 & 전용 음성인식 마이크 -->
+      <div style="display:flex; align-items:center; background:#121214; border-radius:10px; padding:4px 8px; border:1px solid #3a3a3c; gap:6px;">
         <input id="memopad-text-input" type="text" placeholder="메모할 텍스트 입력..." style="flex:1; background:transparent; border:none; color:#fff; font-size:0.88rem; outline:none;" />
+        <button id="btn-pad-mic" class="btn-mic" onpointerdown="event.preventDefault()" onclick="togglePadVoiceInput()" title="메모딱지 음성입력">
+          <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+        </button>
       </div>
     </div>
 
@@ -681,7 +694,6 @@
       document.getElementById('btn-plus').classList.remove('open');
     }
 
-    /* 사진/동영상 촬영 즉시 서랍에 자동 보관하는 핵심 핸들러 */
     async function handleDirectCapture(event, defaultType) {
       const files = event.target.files;
       if (!files || files.length === 0) return;
@@ -693,20 +705,29 @@
         const isVid = file.type.startsWith('video');
         const finalType = defaultType || (isVid ? '동영상' : '사진');
         const dataUrl = await readFileDataURL(file);
+        const mediaObj = { type: finalType, data: dataUrl, isVideo: isVid };
 
-        await saveThought(finalType, extraText, [{
-          type: finalType,
-          data: dataUrl,
-          isVideo: isVid
-        }]);
+        if (currentMainMode === 'plan') {
+          const plan = {
+            id: Date.now() + Math.random(),
+            title: extraText || (finalType + ' 메모'),
+            status: '대기',
+            timeSlot: (currentPlanSubtab === 'focus' || currentPlanSubtab === 'backlog') ? 'none' : currentPlanSubtab,
+            isFocus: currentPlanSubtab === 'focus',
+            mediaList: [mediaObj],
+            updatedAt: new Date().toLocaleDateString()
+          };
+          await dbPut('plans', plan);
+          renderPlanView();
+        } else {
+          await saveThought(finalType, extraText, [mediaObj]);
+          selectCategory(defaultType || '전체');
+        }
       }
 
       input.value = '';
       input.style.height = 'auto';
       event.target.value = '';
-
-      // 방금 촬영한 미디어가 바로 보이도록 카테고리 전환
-      selectCategory(defaultType || '전체');
     }
 
     function readFileDataURL(file) {
@@ -726,7 +747,9 @@
     async function handleSendAction() {
       const input = document.getElementById('prompt-input');
       const text = input.value.trim();
-      if (!text) return triggerVoiceInput();
+      if (isVoiceRecording) toggleVoiceInput();
+
+      if (!text) return toggleVoiceInput();
 
       if (currentMainMode === 'idea') {
         await saveThought('노트', text, []);
@@ -739,22 +762,164 @@
       input.style.height = 'auto';
     }
 
-    function triggerVoiceInput() {
+    /* 메인 음성 입력 로직 (무제한 연속 + 커서 삽입) */
+    let recognition = null;
+    let isVoiceRecording = false;
+
+    function toggleVoiceInput() {
       closePlusMenu();
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'ko-KR';
-        recognition.interimResults = false;
-        recognition.onresult = function(event) {
-          const spokenText = event.results[0][0].transcript;
-          const el = document.getElementById('prompt-input');
-          el.value += (el.value ? ' ' : '') + spokenText;
-          handleInputChange(el);
-        };
-        recognition.start();
-      } else {
+      if (!SpeechRecognition) {
         alert('현재 브라우저에서는 음성 인식을 지원하지 않습니다.');
+        return;
+      }
+
+      const micBtn = document.getElementById('btn-mic');
+
+      if (isVoiceRecording) {
+        isVoiceRecording = false;
+        if (recognition) recognition.stop();
+        micBtn.classList.remove('recording');
+        return;
+      }
+
+      // 메모딱지 음성입력이 켜져있다면 중단
+      if (isPadVoiceRecording) togglePadVoiceInput();
+
+      try {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'ko-KR';
+        recognition.continuous = true;
+        recognition.interimResults = false;
+
+        isVoiceRecording = true;
+        micBtn.classList.add('recording');
+
+        recognition.onresult = function(event) {
+          const input = document.getElementById('prompt-input');
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              const transcript = event.results[i][0].transcript.trim();
+              if (transcript) {
+                insertTextAtCursor(input, transcript);
+              }
+            }
+          }
+        };
+
+        recognition.onerror = function(event) {
+          console.warn('Speech error:', event.error);
+          if (event.error === 'not-allowed') {
+            alert('마이크 사용 권한이 필요합니다. 브라우저 설정에서 마이크를 허용해주세요.');
+            isVoiceRecording = false;
+            micBtn.classList.remove('recording');
+          }
+        };
+
+        recognition.onend = function() {
+          if (isVoiceRecording) {
+            try { recognition.start(); } catch (e) {}
+          } else {
+            micBtn.classList.remove('recording');
+          }
+        };
+
+        recognition.start();
+      } catch (err) {
+        console.error('Speech recognition error:', err);
+        isVoiceRecording = false;
+        micBtn.classList.remove('recording');
+      }
+    }
+
+    /* 메모딱지 전용 음성 입력 로직 (무제한 연속 + 커서 삽입) */
+    let padRecognition = null;
+    let isPadVoiceRecording = false;
+
+    function togglePadVoiceInput() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert('현재 브라우저에서는 음성 인식을 지원하지 않습니다.');
+        return;
+      }
+
+      const padMicBtn = document.getElementById('btn-pad-mic');
+
+      if (isPadVoiceRecording) {
+        isPadVoiceRecording = false;
+        if (padRecognition) padRecognition.stop();
+        padMicBtn.classList.remove('recording');
+        return;
+      }
+
+      // 메인 음성입력이 켜져있다면 중단
+      if (isVoiceRecording) toggleVoiceInput();
+
+      try {
+        padRecognition = new SpeechRecognition();
+        padRecognition.lang = 'ko-KR';
+        padRecognition.continuous = true;
+        padRecognition.interimResults = false;
+
+        isPadVoiceRecording = true;
+        padMicBtn.classList.add('recording');
+
+        padRecognition.onresult = function(event) {
+          const input = document.getElementById('memopad-text-input');
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              const transcript = event.results[i][0].transcript.trim();
+              if (transcript) {
+                insertTextAtCursor(input, transcript);
+              }
+            }
+          }
+        };
+
+        padRecognition.onerror = function(event) {
+          console.warn('Pad speech error:', event.error);
+          if (event.error === 'not-allowed') {
+            alert('마이크 사용 권한이 필요합니다.');
+            isPadVoiceRecording = false;
+            padMicBtn.classList.remove('recording');
+          }
+        };
+
+        padRecognition.onend = function() {
+          if (isPadVoiceRecording) {
+            try { padRecognition.start(); } catch (e) {}
+          } else {
+            padMicBtn.classList.remove('recording');
+          }
+        };
+
+        padRecognition.start();
+      } catch (err) {
+        console.error('Pad speech error:', err);
+        isPadVoiceRecording = false;
+        padMicBtn.classList.remove('recording');
+      }
+    }
+
+    /* input 및 textarea 공용 커서 위치 텍스트 삽입기 */
+    function insertTextAtCursor(element, textToInsert) {
+      const start = element.selectionStart ?? element.value.length;
+      const end = element.selectionEnd ?? element.value.length;
+      const val = element.value;
+
+      const needSpaceBefore = start > 0 && !/[\s\n]/.test(val[start - 1]);
+      const needSpaceAfter = end < val.length && !/[\s\n]/.test(val[end]);
+
+      const formatted = (needSpaceBefore ? ' ' : '') + textToInsert + (needSpaceAfter ? ' ' : '');
+      
+      element.value = val.substring(0, start) + formatted + val.substring(end);
+      
+      const newPos = start + formatted.length;
+      element.selectionStart = newPos;
+      element.selectionEnd = newPos;
+      element.focus();
+      if (element.tagName.toLowerCase() === 'textarea') {
+        handleInputChange(element);
       }
     }
 
@@ -778,6 +943,7 @@
         status: '대기',
         timeSlot: 'none',
         isFocus: false,
+        mediaList: [],
         updatedAt: new Date().toLocaleDateString()
       };
       await dbPut('plans', item);
@@ -906,7 +1072,7 @@
       closeEditModal();
     }
 
-    /* 피드 렌더링 & 빈 화면 스마트 액션 버튼 */
+    /* 피드 렌더링 */
     async function renderFeed() {
       const list = (await dbGetAll('thoughts')).reverse();
       const feed = document.getElementById('idea-feed-container');
@@ -914,8 +1080,7 @@
       if (currentCategory === '첫 생각') {
         feed.innerHTML = `
           <div class="empty-canvas">
-            <div>💡 떠오르는 생각을 기록하세요.<br/>저장 즉시 서랍으로 안전하게 보관됩니다.</div>
-            <label for="input-camera-photo" class="empty-action-btn">📷 사진 바로 찍기</label>
+            <div>💡 떠오르는 생각을 기록하세요.<br/>저장 즉시 서랍으로 들어갑니다.</div>
           </div>`;
         return;
       }
@@ -989,6 +1154,7 @@
       renderPlanView();
     }
 
+    /* 계획 뷰 렌더링 */
     async function renderPlanView() {
       const list = (await dbGetAll('plans')).reverse();
       const container = document.getElementById('plan-card-list');
@@ -1008,6 +1174,13 @@
             <span class="status-badge-lg" onclick="togglePlanStatus(${p.id})">${p.status}</span>
             <div class="plan-big-title">${p.title}</div>
           </div>
+          ${p.mediaList && p.mediaList.length > 0 ? `
+            <div class="media-box">
+              ${p.mediaList.map(m => m.isVideo 
+                ? `<video src="${m.data}" controls playsinline></video>` 
+                : `<img src="${m.data}" />`).join('')}
+            </div>
+          ` : ''}
           <div class="card-five-buttons">
             <button class="five-btn active-backlog" onclick="reassignPlanSlotDirect(${p.id}, 'backlog')">🔄 대기</button>
             <button class="five-btn" onclick="openTimeSlotModal(${p.id}, 'plan')">🕒 계획</button>
@@ -1034,31 +1207,56 @@
       renderPlanView();
     }
 
+    /* 메모딱지 화면 */
     let padCanvas, padCtx, isDrawing = false, padColor = '#ffffff', isEraser = false, historyArr = [];
 
     function openMemoPadDirect() {
       closePlusMenu();
-      document.getElementById('memopad-screen').classList.add('active');
+      const screen = document.getElementById('memopad-screen');
+      screen.classList.add('active');
       padCanvas = document.getElementById('memopad-canvas');
       padCtx = padCanvas.getContext('2d');
       
-      const container = document.getElementById('memopad-canvas-container');
-      padCanvas.width = container.clientWidth;
-      padCanvas.height = container.clientHeight;
-      
-      padCtx.fillStyle = '#000000';
-      padCtx.fillRect(0, 0, padCanvas.width, padCanvas.height);
-      setPadColor('#ffffff', document.querySelector('.color-dot'));
-      historyArr = [];
+      requestAnimationFrame(() => {
+        const container = document.getElementById('memopad-canvas-container');
+        const rect = container.getBoundingClientRect();
+        padCanvas.width = Math.round(rect.width);
+        padCanvas.height = Math.round(rect.height);
+        
+        padCtx.fillStyle = '#000000';
+        padCtx.fillRect(0, 0, padCanvas.width, padCanvas.height);
+        padCtx.lineCap = 'round';
+        padCtx.lineJoin = 'round';
+        setPadColor('#ffffff', document.querySelector('.color-dot'));
+        historyArr = [];
+      });
     }
 
     function closeMemoPadDirect() {
+      if (isPadVoiceRecording) togglePadVoiceInput();
       document.getElementById('memopad-screen').classList.remove('active');
       document.getElementById('memopad-collapsible-toolbar').classList.remove('active');
     }
 
     function togglePadToolbar() {
-      document.getElementById('memopad-collapsible-toolbar').classList.toggle('active');
+      const toolbar = document.getElementById('memopad-collapsible-toolbar');
+      toolbar.classList.toggle('active');
+      setTimeout(() => {
+        const container = document.getElementById('memopad-canvas-container');
+        const rect = container.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          const imgData = padCtx.getImageData(0, 0, padCanvas.width, padCanvas.height);
+          padCanvas.width = Math.round(rect.width);
+          padCanvas.height = Math.round(rect.height);
+          padCtx.fillStyle = '#000000';
+          padCtx.fillRect(0, 0, padCanvas.width, padCanvas.height);
+          padCtx.putImageData(imgData, 0, 0);
+          padCtx.lineCap = 'round';
+          padCtx.lineJoin = 'round';
+          padCtx.strokeStyle = isEraser ? '#000000' : padColor;
+          padCtx.lineWidth = isEraser ? 24 : 3.5;
+        }
+      }, 50);
     }
 
     function setPadColor(color, el) {
@@ -1096,6 +1294,7 @@
     }
 
     async function saveMemoPadToDrawer() {
+      if (isPadVoiceRecording) togglePadVoiceInput();
       const text = document.getElementById('memopad-text-input').value.trim();
       const dataUrl = padCanvas.toDataURL('image/jpeg', 0.85);
       await saveThought('메모딱지', text, [{ type: '메모딱지', data: dataUrl, isVideo: false }]);
@@ -1105,6 +1304,16 @@
       selectCategory('전체');
     }
 
+    function getCanvasCoordinates(e) {
+      const rect = padCanvas.getBoundingClientRect();
+      const scaleX = padCanvas.width / rect.width;
+      const scaleY = padCanvas.height / rect.height;
+      return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY
+      };
+    }
+
     window.addEventListener('DOMContentLoaded', async () => {
       padCanvas = document.getElementById('memopad-canvas');
       
@@ -1112,15 +1321,15 @@
         padCanvas.setPointerCapture(e.pointerId);
         isDrawing = true;
         saveCanvasState();
-        const rect = padCanvas.getBoundingClientRect();
+        const pos = getCanvasCoordinates(e);
         padCtx.beginPath();
-        padCtx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        padCtx.moveTo(pos.x, pos.y);
       });
 
       padCanvas.addEventListener('pointermove', (e) => {
         if (!isDrawing) return;
-        const rect = padCanvas.getBoundingClientRect();
-        padCtx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+        const pos = getCanvasCoordinates(e);
+        padCtx.lineTo(pos.x, pos.y);
         padCtx.stroke();
       });
 
