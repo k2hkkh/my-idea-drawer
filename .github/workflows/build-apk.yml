@@ -189,29 +189,42 @@ jobs:
               .card-time { font-size: 0.75rem; color: var(--muted); }
               .card-content { font-size: clamp(0.92rem, 2.7vw, 1.05rem); line-height: 1.5; white-space: pre-wrap; color: #ffffff; }
 
-              .card-action-bar {
+              /* 정확히 5개 버튼 가로 바 */
+              .card-five-buttons {
                 display: flex;
-                justify-content: flex-end;
-                align-items: center;
-                gap: 6px;
+                gap: 5px;
+                overflow-x: auto;
+                white-space: nowrap;
                 border-top: 1px solid #27272a;
                 padding-top: 10px;
+                -webkit-overflow-scrolling: touch;
               }
-              .action-chip-btn {
+              .card-five-buttons::-webkit-scrollbar { display: none; }
+              
+              .five-btn {
+                flex: 1;
+                min-width: 60px;
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                padding: 6px 12px;
+                padding: 7px 6px;
                 border-radius: 8px;
                 border: 1px solid #3f3f46;
                 background: var(--surface);
                 color: #ffffff;
-                font-size: 0.78rem;
-                font-weight: 600;
+                font-size: clamp(0.72rem, 2.1vw, 0.78rem);
+                font-weight: 700;
                 cursor: pointer;
+                white-space: nowrap;
+                transition: all 0.15s;
               }
-              .action-chip-btn.time { background: #1e293b; border-color: #38bdf8; color: #38bdf8; }
-              .action-chip-btn.delete { background: #3b1414; border-color: #ef4444; color: #fca5a5; }
+              .five-btn:active { transform: scale(0.96); }
+              .five-btn.time { border-color: #38bdf8; color: #38bdf8; background: #0f172a; }
+              .five-btn.time.active { background: #0284c7; color: #ffffff; border-color: #38bdf8; }
+              .five-btn.focus { border-color: #ea580c; color: #fed7aa; background: #3f2214; }
+              .five-btn.focus.active { background: #ea580c; color: #ffffff; border-color: #fdba74; }
+              .five-btn.active { background: #2563eb; color: #ffffff; border-color: #3b82f6; }
+              .five-btn.delete { border-color: #ef4444; color: #fca5a5; background: #3b1414; }
 
               /* 쪽잠 단일 버튼 */
               .nap-single-container {
@@ -384,12 +397,6 @@ jobs:
                 flex-shrink: 0;
               }
               .wave-bar { width: 3px; height: 12px; background: #ffffff; border-radius: 2px; }
-              .btn-action-send.listening { background: var(--danger); animation: pulseWave 1.2s infinite; }
-              .btn-action-send.listening .wave-bar { animation: waveAnim 0.6s infinite alternate ease-in-out; }
-              .btn-action-send.listening .wave-bar:nth-child(2) { animation-delay: 0.15s; }
-              .btn-action-send.listening .wave-bar:nth-child(3) { animation-delay: 0.3s; }
-              @keyframes waveAnim { 0% { height: 6px; } 100% { height: 18px; } }
-              @keyframes pulseWave { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
               @keyframes micPulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
               .plus-menu-popover {
@@ -422,7 +429,7 @@ jobs:
               }
               .menu-item:active { background: var(--surface); }
 
-              /* 레이어 팝업 공통 */
+              /* 팝업 공통 */
               .modal-backdrop {
                 display: none;
                 position: fixed;
@@ -453,9 +460,9 @@ jobs:
                 background: var(--surface);
                 border: 1px solid #3f3f46;
                 color: #ffffff;
-                padding: 12px;
+                padding: 13px 14px;
                 border-radius: 10px;
-                font-size: 0.9rem;
+                font-size: 0.95rem;
                 font-weight: 700;
                 cursor: pointer;
                 text-align: left;
@@ -463,7 +470,6 @@ jobs:
                 align-items: center;
                 justify-content: space-between;
               }
-              .pop-btn-choice.focus { background: #3f2214; border-color: #ea580c; color: #fed7aa; }
               .pop-btn-stop {
                 background: var(--danger);
                 border: none;
@@ -567,7 +573,6 @@ jobs:
                 display: flex; align-items: center; justify-content: center; flex-shrink: 0;
               }
               .pad-mic-btn svg { width: 19px; height: 19px; fill: #8e8e93; }
-              .pad-mic-btn.listening svg { fill: #ef4444; animation: micPulse 1.2s infinite; }
               .pad-action-btn {
                 background: var(--primary); border: none; color: #ffffff; padding: 5px 9px;
                 border-radius: 7px; font-size: clamp(0.74rem, 2vw, 0.78rem); font-weight: bold; cursor: pointer;
@@ -672,7 +677,7 @@ jobs:
                   onmouseup="trackCursor(this)" 
                   ontouchend="setTimeout(() => trackCursor(this), 40)" 
                   onfocus="setTimeout(() => trackCursor(this), 40)"></textarea>
-                <button id="btn-mic-main" class="btn-mic" onpointerdown="event.preventDefault()" onclick="toggleContinuousVoice('main')">
+                <button id="btn-mic-main" class="btn-mic" onpointerdown="event.preventDefault()" onclick="triggerVoiceInput('main')">
                   <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                 </button>
                 <button id="btn-wave" class="btn-action-send" onpointerdown="event.preventDefault()" onclick="handleSendAction()">
@@ -698,51 +703,28 @@ jobs:
                 </div>
                 <div id="nap-modal-status" style="font-size:0.85rem; color:#a1a1aa;">원하는 휴식 시간을 선택하세요:</div>
                 <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
-                  <button class="action-chip-btn" style="padding:12px 0;" onclick="startNapTimer(15)">15분</button>
-                  <button class="action-chip-btn" style="padding:12px 0;" onclick="startNapTimer(30)">30분</button>
-                  <button class="action-chip-btn" style="padding:12px 0;" onclick="startNapTimer(45)">45분</button>
+                  <button class="five-btn" style="padding:12px 0;" onclick="startNapTimer(15)">15분</button>
+                  <button class="five-btn" style="padding:12px 0;" onclick="startNapTimer(30)">30분</button>
+                  <button class="five-btn" style="padding:12px 0;" onclick="startNapTimer(45)">45분</button>
                 </div>
                 <button id="nap-modal-stop-btn" class="pop-btn-stop" style="display:none;" onclick="stopNapTimer()">⏹️ 타이머 중단</button>
               </div>
             </div>
 
-            <!-- [🕒 계획시간] 할당 레이어 팝업 -->
-            <div id="slot-assign-modal" class="modal-backdrop" onclick="closeSlotModal(event)">
+            <!-- [🕒 계획시간] 할당 팝업: 오직 오전, 오후, 저녁, 심야만 배치 -->
+            <div id="time-sub-modal" class="modal-backdrop" onclick="closeTimeSlotModal(event)">
               <div class="pop-card" onclick="event.stopPropagation()">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <span style="font-weight:bold; font-size:1.05rem; color:#fff;">🕒 계획시간 할당</span>
-                  <button onclick="closeSlotModal()" style="background:transparent; border:none; color:#8e8e93; font-size:1.2rem; cursor:pointer;">✕</button>
+                  <span style="font-weight:bold; font-size:1.05rem; color:#fff;">🕒 계획시간 지정</span>
+                  <button onclick="closeTimeSlotModal()" style="background:transparent; border:none; color:#8e8e93; font-size:1.2rem; cursor:pointer;">✕</button>
                 </div>
-                <div style="font-size:0.85rem; color:#a1a1aa;">배치할 시간대나 상태를 선택하세요:</div>
-                <div style="display:flex; flex-direction:column; gap:6px;">
-                  <button class="pop-btn-choice focus" onclick="confirmSlotAssign('focus')">⚡ 지금 집중</button>
-                  <button class="pop-btn-choice" onclick="confirmSlotAssign('morning')">🌅 오전 (06:00 ~ 12:00)</button>
-                  <button class="pop-btn-choice" onclick="confirmSlotAssign('afternoon')">☀️ 오후 (12:00 ~ 18:00)</button>
-                  <button class="pop-btn-choice" onclick="confirmSlotAssign('evening')">🌙 저녁 (18:00 ~ 24:00)</button>
-                  <button class="pop-btn-choice" onclick="confirmSlotAssign('night')">⏱️ 심야 (00:00 ~ 06:00)</button>
-                  <button class="pop-btn-choice" onclick="confirmSlotAssign('backlog')">🔄 대기 (할 일 대기열)</button>
+                <div style="font-size:0.85rem; color:#a1a1aa;">원하는 일과 시간대를 선택하세요:</div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                  <button class="pop-btn-choice" onclick="confirmTimeSlotAssign('morning')">🌅 오전 (06:00 ~ 12:00)</button>
+                  <button class="pop-btn-choice" onclick="confirmTimeSlotAssign('afternoon')">☀️ 오후 (12:00 ~ 18:00)</button>
+                  <button class="pop-btn-choice" onclick="confirmTimeSlotAssign('evening')">🌙 저녁 (18:00 ~ 24:00)</button>
+                  <button class="pop-btn-choice" onclick="confirmTimeSlotAssign('night')">⏱️ 심야 (00:00 ~ 06:00)</button>
                 </div>
-              </div>
-            </div>
-
-            <!-- 계획 수정 모달 -->
-            <div id="plan-edit-modal" class="modal-full">
-              <div class="modal-top">
-                <span style="font-weight:bold; font-size:1rem;">✏️ 계획 상세 수정</span>
-                <div style="display:flex; gap:8px;">
-                  <button class="action-chip-btn" style="background:var(--primary); border:none;" onclick="confirmEditPlan()">💾 저장</button>
-                  <button class="action-chip-btn" style="background:var(--danger); border:none;" onclick="closePlanEditModal()">취소</button>
-                </div>
-              </div>
-              <div class="modal-body">
-                <label style="font-size:0.8rem; color:var(--muted);">할 일 / 계획 내용</label>
-                <textarea id="plan-edit-title" class="main-input" style="background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px; font-size:1rem; min-height:80px;"></textarea>
-
-                <label style="font-size:0.8rem; color:var(--muted); margin-top:8px;">진행 기록 추가</label>
-                <input id="plan-edit-newnote" class="main-input" style="background:var(--card); border:1px solid var(--border); border-radius:10px; padding:10px;" placeholder="진행 상황을 입력하세요..." />
-
-                <label style="font-size:0.8rem; color:var(--muted); margin-top:8px;">누적 진행 기록</label>
-                <div id="plan-edit-history" style="font-size:0.85rem; color:#ccc; background:#141416; padding:10px; border-radius:10px; min-height:60px;"></div>
               </div>
             </div>
 
@@ -773,7 +755,7 @@ jobs:
                       onmouseup="trackCursor(this)"
                       ontouchend="setTimeout(() => trackCursor(this), 40)"
                       onfocus="setTimeout(() => trackCursor(this), 40)" />
-                    <button id="memopad-mic-btn" class="pad-mic-btn" onpointerdown="event.preventDefault()" onclick="toggleContinuousVoice('pad')">
+                    <button id="memopad-mic-btn" class="pad-mic-btn" onpointerdown="event.preventDefault()" onclick="triggerVoiceInput('pad')">
                       <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                     </button>
                   </div>
@@ -794,13 +776,13 @@ jobs:
             <div id="archive-modal" class="modal-full">
               <div class="modal-top">
                 <span style="font-weight:bold; font-size:1.05rem;">📂 생각보관함 & 관리</span>
-                <button class="action-chip-btn" style="background:var(--danger); border:none;" onclick="closeArchiveModal()">닫기</button>
+                <button class="five-btn delete" style="border:none; padding:6px 12px;" onclick="closeArchiveModal()">닫기</button>
               </div>
               <div style="padding:10px 14px; background:#141416;">
                 <div style="display:flex; gap:6px;">
-                  <button id="subtab-archive" class="action-chip-btn" onclick="switchArchiveTab('archive')">📂 보관함</button>
-                  <button id="subtab-trash" class="action-chip-btn" onclick="switchArchiveTab('trash')">🗑️ 휴지통</button>
-                  <button id="subtab-backup" class="action-chip-btn" onclick="switchArchiveTab('backup')">💾 백업</button>
+                  <button id="subtab-archive" class="five-btn active" onclick="switchArchiveTab('archive')">📂 보관함</button>
+                  <button id="subtab-trash" class="five-btn" onclick="switchArchiveTab('trash')">🗑️ 휴지통</button>
+                  <button id="subtab-backup" class="five-btn" onclick="switchArchiveTab('backup')">💾 백업</button>
                 </div>
               </div>
 
@@ -812,14 +794,14 @@ jobs:
                   <div style="font-weight:bold; color:var(--accent);">📥 전체 데이터 백업</div>
                   <div style="font-size:0.85rem; color:var(--muted);">모든 데이터를 파일로 저장하거나 클립보드에 복사합니다.</div>
                   <div style="display:flex; gap:8px; margin-top:6px;">
-                    <button class="action-chip-btn" style="background:var(--primary); border:none; flex:1;" onclick="exportBackupData()">💾 파일 다운로드</button>
-                    <button class="action-chip-btn" style="flex:1;" onclick="copyBackupToClipboard()">📋 클립보드 복사</button>
+                    <button class="five-btn active" style="flex:1;" onclick="exportBackupData()">💾 파일 다운로드</button>
+                    <button class="five-btn" style="flex:1;" onclick="copyBackupToClipboard()">📋 클립보드 복사</button>
                   </div>
                 </div>
 
                 <div class="thought-card">
                   <div style="font-weight:bold; color:var(--success);">📤 데이터 복원</div>
-                  <button class="action-chip-btn" style="width:100%; margin-top:6px;" onclick="document.getElementById('backup-import-file').click()">📂 백업 파일 선택 복원</button>
+                  <button class="five-btn" style="width:100%; margin-top:6px;" onclick="document.getElementById('backup-import-file').click()">📂 백업 파일 선택 복원</button>
                 </div>
               </div>
             </div>
@@ -827,16 +809,16 @@ jobs:
             <div id="manual-modal" class="modal-full">
               <div class="modal-top">
                 <span style="font-weight:bold; font-size:1.05rem;">💡 가이드</span>
-                <button class="action-chip-btn" style="background:var(--danger); border:none;" onclick="closeManualModal()">닫기</button>
+                <button class="five-btn delete" style="border:none; padding:6px 12px;" onclick="closeManualModal()">닫기</button>
               </div>
               <div class="modal-body">
                 <div class="thought-card">
-                  <div style="font-weight:bold; color:var(--accent);">1. 기본 '대기' 시작 및 계획시간</div>
-                  <div style="font-size:0.85rem; color:#ccc; line-height:1.5;">모든 생각과 계획은 '대기' 상태로 시작하며, `[🕒 계획시간]` 버튼을 눌러 원하는 시간대로 즉각 이동시킵니다.</div>
+                  <div style="font-weight:bold; color:var(--accent);">1. 5개 원터치 버튼 구성</div>
+                  <div style="font-size:0.85rem; color:#ccc; line-height:1.5;">모든 카드는 `[대기]`, `[계획시간]`, `[지금집중]`, `[복사]`, `[삭제]` 5개 버튼으로 명확하게 관리됩니다.</div>
                 </div>
                 <div class="thought-card">
-                  <div style="font-weight:bold; color:var(--accent);">2. 원터치 쪽잠 타이머</div>
-                  <div style="font-size:0.85rem; color:#ccc; line-height:1.5;">`[⏱️ 쪽잠]` 버튼을 터치하여 15/30/45분을 선택하고 중단할 수 있습니다.</div>
+                  <div style="font-weight:bold; color:var(--accent);">2. 계획시간 하위 메뉴</div>
+                  <div style="font-size:0.85rem; color:#ccc; line-height:1.5;">`[🕒 계획시간]`을 터치하면 오직 `오전`, `오후`, `저녁`, `심야` 4개 시간대만 열려 원하는 시간대로 즉각 배치됩니다.</div>
                 </div>
               </div>
             </div>
@@ -845,15 +827,11 @@ jobs:
               let currentMainMode = 'idea';
               let currentCategory = '첫 생각';
               let currentAttachments = [];
-              let currentPlanSubtab = 'backlog'; // 기본 시작: 대기모드
+              let currentPlanSubtab = 'backlog'; // 항상 대기모드로 시작
 
-              let activeTargetContext = 'main';
               let activeVoiceTarget = 'main';
-              let isListeningContinuous = false;
-
               let targetSlotItemId = null;
-              let targetSlotSource = 'thought'; // 'thought' or 'plan'
-              let editingPlanId = null;
+              let targetSlotSource = 'thought';
 
               let cursorPositions = {
                 'prompt-input': { start: 0, end: 0 },
@@ -873,10 +851,7 @@ jobs:
                 }
               });
 
-              let lastProcessedVoice = '';
-              let lastProcessedTime = 0;
-
-              /* 쪽잠 타이머 엔진 */
+              /* 쪽잠 타이머 */
               let napTimerInterval = null;
               let napEndTime = null;
 
@@ -968,7 +943,7 @@ jobs:
                   ideaFeed.style.display = 'none';
                   planFeed.style.display = 'flex';
                   plusBtn.style.display = 'none';
-                  input.placeholder = '새로운 계획을 입력하세요 (대기모드로 시작)...';
+                  input.placeholder = '새로운 계획을 입력하세요 (대기모드로 등록)...';
                   renderPlanView();
                 }
               }
@@ -997,9 +972,9 @@ jobs:
                 document.getElementById('btn-plus').classList.remove('open');
               }
 
-              function triggerCamera(context = 'main') { activeTargetContext = context; closePlusMenu(); document.getElementById('camera-file').click(); }
-              function triggerGallery(context = 'main') { activeTargetContext = context; closePlusMenu(); document.getElementById('gallery-file').click(); }
-              function triggerVideo(context = 'main') { activeTargetContext = context; closePlusMenu(); document.getElementById('video-file').click(); }
+              function triggerCamera(context = 'main') { closePlusMenu(); document.getElementById('camera-file').click(); }
+              function triggerGallery(context = 'main') { closePlusMenu(); document.getElementById('gallery-file').click(); }
+              function triggerVideo(context = 'main') { closePlusMenu(); document.getElementById('video-file').click(); }
 
               function compressImage(file, maxWidth = 800, quality = 0.65) {
                 return new Promise((resolve) => {
@@ -1100,8 +1075,6 @@ jobs:
                 const hasAttachments = currentAttachments.length > 0;
                 
                 if (text || hasAttachments) {
-                  if (isListeningContinuous) stopContinuousVoice();
-
                   if (currentMainMode === 'idea') {
                     let category = '노트';
                     if (hasAttachments) {
@@ -1113,7 +1086,6 @@ jobs:
                     saveThought(category, text, [...currentAttachments]);
                     selectCategory('첫 생각');
                   } else {
-                    // 계획 모드: 항상 대기모드로 시작
                     savePlanToBacklog(text);
                     renderPlanView();
                   }
@@ -1125,12 +1097,12 @@ jobs:
                   renderAttachmentTray();
                   updateSendButtonState();
                 } else {
-                  toggleContinuousVoice('main');
+                  triggerVoiceInput('main');
                 }
               }
 
-              /* 음성 제어 */
-              function toggleContinuousVoice(target) {
+              /* 음성 입력: 구글 네이티브 음성 다이얼로그 호출 (비프음 루프 차단 & 정확한 띄어쓰기) */
+              function triggerVoiceInput(target) {
                 activeVoiceTarget = target;
                 closePlusMenu();
 
@@ -1140,46 +1112,30 @@ jobs:
                   trackCursor(el);
                 }
 
-                if (isListeningContinuous) {
-                  stopContinuousVoice();
+                if (window.AndroidBridge && window.AndroidBridge.openSpeechDialog) {
+                  window.AndroidBridge.openSpeechDialog();
                 } else {
-                  startContinuousVoice();
+                  // 브라우저 테스트 환경용 대체
+                  const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+                  if (Speech) {
+                    try {
+                      const rec = new Speech();
+                      rec.lang = 'ko-KR';
+                      rec.onresult = (e) => {
+                        appendVoiceResult(e.results[0][0].transcript);
+                      };
+                      rec.start();
+                    } catch(e) {}
+                  } else {
+                    alert('음성 인식 기능을 사용할 수 없습니다.');
+                  }
                 }
               }
 
-              function startContinuousVoice() {
-                isListeningContinuous = true;
-                updateVoiceButtonUI(true);
-                if (window.AndroidBridge && window.AndroidBridge.startContinuousSpeech) {
-                  window.AndroidBridge.startContinuousSpeech();
-                }
-              }
-
-              function stopContinuousVoice() {
-                isListeningContinuous = false;
-                updateVoiceButtonUI(false);
-                if (window.AndroidBridge && window.AndroidBridge.stopContinuousSpeech) {
-                  window.AndroidBridge.stopContinuousSpeech();
-                }
-              }
-
-              function updateVoiceButtonUI(listening) {
-                const btnWave = document.getElementById('btn-wave');
-                const btnMicMain = document.getElementById('btn-mic-main');
-                const btnMicPad = document.getElementById('memopad-mic-btn');
-                [btnWave, btnMicMain].forEach(btn => { if (btn) btn.classList.toggle('listening', listening); });
-                if (btnMicPad) btnMicPad.classList.toggle('listening', listening);
-              }
-
-              /* 띄어쓰기 정밀 보정 */
+              /* 음성 결과 단일 공백 정밀 삽입 */
               function appendVoiceResult(text) {
                 if (!text || !text.trim()) return;
                 const clean = text.trim().replace(/\s+/g, ' ');
-                const now = Date.now();
-
-                if (clean === lastProcessedVoice && (now - lastProcessedTime < 400)) return;
-                lastProcessedVoice = clean;
-                lastProcessedTime = now;
 
                 let targetId = (activeVoiceTarget === 'pad') ? 'memopad-text-input' : 'prompt-input';
                 const el = document.getElementById(targetId);
@@ -1215,9 +1171,6 @@ jobs:
               window.receiveVoiceResult = function(text) {
                 if (text && text.trim()) appendVoiceResult(text);
               };
-              window.onSpeechEndedNative = function() {
-                if (!isListeningContinuous) updateVoiceButtonUI(false);
-              };
 
               function pollFloatingVoiceText() {
                 if (window.AndroidBridge && window.AndroidBridge.getPendingVoiceText) {
@@ -1234,7 +1187,7 @@ jobs:
               }
               setInterval(pollFloatingVoiceText, 300);
 
-              /* 로컬 스토리지 엔진 */
+              /* 저장소 엔진 */
               function getThoughtStorage() {
                 const data = localStorage.getItem('idea_drawer_storage') || '[]';
                 try { return JSON.parse(data); } catch (e) { return []; }
@@ -1264,7 +1217,7 @@ jobs:
                 renderPlanView();
               }
 
-              /* 첫 시작은 항상 대기모드로 시작 */
+              /* 기본 대기모드로 등록 */
               function savePlanToBacklog(title) {
                 if (!title || !title.trim()) return;
                 const list = getPlanStorage();
@@ -1281,25 +1234,66 @@ jobs:
                 switchPlanSubtab('backlog');
               }
 
-              /* [🕒 계획시간] 할당 팝업 제어 */
-              function openSlotModal(id, source) {
+              /* 생각서랍 원터치 이동 (대기 / 지금집중) - 원본 서랍 자동 삭제 */
+              function transferThoughtDirect(id, type) {
+                const thoughts = getThoughtStorage();
+                const item = thoughts.find(t => t.id === id);
+                if (!item) return;
+
+                const title = item.content ? item.content.trim() : `[${item.category || '노트'}] 메모`;
+                const plans = getPlanStorage();
+                const isFocus = (type === 'focus');
+
+                plans.unshift({
+                  id: Date.now(),
+                  title: title,
+                  status: '대기',
+                  timeSlot: 'none',
+                  isFocus: isFocus,
+                  notes: [],
+                  mediaList: item.mediaList || [],
+                  updatedAt: new Date().toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })
+                });
+                setPlanStorage(plans);
+                setThoughtStorage(thoughts.filter(t => t.id !== id));
+
+                alert(isFocus ? '⚡ [지금집중] 일과로 이동되었습니다!' : '🔄 [대기] 일과로 이동되었습니다!');
+              }
+
+              /* 나의계획 내부 원터치 변경 (대기 / 지금집중) */
+              function reassignPlanSlotDirect(id, type) {
+                const plans = getPlanStorage();
+                const item = plans.find(p => p.id === id);
+                if (item) {
+                  if (type === 'focus') {
+                    item.isFocus = !item.isFocus;
+                  } else if (type === 'backlog') {
+                    item.isFocus = false;
+                    item.timeSlot = 'none';
+                  }
+                  setPlanStorage(plans);
+                }
+              }
+
+              /* [🕒 계획시간] 팝업 제어: 오직 오전, 오후, 저녁, 심야만 노출 */
+              function openTimeSlotModal(id, source) {
                 targetSlotItemId = id;
                 targetSlotSource = source;
-                document.getElementById('slot-assign-modal').classList.add('active');
+                document.getElementById('time-sub-modal').classList.add('active');
               }
-              function closeSlotModal(e) {
-                if (e && e.target && e.target.id !== 'slot-assign-modal') return;
-                document.getElementById('slot-assign-modal').classList.remove('active');
+              function closeTimeSlotModal(e) {
+                if (e && e.target && e.target.id !== 'time-sub-modal') return;
+                document.getElementById('time-sub-modal').classList.remove('active');
                 targetSlotItemId = null;
               }
 
-              function confirmSlotAssign(chosenSlot) {
+              function confirmTimeSlotAssign(chosenSlot) {
                 if (!targetSlotItemId) return;
-                const isFocus = (chosenSlot === 'focus');
-                const slotValue = isFocus ? 'none' : (chosenSlot === 'backlog' ? 'none' : chosenSlot);
+
+                const slotLabels = { morning: '오전', afternoon: '오후', evening: '저녁', night: '심야' };
 
                 if (targetSlotSource === 'thought') {
-                  // 생각서랍 ➔ 나의계획 이동 (서랍에서 자동 삭제)
+                  // 생각서랍 ➔ 지정 시간대 이동 (서랍에서 자동 삭제)
                   const thoughts = getThoughtStorage();
                   const item = thoughts.find(t => t.id === targetSlotItemId);
                   if (item) {
@@ -1309,47 +1303,52 @@ jobs:
                       id: Date.now(),
                       title: title,
                       status: '대기',
-                      timeSlot: slotValue,
-                      isFocus: isFocus,
+                      timeSlot: chosenSlot,
+                      isFocus: false,
                       notes: [],
                       mediaList: item.mediaList || [],
                       updatedAt: new Date().toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })
                     });
                     setPlanStorage(plans);
                     setThoughtStorage(thoughts.filter(t => t.id !== targetSlotItemId));
-                    alert('📋 계획시간이 지정되어 나의계획으로 이동되었습니다!');
+                    alert(`📋 [${slotLabels[chosenSlot]}] 일과로 이동되었습니다!`);
                   }
                 } else if (targetSlotSource === 'plan') {
-                  // 나의계획 내부 시간대 상호 이동
+                  // 나의계획 내부 시간대 변경
                   const plans = getPlanStorage();
                   const item = plans.find(p => p.id === targetSlotItemId);
                   if (item) {
-                    item.isFocus = isFocus;
-                    item.timeSlot = slotValue;
+                    item.isFocus = false;
+                    item.timeSlot = chosenSlot;
                     setPlanStorage(plans);
                   }
                 }
-                document.getElementById('slot-assign-modal').classList.remove('active');
+                document.getElementById('time-sub-modal').classList.remove('active');
                 targetSlotItemId = null;
               }
 
               /* 클립보드 복사 */
               function copyCardContent(text) {
                 if (!text || !text.trim()) { alert('복사할 텍스트가 없습니다.'); return; }
-                navigator.clipboard.writeText(text).then(() => {
-                  alert('📋 내용이 클립보드에 복사되었습니다.');
-                }).catch(() => {
-                  const ta = document.createElement('textarea');
-                  ta.value = text;
-                  document.body.appendChild(ta);
-                  ta.select();
-                  document.execCommand('copy');
-                  document.body.removeChild(ta);
-                  alert('📋 내용이 복사되었습니다.');
-                });
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                  navigator.clipboard.writeText(text).then(() => { alert('📋 내용이 클립보드에 복사되었습니다.'); }).catch(() => fallbackCopy(text));
+                } else {
+                  fallbackCopy(text);
+                }
+              }
+              function fallbackCopy(text) {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                alert('📋 내용이 클립보드에 복사되었습니다.');
               }
 
-              /* 생각서랍 뷰 렌더링 */
+              /* 생각서랍 피드 렌더링 (하단 정확히 5개 버튼 순서 고정) */
               function renderFeed() {
                 const list = getThoughtStorage();
                 const feed = document.getElementById('idea-feed-container');
@@ -1380,11 +1379,13 @@ jobs:
                       ` : ''}
                       ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
                       
-                      <!-- 단일화된 깔끔한 카드 액션 바 -->
-                      <div class="card-action-bar">
-                        <button class="action-chip-btn time" onclick="openSlotModal(${item.id}, 'thought')">🕒 계획시간</button>
-                        <button class="action-chip-btn" onclick="copyCardContent('${safeContent}')">📋 복사</button>
-                        <button class="action-chip-btn delete" onclick="deleteThought(${item.id})">🗑️ 삭제</button>
+                      <!-- 1.대기 2.계획시간 3.지금집중 4.복사 5.삭제 (정확히 5개 버튼) -->
+                      <div class="card-five-buttons">
+                        <button class="five-btn" onclick="transferThoughtDirect(${item.id}, 'backlog')">🔄 대기</button>
+                        <button class="five-btn time" onclick="openTimeSlotModal(${item.id}, 'thought')">🕒 계획시간</button>
+                        <button class="five-btn focus" onclick="transferThoughtDirect(${item.id}, 'focus')">⚡ 지금집중</button>
+                        <button class="five-btn" onclick="copyCardContent('${safeContent}')">📋 복사</button>
+                        <button class="five-btn delete" onclick="deleteThought(${item.id})">🗑️ 삭제</button>
                       </div>
                     </div>
                   `;
@@ -1397,7 +1398,7 @@ jobs:
                 }
               }
 
-              /* 나의계획 뷰 렌더링 (집중/시간대 상호 배타적 분리) */
+              /* 나의계획 피드 렌더링 (하단 정확히 5개 버튼 순서 고정) */
               function switchPlanSubtab(tab) {
                 currentPlanSubtab = tab;
                 document.querySelectorAll('.plan-time-tab').forEach(b => b.classList.remove('active'));
@@ -1428,6 +1429,7 @@ jobs:
                   const isDone = p.status === '완료';
                   const statusClass = (p.status === '진행중') ? 'progress' : (isDone ? 'done' : 'waiting');
                   const safeTitle = (p.title || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                  const isTimeActive = ['morning', 'afternoon', 'evening', 'night'].includes(p.timeSlot) && !p.isFocus;
 
                   return `
                     <div class="plan-big-card ${isDone ? 'completed' : ''}">
@@ -1436,18 +1438,19 @@ jobs:
                         <div class="plan-big-title ${isDone ? 'completed' : ''}">${p.title}</div>
                       </div>
 
-                      ${p.notes && p.notes.length > 0 ? `
-                        <div style="font-size:0.85rem; color:#a1a1aa; background:#121214; padding:8px 12px; border-radius:8px;">
-                          ${p.notes.map(n => `<div>• ${n}</div>`).join('')}
+                      ${p.mediaList && p.mediaList.length > 0 ? `
+                        <div>
+                          ${p.mediaList.map(m => `<img src="${m.data}" style="width:100%; max-height:180px; object-fit:contain; border-radius:8px; border:1px solid var(--border); background:#000;" />`).join('')}
                         </div>
                       ` : ''}
 
-                      <!-- 나의계획 카드 액션 바: 계획시간 변경 + 수정 + 복사 + 삭제 -->
-                      <div class="card-action-bar">
-                        <button class="action-chip-btn time" onclick="openSlotModal(${p.id}, 'plan')">🕒 계획시간</button>
-                        <button class="action-chip-btn" onclick="openPlanEditModal(${p.id})">✏️ 수정</button>
-                        <button class="action-chip-btn" onclick="copyCardContent('${safeTitle}')">📋 복사</button>
-                        <button class="action-chip-btn delete" onclick="deletePlan(${p.id})">🗑️ 삭제</button>
+                      <!-- 1.대기 2.계획시간 3.지금집중 4.복사 5.삭제 (정확히 5개 버튼) -->
+                      <div class="card-five-buttons">
+                        <button class="five-btn ${p.timeSlot === 'none' && !p.isFocus ? 'active' : ''}" onclick="reassignPlanSlotDirect(${p.id}, 'backlog')">🔄 대기</button>
+                        <button class="five-btn time ${isTimeActive ? 'active' : ''}" onclick="openTimeSlotModal(${p.id}, 'plan')">🕒 계획시간</button>
+                        <button class="five-btn focus ${p.isFocus ? 'active' : ''}" onclick="reassignPlanSlotDirect(${p.id}, 'focus')">⚡ 지금집중</button>
+                        <button class="five-btn" onclick="copyCardContent('${safeTitle}')">📋 복사</button>
+                        <button class="five-btn delete" onclick="deletePlan(${p.id})">🗑️ 삭제</button>
                       </div>
                     </div>
                   `;
@@ -1469,39 +1472,6 @@ jobs:
                 }
               }
 
-              /* 나의계획 상세 수정 모달 */
-              function openPlanEditModal(id) {
-                const item = getPlanStorage().find(p => p.id === id);
-                if (item) {
-                  editingPlanId = id;
-                  document.getElementById('plan-edit-title').value = item.title || '';
-                  document.getElementById('plan-edit-newnote').value = '';
-                  const hist = document.getElementById('plan-edit-history');
-                  hist.innerHTML = (item.notes && item.notes.length > 0) ? item.notes.map(n => `<div>• ${n}</div>`).join('') : '진행 기록이 없습니다.';
-                  document.getElementById('plan-edit-modal').classList.add('active');
-                }
-              }
-              function closePlanEditModal() {
-                document.getElementById('plan-edit-modal').classList.remove('active');
-                editingPlanId = null;
-              }
-              function confirmEditPlan() {
-                const title = document.getElementById('plan-edit-title').value.trim();
-                const newNote = document.getElementById('plan-edit-newnote').value.trim();
-                const list = getPlanStorage();
-                const item = list.find(p => p.id === editingPlanId);
-
-                if (item && title) {
-                  item.title = title;
-                  if (newNote) {
-                    const timeStamp = new Date().toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' });
-                    item.notes.push(`[${timeStamp}] ${newNote}`);
-                  }
-                  setPlanStorage(list);
-                }
-                closePlanEditModal();
-              }
-
               /* 암전 메모딱지 */
               const padScreen = document.getElementById('memopad-screen');
               const padCanvas = document.getElementById('memopad-canvas');
@@ -1510,15 +1480,10 @@ jobs:
               const padTextStrip = document.getElementById('memopad-text-strip');
               const padTextDisplay = document.getElementById('memopad-text-display');
 
-              let padDrawing = false;
-              let isMoving = false;
-              let padColor = '#ffffff';
-              let isPadEraser = false;
+              let padDrawing = false, isMoving = false, padColor = '#ffffff', isPadEraser = false;
               const MOVE_THRESHOLD = 5;
-
               let lastTapTime = 0, lastTapX = 0, lastTapY = 0;
-              let touchStartX = 0, touchStartY = 0;
-              let isCornerGesture = null;
+              let touchStartX = 0, touchStartY = 0, isCornerGesture = null;
               let padHistory = [];
 
               function openMemoPadDirect() {
@@ -1539,13 +1504,11 @@ jobs:
                 }, 30);
               }
               function closeMemoPadDirect() {
-                if (isListeningContinuous) stopContinuousVoice();
                 padScreen.classList.remove('active');
                 padToolbar.classList.remove('active');
               }
               function setPadColor(color, el) {
-                padColor = color;
-                isPadEraser = false;
+                padColor = color; isPadEraser = false;
                 document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
                 if (el) el.classList.add('active');
                 document.getElementById('pad-eraser-btn').classList.remove('active');
@@ -1561,12 +1524,8 @@ jobs:
                 else { setPadColor(padColor); }
               }
               function undoPadStroke() {
-                if (padHistory.length > 0) {
-                  padCtx.putImageData(padHistory.pop(), 0, 0);
-                } else {
-                  padCtx.fillStyle = '#000000';
-                  padCtx.fillRect(0, 0, padCanvas.width, padCanvas.height);
-                }
+                if (padHistory.length > 0) { padCtx.putImageData(padHistory.pop(), 0, 0); }
+                else { padCtx.fillStyle = '#000000'; padCtx.fillRect(0, 0, padCanvas.width, padCanvas.height); }
               }
               function clearPadCanvas() {
                 if (confirm('도화지를 모두 지우시겠습니까?')) {
@@ -1598,8 +1557,7 @@ jobs:
                   lastTapTime = 0;
                   return;
                 }
-                lastTapTime = now;
-                lastTapX = x; lastTapY = y;
+                lastTapTime = now; lastTapX = x; lastTapY = y;
                 touchStartX = x; touchStartY = y;
                 isMoving = false; padDrawing = false;
               }, { passive: false });
@@ -1677,6 +1635,10 @@ jobs:
               function closeArchiveModal() { document.getElementById('archive-modal').classList.remove('active'); }
 
               function switchArchiveTab(tab) {
+                document.getElementById('subtab-archive').classList.toggle('active', tab === 'archive');
+                document.getElementById('subtab-trash').classList.toggle('active', tab === 'trash');
+                document.getElementById('subtab-backup').classList.toggle('active', tab === 'backup');
+
                 document.getElementById('archive-feed').style.display = (tab === 'archive') ? 'flex' : 'none';
                 document.getElementById('trash-feed').style.display = (tab === 'trash') ? 'flex' : 'none';
                 document.getElementById('backup-pane').style.display = (tab === 'backup') ? 'flex' : 'none';
@@ -1691,7 +1653,7 @@ jobs:
                   <div class="thought-card">
                     <div class="card-header"><span class="card-badge">${item.category || '노트'}</span><span class="card-time">${item.time}</span></div>
                     ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
-                    <div style="display:flex; justify-content:flex-end;"><button class="action-chip-btn delete" onclick="deleteThought(${item.id}); renderArchiveFeed();">🗑️ 삭제</button></div>
+                    <div style="display:flex; justify-content:flex-end;"><button class="five-btn delete" onclick="deleteThought(${item.id}); renderArchiveFeed();">🗑️ 삭제</button></div>
                   </div>
                 `).join('');
               }
@@ -1702,14 +1664,14 @@ jobs:
                 if (list.length === 0) { feed.innerHTML = '<p style="color:#555; text-align:center; padding:40px 0;">휴지통이 비어 있습니다.</p>'; return; }
                 feed.innerHTML = `
                   <div style="display:flex; justify-content:flex-end; margin-bottom:6px;">
-                    <button class="action-chip-btn delete" onclick="clearAllTrash()">🗑️ 휴지통 전체 비우기</button>
+                    <button class="five-btn delete" onclick="clearAllTrash()">🗑️ 휴지통 전체 비우기</button>
                   </div>
                 ` + list.map(item => `
                   <div class="thought-card">
                     <img src="${item.imageData}" style="width:100%; max-height:180px; object-fit:contain; border-radius:8px;" />
                     <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:6px;">
-                      <button class="action-chip-btn" style="background:var(--primary); border:none;" onclick="restoreTrashItem(${item.id})">↩️ 복원</button>
-                      <button class="action-chip-btn delete" onclick="deleteTrashItemPermanently(${item.id})">🗑️ 영구 삭제</button>
+                      <button class="five-btn active" onclick="restoreTrashItem(${item.id})">↩️ 복원</button>
+                      <button class="five-btn delete" onclick="deleteTrashItemPermanently(${item.id})">🗑️ 영구 삭제</button>
                     </div>
                   </div>
                 `).join('');
@@ -1738,7 +1700,7 @@ jobs:
               }
 
               function exportBackupData() {
-                const backupObj = { version: '3.1', exportDate: new Date().toISOString(), thoughts: getThoughtStorage(), plans: getPlanStorage(), trash: getPadTrashStorage() };
+                const backupObj = { version: '3.2', exportDate: new Date().toISOString(), thoughts: getThoughtStorage(), plans: getPlanStorage(), trash: getPadTrashStorage() };
                 const jsonStr = JSON.stringify(backupObj, null, 2);
                 try {
                   const blob = new Blob([jsonStr], { type: 'application/json' });
@@ -1751,7 +1713,7 @@ jobs:
                 } catch (e) { copyBackupToClipboard(); }
               }
               function copyBackupToClipboard() {
-                const backupObj = { version: '3.1', exportDate: new Date().toISOString(), thoughts: getThoughtStorage(), plans: getPlanStorage(), trash: getPadTrashStorage() };
+                const backupObj = { version: '3.2', exportDate: new Date().toISOString(), thoughts: getThoughtStorage(), plans: getPlanStorage(), trash: getPadTrashStorage() };
                 navigator.clipboard.writeText(JSON.stringify(backupObj, null, 2)).then(() => {
                   alert('📋 백업 데이터가 클립보드에 복사되었습니다.');
                 });
@@ -1783,7 +1745,7 @@ jobs:
           </html>
           EOF
 
-      - name: 5. 고정 Keystore 및 음소거 네이티브 음성 브릿지 주입
+      - name: 5. 고정 Keystore 및 구글 표준 음성 브릿지 주입
         run: |
           cat << 'EOF' > package.json
           {
@@ -1999,9 +1961,6 @@ jobs:
                           intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
                           intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
                           intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
-                          
-                          intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 8000L);
-                          intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 8000L);
 
                           speechRecognizer.setRecognitionListener(new RecognitionListener() {
                               @Override
@@ -2088,19 +2047,13 @@ jobs:
           package com.k2hkkh.ideadrawer;
 
           import android.Manifest;
-          import android.content.Context;
           import android.content.Intent;
           import android.content.SharedPreferences;
           import android.content.pm.PackageManager;
-          import android.media.AudioManager;
           import android.os.Build;
           import android.os.Bundle;
-          import android.os.Handler;
-          import android.os.Looper;
           import android.provider.Settings;
-          import android.speech.RecognitionListener;
           import android.speech.RecognizerIntent;
-          import android.speech.SpeechRecognizer;
           import android.webkit.JavascriptInterface;
           import androidx.core.app.ActivityCompat;
           import androidx.core.content.ContextCompat;
@@ -2108,8 +2061,7 @@ jobs:
           import java.util.ArrayList;
 
           public class MainActivity extends BridgeActivity {
-              private SpeechRecognizer inAppRecognizer;
-              private boolean isContinuousMode = false;
+              private static final int SPEECH_REQUEST_CODE = 1002;
 
               @Override
               public void onCreate(Bundle savedInstanceState) {
@@ -2120,29 +2072,6 @@ jobs:
                   if (getBridge() != null && getBridge().getWebView() != null) {
                       getBridge().getWebView().addJavascriptInterface(new Object() {
                           @JavascriptInterface
-                          public void startContinuousSpeech() {
-                              new Handler(Looper.getMainLooper()).post(() -> {
-                                  isContinuousMode = true;
-                                  muteSystemAudio(true);
-                                  startListeningLoop();
-                              });
-                          }
-
-                          @JavascriptInterface
-                          public void stopContinuousSpeech() {
-                              new Handler(Looper.getMainLooper()).post(() -> {
-                                  isContinuousMode = false;
-                                  muteSystemAudio(false);
-                                  if (inAppRecognizer != null) {
-                                      inAppRecognizer.stopListening();
-                                      inAppRecognizer.destroy();
-                                      inAppRecognizer = null;
-                                  }
-                                  evalJS("if (window.onSpeechEndedNative) window.onSpeechEndedNative();");
-                              });
-                          }
-
-                          @JavascriptInterface
                           public String getPendingVoiceText() {
                               SharedPreferences prefs = getSharedPreferences("IdeaPrefs", MODE_PRIVATE);
                               String pending = prefs.getString("PENDING_VOICE", "");
@@ -2151,23 +2080,35 @@ jobs:
                               }
                               return pending;
                           }
+
+                          @JavascriptInterface
+                          public void openSpeechDialog() {
+                              Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                              intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                              intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
+                              intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "생각을 말씀하세요...");
+                              try {
+                                  startActivityForResult(intent, SPEECH_REQUEST_CODE);
+                              } catch (Exception ignored) {}
+                          }
                       }, "AndroidBridge");
                   }
               }
 
-              private void muteSystemAudio(boolean mute) {
-                  try {
-                      AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-                      if (am != null) {
-                          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                              am.adjustStreamVolume(AudioManager.STREAM_SYSTEM, mute ? AudioManager.ADJUST_MUTE : AudioManager.ADJUST_UNMUTE, 0);
-                              am.adjustStreamVolume(AudioManager.STREAM_NOTIFICATION, mute ? AudioManager.ADJUST_MUTE : AudioManager.ADJUST_UNMUTE, 0);
-                          } else {
-                              am.setStreamMute(AudioManager.STREAM_SYSTEM, mute);
-                              am.setStreamMute(AudioManager.STREAM_NOTIFICATION, mute);
+              @Override
+              protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+                  super.onActivityResult(requestCode, resultCode, data);
+                  if (requestCode == SPEECH_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
+                      ArrayList<String> results = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                      if (results != null && !results.isEmpty()) {
+                          String spokenText = results.get(0).replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ");
+                          if (getBridge() != null && getBridge().getWebView() != null) {
+                              getBridge().getWebView().post(() ->
+                                  getBridge().getWebView().evaluateJavascript("if (window.receiveVoiceResult) window.receiveVoiceResult('" + spokenText + "');", null)
+                              );
                           }
                       }
-                  } catch (Exception ignored) {}
+                  }
               }
 
               private void requestAppPermissions() {
@@ -2182,79 +2123,6 @@ jobs:
                   }
               }
 
-              private void startListeningLoop() {
-                  if (!isContinuousMode) return;
-
-                  if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                      requestAppPermissions();
-                      isContinuousMode = false;
-                      muteSystemAudio(false);
-                      evalJS("if (window.onSpeechEndedNative) window.onSpeechEndedNative();");
-                      return;
-                  }
-
-                  try {
-                      if (inAppRecognizer != null) {
-                          inAppRecognizer.destroy();
-                          inAppRecognizer = null;
-                      }
-
-                      inAppRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
-                      Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-                      intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-                      intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
-                      intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
-                      intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 8000L);
-                      intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 8000L);
-
-                      inAppRecognizer.setRecognitionListener(new RecognitionListener() {
-                          @Override public void onReadyForSpeech(Bundle params) {}
-                          @Override public void onBeginningOfSpeech() {}
-                          @Override public void onRmsChanged(float rmsdB) {}
-                          @Override public void onBufferReceived(byte[] buffer) {}
-                          @Override public void onEndOfSpeech() {}
-
-                          @Override
-                          public void onError(int error) {
-                              if (isContinuousMode) {
-                                  new Handler(Looper.getMainLooper()).postDelayed(() -> startListeningLoop(), 100);
-                              } else {
-                                  muteSystemAudio(false);
-                                  evalJS("if (window.onSpeechEndedNative) window.onSpeechEndedNative();");
-                              }
-                          }
-
-                          @Override
-                          public void onResults(Bundle results) {
-                              ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-                              if (matches != null && !matches.isEmpty()) {
-                                  sendTextToWebView(matches.get(0));
-                              }
-                              if (isContinuousMode) {
-                                  new Handler(Looper.getMainLooper()).postDelayed(() -> startListeningLoop(), 100);
-                              } else {
-                                  muteSystemAudio(false);
-                              }
-                          }
-
-                          @Override public void onPartialResults(Bundle partialResults) {}
-                          @Override public void onEvent(int eventType, Bundle params) {}
-                      });
-
-                      inAppRecognizer.startListening(intent);
-                  } catch (Exception e) {
-                      isContinuousMode = false;
-                      muteSystemAudio(false);
-                      evalJS("if (window.onSpeechEndedNative) window.onSpeechEndedNative();");
-                  }
-              }
-
-              private void evalJS(String script) {
-                if (getBridge() != null && getBridge().getWebView() != null) {
-                    getBridge().getWebView().post(() -> getBridge().getWebView().evaluateJavascript(script, null));
-                }
-              }
-
               @Override
               public void onResume() {
                   super.onResume();
@@ -2265,13 +2133,6 @@ jobs:
               public void onNewIntent(Intent intent) {
                   super.onNewIntent(intent);
                   setIntent(intent);
-              }
-
-              private void sendTextToWebView(String text) {
-                  if (text != null) {
-                      String cleanText = text.replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ");
-                      evalJS("if (window.receiveVoiceResult) window.receiveVoiceResult('" + cleanText + "');");
-                  }
               }
 
               private void startWidgetIfAllowed() {
@@ -2289,17 +2150,6 @@ jobs:
                   } else {
                       Intent intent = new Intent(this, FloatingWidgetService.class);
                       startService(intent);
-                  }
-              }
-
-              @Override
-              public void onDestroy() {
-                  super.onDestroy();
-                  isContinuousMode = false;
-                  muteSystemAudio(false);
-                  if (inAppRecognizer != null) {
-                      try { inAppRecognizer.destroy(); } catch (Exception ignored) {}
-                      inAppRecognizer = null;
                   }
               }
           }
