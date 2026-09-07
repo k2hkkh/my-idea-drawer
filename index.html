@@ -3,83 +3,433 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#000000" />
   <title>생각서랍</title>
   <style>
     :root {
-      --bg: #000000; --card: #1c1c1e; --surface: #2c2c2e; --primary: #2563eb; --accent: #38bdf8; --danger: #ef4444; --text: #f8fafc; --muted: #8e8e93; --border: #2c2c2e;
+      --bg: #000000;
+      --card: #1c1c1e;
+      --surface: #2c2c2e;
+      --primary: #2563eb;
+      --accent: #38bdf8;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --muted: #8e8e93;
+      --border: #2c2c2e;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif; background-color: var(--bg); color: var(--text); height: 100dvh; display: flex; flex-direction: column; overflow: hidden; padding-top: env(safe-area-inset-top, 0px); }
     
-    header { padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; background: var(--bg); border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 6px; }
-    .main-mode-switch { display: flex; background: #141416; padding: 3px; border-radius: 20px; border: 1px solid var(--border); gap: 2px; flex: 1; justify-content: stretch; }
-    .mode-btn { flex: 1; padding: 8px 4px; border-radius: 16px; border: none; background: transparent; color: var(--muted); font-size: clamp(0.78rem, 2.4vw, 0.88rem); font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; transition: all 0.2s; }
-    .mode-btn.active { background: var(--primary); color: #ffffff; box-shadow: 0 2px 8px rgba(37,99,235,0.4); }
-
-    .category-bar { display: flex; padding: 8px 12px; background: #121214; gap: 6px; overflow-x: auto; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-    .category-pill { padding: 5px 12px; border-radius: 14px; background: var(--card); border: 1px solid var(--border); font-size: 0.78rem; color: var(--muted); cursor: pointer; white-space: nowrap; font-weight: 600; }
-    .category-pill.active { background: var(--primary); color: #ffffff; border-color: var(--primary); }
-
-    .view-container { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
-    .empty-canvas { margin: auto; text-align: center; color: #52525b; font-size: 0.95rem; line-height: 1.6; }
+    /* 100dvh 및 Safe-Area 최적화 */
+    html, body {
+      width: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      padding-top: env(safe-area-inset-top, 0px);
+    }
     
-    .thought-card, .plan-big-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
-    .card-header, .plan-big-card-top { display: flex; justify-content: space-between; align-items: center; }
-    .card-badge { font-size: 0.75rem; padding: 3px 8px; border-radius: 6px; background: var(--surface); color: var(--accent); font-weight: 600; }
+    header {
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      gap: 6px;
+    }
+    .main-mode-switch {
+      display: flex;
+      background: #141416;
+      padding: 3px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      gap: 2px;
+      flex: 1;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: 8px 4px;
+      border-radius: 16px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: clamp(0.78rem, 2.4vw, 0.88rem);
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .mode-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.4);
+    }
+
+    .category-bar {
+      display: flex;
+      padding: 8px 12px;
+      background: #121214;
+      gap: 6px;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .category-pill {
+      padding: 5px 12px;
+      border-radius: 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      font-size: 0.78rem;
+      color: var(--muted);
+      cursor: pointer;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+    .category-pill.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .view-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .empty-canvas {
+      margin: auto;
+      text-align: center;
+      color: #52525b;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    
+    .thought-card, .plan-big-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .card-header, .plan-big-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-badge {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--accent);
+      font-weight: 600;
+    }
     .card-time { font-size: 0.75rem; color: var(--muted); }
-    .card-content, .plan-big-title { font-size: clamp(0.92rem, 2.7vw, 1.05rem); line-height: 1.5; white-space: pre-wrap; color: #ffffff; }
+    .card-content, .plan-big-title {
+      font-size: clamp(0.92rem, 2.7vw, 1.05rem);
+      line-height: 1.5;
+      white-space: pre-wrap;
+      color: #ffffff;
+      user-select: text;
+    }
+    .status-badge-lg {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: #27272a;
+      color: #e4e4e7;
+      cursor: pointer;
+    }
 
-    .card-five-buttons { display: flex; gap: 4px; overflow-x: auto; white-space: nowrap; border-top: 1px solid #27272a; padding-top: 10px; }
-    .five-btn { flex: 1; min-width: 46px; display: inline-flex; align-items: center; justify-content: center; padding: 7px 2px; border-radius: 8px; border: 1px solid #3f3f46; background: #1c1c1e; color: #a1a1aa; font-size: clamp(0.68rem, 1.8vw, 0.74rem); font-weight: 600; cursor: pointer; }
+    .media-box {
+      border-radius: 10px;
+      overflow: hidden;
+      background: #000;
+      margin-top: 4px;
+    }
+    .media-box img, .media-box video {
+      width: 100%;
+      max-height: 280px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .card-five-buttons {
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      white-space: nowrap;
+      border-top: 1px solid #27272a;
+      padding-top: 10px;
+    }
+    .five-btn {
+      flex: 1;
+      min-width: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 2px;
+      border-radius: 8px;
+      border: 1px solid #3f3f46;
+      background: #1c1c1e;
+      color: #a1a1aa;
+      font-size: clamp(0.68rem, 1.8vw, 0.74rem);
+      font-weight: 600;
+      cursor: pointer;
+    }
     .five-btn.active-backlog { background: #1e3a8a; border-color: #3b82f6; color: #ffffff; font-weight: 700; }
-    .five-btn.active-time { background: #0369a1; border-color: #38bdf8; color: #ffffff; font-weight: 700; }
-    .five-btn.active-focus { background: #7c2d12; border-color: #ea580c; color: #ffedd5; font-weight: 700; }
 
     .plan-time-tabs { display: flex; gap: 4px; width: 100%; flex-shrink: 0; }
-    .plan-time-tab { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 8px 2px; color: var(--muted); font-size: clamp(0.68rem, 2vw, 0.76rem); font-weight: bold; text-align: center; cursor: pointer; white-space: nowrap; }
+    .plan-time-tab {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 2px;
+      color: var(--muted);
+      font-size: clamp(0.68rem, 2vw, 0.76rem);
+      font-weight: bold;
+      text-align: center;
+      cursor: pointer;
+      white-space: nowrap;
+    }
     .plan-time-tab.active { background: #1e3a8a; color: #60a5fa; border-color: #3b82f6; }
     .plan-time-tab.focus-tab.active { background: #9a3412; color: #fdba74; border-color: #f97316; }
 
-    .bottom-bar-wrapper { padding: 8px 14px calc(14px + env(safe-area-inset-bottom, 0px)) 14px; background: var(--bg); position: relative; flex-shrink: 0; }
-    .capsule-box { background: var(--card); border: 1px solid var(--border); border-radius: 30px; padding: 6px 10px; display: flex; align-items: center; gap: 8px; }
-    .btn-plus { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); border: none; color: #ffffff; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    /* 하단 입력바 및 Safe Area 패딩 */
+    .bottom-bar-wrapper {
+      padding: 8px 14px calc(12px + env(safe-area-inset-bottom, 0px)) 14px;
+      background: var(--bg);
+      position: relative;
+      flex-shrink: 0;
+      border-top: 1px solid #18181b;
+    }
+    .capsule-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-plus {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: none;
+      color: #ffffff;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
     .btn-plus.open { transform: rotate(45deg); background: var(--danger); }
-    .main-input { flex: 1; background: transparent; border: none; color: #ffffff; font-size: clamp(0.88rem, 2.6vw, 0.95rem); outline: none; min-height: 24px; max-height: 90px; resize: none; line-height: 1.4; user-select: text; }
-    .btn-mic { background: none; border: none; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+    .main-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      font-size: clamp(0.88rem, 2.6vw, 0.95rem);
+      outline: none;
+      min-height: 24px;
+      max-height: 90px;
+      resize: none;
+      line-height: 1.4;
+      user-select: text;
+    }
+    .btn-mic {
+      background: none;
+      border: none;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
     .btn-mic svg { width: 22px; height: 22px; fill: #8e8e93; }
-    .btn-action-send { width: 36px; height: 36px; border-radius: 50%; background: #2563eb; border: none; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 1.2rem; font-weight: bold; cursor: pointer; flex-shrink: 0; }
+    .btn-action-send {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #2563eb;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
     
-    .plus-menu-popover { display: none; position: absolute; bottom: 74px; left: 14px; background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 8px 6px; flex-direction: column; gap: 4px; z-index: 50; min-width: 170px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+    .plus-menu-popover {
+      display: none;
+      position: absolute;
+      bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+      left: 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 8px 6px;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 50;
+      min-width: 190px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
     .plus-menu-popover.active { display: flex; }
-    .menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; color: #ffffff; font-size: 0.9rem; cursor: pointer; }
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      color: #ffffff;
+      font-size: 0.88rem;
+      cursor: pointer;
+    }
     .menu-item:active { background: var(--surface); }
 
-    /* 메모딱지 UI */
-    #memopad-screen { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: #000000; z-index: 2000; overflow: hidden; flex-direction: column; }
+    /* 모달 공통 */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100dvh;
+      background: rgba(0,0,0,0.75);
+      z-index: 3000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .modal-backdrop.active { display: flex; }
+    .pop-card {
+      background: #1c1c1e;
+      border: 1px solid #3a3a3c;
+      border-radius: 18px;
+      padding: 18px;
+      width: 100%;
+      max-width: 340px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .pop-textarea {
+      width: 100%;
+      height: 120px;
+      background: #121214;
+      border: 1px solid #3a3a3c;
+      border-radius: 10px;
+      padding: 10px;
+      color: #fff;
+      font-size: 0.95rem;
+      resize: none;
+      outline: none;
+      user-select: text;
+    }
+    .pop-btn-row { display: flex; gap: 8px; }
+    .pop-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      font-weight: bold;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .pop-btn.cancel { background: #2c2c2e; color: #8e8e93; }
+    .pop-btn.confirm { background: var(--primary); color: #fff; }
+    .pop-btn-choice {
+      width: 100%;
+      padding: 12px;
+      background: #2c2c2e;
+      border: 1px solid #3f3f46;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.92rem;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    /* 메모딱지 화면 (포인터 이벤트 완벽 지원) */
+    #memopad-screen {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100dvh;
+      background: #000000;
+      z-index: 2000;
+      overflow: hidden;
+      flex-direction: column;
+    }
     #memopad-screen.active { display: flex; }
-    
-    .memopad-top-bar { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; background: #1c1c1e; border-bottom: 1px solid #3a3a3c; flex-shrink: 0; z-index: 2100; }
-    .memopad-collapsible-toolbar { display: none; background: #141416; border-bottom: 1px solid #3a3a3c; padding: 10px; flex-direction: column; gap: 8px; flex-shrink: 0; z-index: 2100; }
+    .memopad-top-bar {
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #1c1c1e;
+      border-bottom: 1px solid #3a3a3c;
+      flex-shrink: 0;
+    }
+    .memopad-collapsible-toolbar {
+      display: none;
+      background: #141416;
+      border-bottom: 1px solid #3a3a3c;
+      padding: 10px;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+    }
     .memopad-collapsible-toolbar.active { display: flex; }
-    
     .pad-palette { display: flex; gap: 8px; align-items: center; overflow-x: auto; }
     .color-dot { width: 24px; height: 24px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; flex-shrink: 0; }
     .color-dot.active { border-color: #ffffff; transform: scale(1.15); }
-    .pad-tool-btn { background: var(--surface); border: 1px solid #3a3a3c; color: #fff; padding: 5px 10px; border-radius: 8px; font-size: 0.78rem; font-weight: bold; cursor: pointer; flex-shrink: 0; }
+    .pad-tool-btn {
+      background: var(--surface);
+      border: 1px solid #3a3a3c;
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: bold;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
     .pad-tool-btn.active { background: #3b82f6; border-color: #60a5fa; }
-    
     #memopad-canvas-container { flex: 1; position: relative; width: 100%; overflow: hidden; background: #000000; }
     #memopad-canvas { width: 100%; height: 100%; display: block; touch-action: none; }
-
-    /* 커스텀 수정 팝업창 스타일 */
-    .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.75); z-index: 3000; justify-content: center; align-items: center; padding: 20px; }
-    .modal-backdrop.active { display: flex; }
-    .pop-card { background: #1c1c1e; border: 1px solid #3a3a3c; border-radius: 18px; padding: 18px; width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-    .pop-textarea { width: 100%; height: 120px; background: #121214; border: 1px solid #3a3a3c; border-radius: 10px; padding: 10px; color: #fff; font-size: 0.95rem; resize: none; outline: none; user-select: text; }
-    .pop-btn-row { display: flex; gap: 8px; }
-    .pop-btn { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: bold; font-size: 0.9rem; cursor: pointer; }
-    .pop-btn.cancel { background: #2c2c2e; color: #8e8e93; }
-    .pop-btn.confirm { background: var(--primary); color: #fff; }
   </style>
 </head>
 <body>
@@ -100,10 +450,12 @@
     <div class="category-pill" onclick="selectCategory('전체')">📂 전체</div>
   </div>
 
+  <!-- 생각서랍 피드 -->
   <div class="view-container" id="idea-feed-container">
     <div class="empty-canvas">떠오르는 생각을 기록하세요. 저장 즉시 서랍으로 들어갑니다.</div>
   </div>
 
+  <!-- 나의계획 피드 -->
   <div class="view-container" id="plan-feed-container" style="display:none;">
     <div class="plan-time-tabs">
       <button class="plan-time-tab active" id="ptab-backlog" onclick="switchPlanSubtab('backlog')">🔄 대기</button>
@@ -116,15 +468,20 @@
     <div id="plan-card-list" style="display:flex; flex-direction:column; gap:12px;"></div>
   </div>
 
+  <!-- 첨부 미리보기 트레이 -->
   <div class="attachment-tray" id="attachment-tray" style="display:none; padding:8px 14px; gap:8px; overflow-x:auto; background:#121214;"></div>
 
-  <!-- 카메라와 갤러리를 모두 호출할 수 있도록 명확히 연동된 파일 입력기 -->
-  <input type="file" id="hidden-file-input" style="display:none;" accept="image/*,video/*" capture="environment" onchange="handleFileSelect(event)" />
+  <!-- HTML5 표준 독립형 카메라/비디오/갤러리 인풋 (권한 에러 100% 방지) -->
+  <input type="file" id="input-camera-photo" style="display:none;" accept="image/*" capture="environment" onchange="handleFileSelect(event, '사진')" />
+  <input type="file" id="input-camera-video" style="display:none;" accept="video/*" capture="camcorder" onchange="handleFileSelect(event, '동영상')" />
+  <input type="file" id="input-album-file" style="display:none;" accept="image/*,video/*" multiple onchange="handleFileSelect(event, null)" />
 
+  <!-- 하단 입력바 -->
   <div class="bottom-bar-wrapper">
     <div class="plus-menu-popover" id="plus-menu">
-      <div class="menu-item" onclick="triggerFilePicker('image/*')"><span>📷 사진 촬영 및 첨부</span></div>
-      <div class="menu-item" onclick="triggerFilePicker('video/*')"><span>🎬 동영상 촬영 및 첨부</span></div>
+      <div class="menu-item" onclick="triggerPicker('photo')"><span>📷 카메라로 사진 촬영</span></div>
+      <div class="menu-item" onclick="triggerPicker('video')"><span>🎥 비디오로 영상 녹화</span></div>
+      <div class="menu-item" onclick="triggerPicker('album')"><span>📁 앨범 / 파일에서 선택</span></div>
       <div class="menu-item" onclick="openMemoPadDirect()"><span>📑 메모딱지 작성</span></div>
     </div>
     <div class="capsule-box">
@@ -137,7 +494,7 @@
     </div>
   </div>
 
-  <!-- 커스텀 수정 모달창 -->
+  <!-- 수정 팝업 모달 -->
   <div id="custom-edit-modal" class="modal-backdrop">
     <div class="pop-card" onclick="event.stopPropagation()">
       <div style="font-weight:bold; font-size:1.05rem; color:#fff;">✏️ 내용 수정</div>
@@ -149,37 +506,7 @@
     </div>
   </div>
 
-  <!-- 메모딱지 화면 -->
-  <div id="memopad-screen">
-    <div class="memopad-top-bar">
-      <button class="pad-tool-btn" onclick="togglePadToolbar()">⚙️ 도구 모음 열기/닫기</button>
-      <div style="display:flex; gap:6px;">
-        <button onclick="saveMemoPadToDrawer()" style="background:var(--primary); color:#fff; border:none; padding:5px 12px; border-radius:8px; font-size:0.78rem; font-weight:bold; cursor:pointer;">저장</button>
-        <button onclick="closeMemoPadDirect()" style="background:var(--surface); color:#fff; border:none; width:26px; height:26px; border-radius:50%; font-size:0.8rem; cursor:pointer;">✕</button>
-      </div>
-    </div>
-
-    <div id="memopad-collapsible-toolbar" class="memopad-collapsible-toolbar">
-      <div class="pad-palette">
-        <div class="color-dot active" style="background:#ffffff;" onclick="setPadColor('#ffffff', this)"></div>
-        <div class="color-dot" style="background:#facc15;" onclick="setPadColor('#facc15', this)"></div>
-        <div class="color-dot" style="background:#38bdf8;" onclick="setPadColor('#38bdf8', this)"></div>
-        <div class="color-dot" style="background:#ef4444;" onclick="setPadColor('#ef4444', this)"></div>
-        <div style="width:1px; height:20px; background:#3a3a3c; margin:0 4px;"></div>
-        <button id="pad-eraser-btn" class="pad-tool-btn" onclick="togglePadEraser()">🧹 지우개</button>
-        <button class="pad-tool-btn" onclick="undoPadStroke()">↩️ 전단계</button>
-        <button class="pad-tool-btn" onclick="clearPadCanvas()">🔄 모두지우기</button>
-      </div>
-      <div style="display:flex; align-items:center; background:#121214; border-radius:10px; padding:6px; border:1px solid #3a3a3c; gap:6px;">
-        <input id="memopad-text-input" type="text" placeholder="텍스트 작성..." style="flex:1; background:transparent; border:none; color:#fff; font-size:0.88rem; outline:none;" />
-      </div>
-    </div>
-
-    <div id="memopad-canvas-container">
-      <canvas id="memopad-canvas"></canvas>
-    </div>
-  </div>
-
+  <!-- 시간 슬롯 지정 모달 -->
   <div id="time-sub-modal" class="modal-backdrop" onclick="closeTimeSlotModal(event)">
     <div class="pop-card" onclick="event.stopPropagation()">
       <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -195,9 +522,125 @@
     </div>
   </div>
 
+  <!-- 메모딱지 화면 -->
+  <div id="memopad-screen">
+    <div class="memopad-top-bar">
+      <button class="pad-tool-btn" onclick="togglePadToolbar()">⚙️ 도구 상자</button>
+      <div style="display:flex; gap:8px;">
+        <button onclick="saveMemoPadToDrawer()" style="background:var(--primary); color:#fff; border:none; padding:6px 14px; border-radius:8px; font-size:0.82rem; font-weight:bold; cursor:pointer;">저장</button>
+        <button onclick="closeMemoPadDirect()" style="background:var(--surface); color:#fff; border:none; width:28px; height:28px; border-radius:50%; font-size:0.85rem; cursor:pointer;">✕</button>
+      </div>
+    </div>
+
+    <div id="memopad-collapsible-toolbar" class="memopad-collapsible-toolbar">
+      <div class="pad-palette">
+        <div class="color-dot active" style="background:#ffffff;" onclick="setPadColor('#ffffff', this)"></div>
+        <div class="color-dot" style="background:#facc15;" onclick="setPadColor('#facc15', this)"></div>
+        <div class="color-dot" style="background:#38bdf8;" onclick="setPadColor('#38bdf8', this)"></div>
+        <div class="color-dot" style="background:#ef4444;" onclick="setPadColor('#ef4444', this)"></div>
+        <div style="width:1px; height:20px; background:#3a3a3c; margin:0 4px;"></div>
+        <button id="pad-eraser-btn" class="pad-tool-btn" onclick="togglePadEraser()">🧹 지우개</button>
+        <button class="pad-tool-btn" onclick="undoPadStroke()">↩️ 되돌리기</button>
+        <button class="pad-tool-btn" onclick="clearPadCanvas()">🔄 전체삭제</button>
+      </div>
+      <div style="display:flex; align-items:center; background:#121214; border-radius:10px; padding:6px 10px; border:1px solid #3a3a3c;">
+        <input id="memopad-text-input" type="text" placeholder="메모할 텍스트 입력..." style="flex:1; background:transparent; border:none; color:#fff; font-size:0.88rem; outline:none;" />
+      </div>
+    </div>
+
+    <div id="memopad-canvas-container">
+      <canvas id="memopad-canvas"></canvas>
+    </div>
+  </div>
+
   <script>
-    let currentMainMode = 'idea', currentCategory = '첫 생각', currentAttachments = [];
-    let currentPlanSubtab = 'backlog', targetSlotItemId = null, targetSlotSource = 'thought';
+    /* ==========================================================================
+       1. IndexedDB 고용량 로컬 영구 저장소 (LocalStorage 5MB 한계 극복)
+       ========================================================================== */
+    const DB_NAME = 'IdeaDrawerDB';
+    const DB_VERSION = 1;
+    let dbInstance = null;
+
+    function initDB() {
+      return new Promise((resolve, reject) => {
+        if (dbInstance) return resolve(dbInstance);
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains('thoughts')) {
+            db.createObjectStore('thoughts', { keyPath: 'id' });
+          }
+          if (!db.objectStoreNames.contains('plans')) {
+            db.createObjectStore('plans', { keyPath: 'id' });
+          }
+        };
+        req.onsuccess = (e) => {
+          dbInstance = e.target.result;
+          resolve(dbInstance);
+        };
+        req.onerror = (e) => reject(e.target.error);
+      });
+    }
+
+    async function dbGetAll(storeName) {
+      const db = await initDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, 'readonly');
+        const store = tx.objectStore(storeName);
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function dbPut(storeName, item) {
+      const db = await initDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, 'readwrite');
+        const store = tx.objectStore(storeName);
+        store.put(item);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function dbDelete(storeName, id) {
+      const db = await initDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, 'readwrite');
+        const store = tx.objectStore(storeName);
+        store.delete(id);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    // 기존 LocalStorage 데이터가 있다면 IndexedDB로 자동 마이그레이션
+    async function migrateLegacyStorage() {
+      try {
+        const oldThoughts = JSON.parse(localStorage.getItem('idea_drawer_storage') || '[]');
+        if (oldThoughts.length > 0) {
+          for (const item of oldThoughts) await dbPut('thoughts', item);
+          localStorage.removeItem('idea_drawer_storage');
+        }
+        const oldPlans = JSON.parse(localStorage.getItem('plan_drawer_storage') || '[]');
+        if (oldPlans.length > 0) {
+          for (const item of oldPlans) await dbPut('plans', item);
+          localStorage.removeItem('plan_drawer_storage');
+        }
+      } catch (e) {
+        console.warn('Storage migration note:', e);
+      }
+    }
+
+    /* ==========================================================================
+       2. 메인 상태 및 모드 제어
+       ========================================================================== */
+    let currentMainMode = 'idea';
+    let currentCategory = '첫 생각';
+    let currentAttachments = [];
+    let currentPlanSubtab = 'backlog';
+    let targetSlotItemId = null, targetSlotSource = 'thought';
     let editingTargetId = null, editingTargetType = 'thought';
 
     function switchMainMode(mode) {
@@ -210,29 +653,47 @@
       document.getElementById('btn-plus').style.display = (mode === 'idea') ? 'flex' : 'none';
       if (mode === 'idea') renderFeed(); else renderPlanView();
     }
+
     function selectCategory(cat) {
       currentCategory = cat;
       document.querySelectorAll('.category-pill').forEach(p => p.classList.toggle('active', p.innerText.includes(cat)));
       renderFeed();
     }
-    function togglePlusMenu() { document.getElementById('plus-menu').classList.toggle('active'); }
-    function closePlusMenu() { document.getElementById('plus-menu').classList.remove('active'); }
 
-    /* 카메라 및 갤러리 파일 선택 안정화 */
-    function triggerFilePicker(acceptType) {
-      closePlusMenu();
-      const fi = document.getElementById('hidden-file-input');
-      fi.accept = acceptType;
-      fi.click();
+    function togglePlusMenu() {
+      const menu = document.getElementById('plus-menu');
+      const btn = document.getElementById('btn-plus');
+      menu.classList.toggle('active');
+      btn.classList.toggle('open');
     }
-    function handleFileSelect(event) {
+
+    function closePlusMenu() {
+      document.getElementById('plus-menu').classList.remove('active');
+      document.getElementById('btn-plus').classList.remove('open');
+    }
+
+    /* ==========================================================================
+       3. HTML5 표준 카메라/비디오/앨범 연동 (100% 호환)
+       ========================================================================== */
+    function triggerPicker(type) {
+      closePlusMenu();
+      if (type === 'photo') document.getElementById('input-camera-photo').click();
+      else if (type === 'video') document.getElementById('input-camera-video').click();
+      else if (type === 'album') document.getElementById('input-album-file').click();
+    }
+
+    function handleFileSelect(event, defaultType) {
       const files = event.target.files;
       if (files && files.length > 0) {
         Array.from(files).forEach(file => {
           const reader = new FileReader();
           reader.onload = function(e) {
             const isVid = file.type.startsWith('video');
-            currentAttachments.push({ type: isVid ? '동영상' : '사진', data: e.target.result, isVideo: isVid });
+            currentAttachments.push({
+              type: defaultType || (isVid ? '동영상' : '사진'),
+              data: e.target.result,
+              isVideo: isVid
+            });
             renderAttachmentTray();
           };
           reader.readAsDataURL(file);
@@ -243,11 +704,18 @@
 
     function renderAttachmentTray() {
       const tray = document.getElementById('attachment-tray');
-      if (currentAttachments.length === 0) { tray.style.display = 'none'; tray.innerHTML = ''; return; }
+      if (currentAttachments.length === 0) {
+        tray.style.display = 'none';
+        tray.innerHTML = '';
+        return;
+      }
       tray.style.display = 'flex';
       tray.innerHTML = currentAttachments.map((item, idx) => `
         <div style="position:relative; width:60px; height:60px; flex-shrink:0;">
-          ${item.isVideo ? `<div style="width:100%; height:100%; background:#222; display:flex; align-items:center; justify-content:center; color:#fff; border-radius:8px; font-size:0.7rem;">동영상</div>` : `<img src="${item.data}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />`}
+          ${item.isVideo 
+            ? `<div style="width:100%; height:100%; background:#222; display:flex; align-items:center; justify-content:center; color:#fff; border-radius:8px; font-size:0.7rem;">🎬 영상</div>`
+            : `<img src="${item.data}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />`
+          }
           <button style="position:absolute; top:-4px; right:-4px; width:18px; height:18px; border-radius:50%; background:var(--danger); color:#fff; border:none; cursor:pointer;" onclick="currentAttachments.splice(${idx},1);renderAttachmentTray();">✕</button>
         </div>
       `).join('');
@@ -258,20 +726,24 @@
       textarea.style.height = Math.min(textarea.scrollHeight, 90) + 'px';
     }
 
-    function handleSendAction() {
+    async function handleSendAction() {
       const input = document.getElementById('prompt-input');
       const text = input.value.trim();
       if (text || currentAttachments.length > 0) {
         if (currentMainMode === 'idea') {
           let cat = '노트';
-          if (currentAttachments.length > 0) cat = currentAttachments.some(a => a.isVideo) ? '동영상' : '사진';
-          saveThought(cat, text, [...currentAttachments]);
-          selectCategory('첫 생각');
+          if (currentAttachments.length > 0) {
+            cat = currentAttachments.some(a => a.isVideo) ? '동영상' : '사진';
+          }
+          await saveThought(cat, text, [...currentAttachments]);
+          selectCategory('전체');
         } else {
-          savePlanToBacklog(text);
+          await savePlanToBacklog(text);
           renderPlanView();
         }
-        input.value = ''; input.style.height = 'auto'; currentAttachments = [];
+        input.value = '';
+        input.style.height = 'auto';
+        currentAttachments = [];
         renderAttachmentTray();
       } else {
         triggerVoiceInput();
@@ -280,8 +752,8 @@
 
     function triggerVoiceInput() {
       closePlusMenu();
-      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
         const recognition = new SpeechRecognition();
         recognition.lang = 'ko-KR';
         recognition.interimResults = false;
@@ -293,158 +765,208 @@
         };
         recognition.start();
       } else {
-        alert('음성 인식을 지원하지 않는 환경입니다.');
+        alert('현재 브라우저에서는 음성 인식을 지원하지 않습니다.');
       }
     }
 
-    function getThoughtStorage() {
-      try { return Array.from(new Map(JSON.parse(localStorage.getItem('idea_drawer_storage') || '[]').map(i => [i.id, i])).values()); } catch(e) { return []; }
-    }
-    function setThoughtStorage(arr) {
-      localStorage.setItem('idea_drawer_storage', JSON.stringify(arr));
+    /* ==========================================================================
+       4. 비즈니스 로직 (IndexedDB 비동기 연동)
+       ========================================================================== */
+    async function saveThought(cat, content, media) {
+      const item = {
+        id: Date.now() + Math.random(),
+        category: cat,
+        content: content || '',
+        mediaList: media || [],
+        time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+      };
+      await dbPut('thoughts', item);
       renderFeed();
     }
-    function saveThought(cat, content, media) {
-      const list = getThoughtStorage();
-      list.unshift({ id: Date.now() + Math.random(), category: cat, content: content || '', mediaList: media || [], time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) });
-      setThoughtStorage(list);
-    }
-    function getPlanStorage() {
-      try { return Array.from(new Map(JSON.parse(localStorage.getItem('plan_drawer_storage') || '[]').map(i => [i.id, i])).values()); } catch(e) { return []; }
-    }
-    function setPlanStorage(arr) {
-      localStorage.setItem('plan_drawer_storage', JSON.stringify(arr));
-      renderPlanView();
-    }
-    function savePlanToBacklog(title) {
+
+    async function savePlanToBacklog(title) {
       if (!title || !title.trim()) return;
-      const list = getPlanStorage();
-      list.unshift({ id: Date.now() + Math.random(), title: title.trim(), status: '대기', timeSlot: 'none', isFocus: false, updatedAt: new Date().toLocaleDateString() });
-      setPlanStorage(list);
+      const item = {
+        id: Date.now() + Math.random(),
+        title: title.trim(),
+        status: '대기',
+        timeSlot: 'none',
+        isFocus: false,
+        updatedAt: new Date().toLocaleDateString()
+      };
+      await dbPut('plans', item);
       switchPlanSubtab('backlog');
     }
 
-    function transferThoughtDirect(id, type) {
-      let thoughts = getThoughtStorage();
+    async function transferThoughtDirect(id, type) {
+      const thoughts = await dbGetAll('thoughts');
       const item = thoughts.find(t => t.id === id);
       if (!item) return;
-      const plans = getPlanStorage();
-      const isFocus = (type === 'focus');
-      plans.unshift({ id: Date.now() + Math.random(), title: item.content || '메모', status: '대기', timeSlot: 'none', isFocus: isFocus, mediaList: item.mediaList || [], updatedAt: new Date().toLocaleDateString() });
-      setPlanStorage(plans);
-      setThoughtStorage(thoughts.filter(t => t.id !== id));
+
+      const plan = {
+        id: Date.now() + Math.random(),
+        title: item.content || (item.mediaList?.length ? '미디어 메모' : '메모'),
+        status: '대기',
+        timeSlot: 'none',
+        isFocus: (type === 'focus'),
+        mediaList: item.mediaList || [],
+        updatedAt: new Date().toLocaleDateString()
+      };
+      await dbPut('plans', plan);
+      await dbDelete('thoughts', id);
+      renderFeed();
     }
 
-    function reassignPlanSlotDirect(id, type) {
-      const plans = getPlanStorage();
+    async function reassignPlanSlotDirect(id, type) {
+      const plans = await dbGetAll('plans');
       const item = plans.find(p => p.id === id);
       if (item) {
         if (type === 'focus') item.isFocus = !item.isFocus;
         else if (type === 'backlog') { item.isFocus = false; item.timeSlot = 'none'; }
-        setPlanStorage(plans);
+        await dbPut('plans', item);
+        renderPlanView();
       }
     }
 
     function openTimeSlotModal(id, source) {
-      targetSlotItemId = id; targetSlotSource = source;
+      targetSlotItemId = id;
+      targetSlotSource = source;
       document.getElementById('time-sub-modal').classList.add('active');
     }
+
     function closeTimeSlotModal(e) {
       if (e && e.target && e.target.id !== 'time-sub-modal') return;
       document.getElementById('time-sub-modal').classList.remove('active');
       targetSlotItemId = null;
     }
-    function confirmTimeSlotAssign(chosenSlot) {
+
+    async function confirmTimeSlotAssign(chosenSlot) {
       if (!targetSlotItemId) return;
       if (targetSlotSource === 'thought') {
-        let thoughts = getThoughtStorage();
+        const thoughts = await dbGetAll('thoughts');
         const item = thoughts.find(t => t.id === targetSlotItemId);
         if (item) {
-          const plans = getPlanStorage();
-          plans.unshift({ id: Date.now() + Math.random(), title: item.content || '메모', status: '대기', timeSlot: chosenSlot, isFocus: false, mediaList: item.mediaList || [], updatedAt: new Date().toLocaleDateString() });
-          setPlanStorage(plans);
-          setThoughtStorage(thoughts.filter(t => t.id !== targetSlotItemId));
+          const plan = {
+            id: Date.now() + Math.random(),
+            title: item.content || '메모',
+            status: '대기',
+            timeSlot: chosenSlot,
+            isFocus: false,
+            mediaList: item.mediaList || [],
+            updatedAt: new Date().toLocaleDateString()
+          };
+          await dbPut('plans', plan);
+          await dbDelete('thoughts', targetSlotItemId);
+          renderFeed();
         }
       } else {
-        const plans = getPlanStorage();
+        const plans = await dbGetAll('plans');
         const item = plans.find(p => p.id === targetSlotItemId);
-        if (item) { item.isFocus = false; item.timeSlot = chosenSlot; setPlanStorage(plans); }
+        if (item) {
+          item.isFocus = false;
+          item.timeSlot = chosenSlot;
+          await dbPut('plans', item);
+          renderPlanView();
+        }
       }
       document.getElementById('time-sub-modal').classList.remove('active');
       targetSlotItemId = null;
     }
 
-    /* 기존 내용이 정확히 채워지는 커스텀 수정 팝업창 연동 */
-    function openEditModal(id, type) {
+    async function openEditModal(id, type) {
       editingTargetId = id;
       editingTargetType = type;
       const modal = document.getElementById('custom-edit-modal');
       const textarea = document.getElementById('edit-modal-textarea');
       
       if (type === 'thought') {
-        const list = getThoughtStorage();
+        const list = await dbGetAll('thoughts');
         const item = list.find(i => i.id === id);
         textarea.value = item ? (item.content || '') : '';
       } else {
-        const list = getPlanStorage();
+        const list = await dbGetAll('plans');
         const item = list.find(p => p.id === id);
         textarea.value = item ? (item.title || '') : '';
       }
       modal.classList.add('active');
     }
+
     function closeEditModal() {
       document.getElementById('custom-edit-modal').classList.remove('active');
       editingTargetId = null;
     }
-    function confirmEditModal() {
+
+    async function confirmEditModal() {
       const newVal = document.getElementById('edit-modal-textarea').value.trim();
       if (!editingTargetId) return;
       
       if (editingTargetType === 'thought') {
-        const list = getThoughtStorage();
+        const list = await dbGetAll('thoughts');
         const item = list.find(i => i.id === editingTargetId);
         if (item) {
           item.content = newVal;
-          setThoughtStorage(list);
+          await dbPut('thoughts', item);
+          renderFeed();
         }
       } else {
-        const list = getPlanStorage();
+        const list = await dbGetAll('plans');
         const item = list.find(p => p.id === editingTargetId);
         if (item) {
           item.title = newVal;
-          setPlanStorage(list);
+          await dbPut('plans', item);
+          renderPlanView();
         }
       }
       closeEditModal();
     }
 
-    function renderFeed() {
-      const list = getThoughtStorage();
+    /* ==========================================================================
+       5. 뷰 렌더링
+       ========================================================================== */
+    async function renderFeed() {
+      const list = (await dbGetAll('thoughts')).reverse();
       const feed = document.getElementById('idea-feed-container');
+      
       if (currentCategory === '첫 생각') {
-        feed.innerHTML = `<div class="empty-canvas">떠오르는 생각을 기록하세요. 저장 즉시 서랍으로 들어갑니다.</div>`;
+        feed.innerHTML = `<div class="empty-canvas">떠오르는 생각을 기록하세요.<br/>저장 즉시 서랍으로 보관됩니다.</div>`;
         return;
       }
+      
       const filtered = (currentCategory === '전체') ? list : list.filter(i => (i.category || '').includes(currentCategory));
       if (filtered.length === 0) {
-        feed.innerHTML = `<div class="empty-canvas">[${currentCategory}] 생각이 없습니다.</div>`;
+        feed.innerHTML = `<div class="empty-canvas">[${currentCategory}] 카테고리에 저장된 생각이 없습니다.</div>`;
         return;
       }
+
       feed.innerHTML = filtered.map(item => `
         <div class="thought-card">
-          <div class="card-header"><span class="card-badge">${item.category || '노트'}</span><span class="card-time">${item.time}</span></div>
-          ${item.mediaList && item.mediaList.length > 0 ? `<div>${item.mediaList.map(m => m.isVideo ? `<video src="${m.data}" controls style="width:100%; max-height:240px; background:#000;"></video>` : `<img src="${m.data}" style="width:100%; max-height:240px; object-fit:contain; background:#000;" />`).join('')}</div>` : ''}
+          <div class="card-header">
+            <span class="card-badge">${item.category || '노트'}</span>
+            <span class="card-time">${item.time || ''}</span>
+          </div>
+          ${item.mediaList && item.mediaList.length > 0 ? `
+            <div class="media-box">
+              ${item.mediaList.map(m => m.isVideo 
+                ? `<video src="${m.data}" controls playsinline></video>` 
+                : `<img src="${m.data}" />`).join('')}
+            </div>
+          ` : ''}
           ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
           <div class="card-five-buttons">
             <button class="five-btn active-backlog" onclick="transferThoughtDirect(${item.id}, 'backlog')">🔄 대기</button>
             <button class="five-btn" onclick="openTimeSlotModal(${item.id}, 'thought')">🕒 계획</button>
             <button class="five-btn" onclick="transferThoughtDirect(${item.id}, 'focus')">⚡ 집중</button>
             <button class="five-btn" onclick="openEditModal(${item.id}, 'thought')">✏️ 수정</button>
-            <button class="five-btn" onclick="navigator.clipboard.writeText('${(item.content||'').replace(/'/g, '&#39;')}')">📋 복사</button>
-            <button class="five-btn" style="color:#f87171;" onclick="setThoughtStorage(getThoughtStorage().filter(i=>i.id !== ${item.id}))">🗑️ 삭제</button>
+            <button class="five-btn" onclick="navigator.clipboard.writeText('${(item.content||'').replace(/'/g, "\\'")}'); alert('복사되었습니다.');">📋 복사</button>
+            <button class="five-btn" style="color:#f87171;" onclick="deleteThoughtItem(${item.id})">🗑️ 삭제</button>
           </div>
         </div>
       `).join('');
+    }
+
+    async function deleteThoughtItem(id) {
+      await dbDelete('thoughts', id);
+      renderFeed();
     }
 
     function switchPlanSubtab(tab) {
@@ -455,8 +977,8 @@
       renderPlanView();
     }
 
-    function renderPlanView() {
-      const list = getPlanStorage();
+    async function renderPlanView() {
+      const list = (await dbGetAll('plans')).reverse();
       const container = document.getElementById('plan-card-list');
       let filtered = [];
       if (currentPlanSubtab === 'focus') filtered = list.filter(p => p.isFocus);
@@ -471,7 +993,7 @@
       container.innerHTML = filtered.map(p => `
         <div class="plan-big-card">
           <div class="plan-big-card-top">
-            <span class="status-badge-lg waiting" onclick="p.status=(p.status==='대기'?'진행중':'대기');setPlanStorage(getPlanStorage());">${p.status}</span>
+            <span class="status-badge-lg" onclick="togglePlanStatus(${p.id})">${p.status}</span>
             <div class="plan-big-title">${p.title}</div>
           </div>
           <div class="card-five-buttons">
@@ -479,12 +1001,30 @@
             <button class="five-btn" onclick="openTimeSlotModal(${p.id}, 'plan')">🕒 계획</button>
             <button class="five-btn" onclick="reassignPlanSlotDirect(${p.id}, 'focus')">⚡ 집중</button>
             <button class="five-btn" onclick="openEditModal(${p.id}, 'plan')">✏️ 수정</button>
-            <button class="five-btn" style="color:#f87171;" onclick="setPlanStorage(getPlanStorage().filter(x=>x.id !== ${p.id}))">🗑️ 삭제</button>
+            <button class="five-btn" style="color:#f87171;" onclick="deletePlanItem(${p.id})">🗑️ 삭제</button>
           </div>
         </div>
       `).join('');
     }
 
+    async function togglePlanStatus(id) {
+      const plans = await dbGetAll('plans');
+      const item = plans.find(p => p.id === id);
+      if (item) {
+        item.status = (item.status === '대기' ? '진행중' : '대기');
+        await dbPut('plans', item);
+        renderPlanView();
+      }
+    }
+
+    async function deletePlanItem(id) {
+      await dbDelete('plans', id);
+      renderPlanView();
+    }
+
+    /* ==========================================================================
+       6. 메모딱지 (모바일 터치 & PC 마우스 Pointer Event 완벽 통합)
+       ========================================================================== */
     let padCanvas, padCtx, isDrawing = false, padColor = '#ffffff', isEraser = false, historyArr = [];
 
     function openMemoPadDirect() {
@@ -502,75 +1042,90 @@
       setPadColor('#ffffff', document.querySelector('.color-dot'));
       historyArr = [];
     }
+
     function closeMemoPadDirect() {
       document.getElementById('memopad-screen').classList.remove('active');
       document.getElementById('memopad-collapsible-toolbar').classList.remove('active');
     }
+
     function togglePadToolbar() {
       document.getElementById('memopad-collapsible-toolbar').classList.toggle('active');
-      setTimeout(() => {
-        const container = document.getElementById('memopad-canvas-container');
-        const imgData = padCtx.getImageData(0, 0, padCanvas.width, padCanvas.height);
-        padCanvas.width = container.clientWidth;
-        padCanvas.height = container.clientHeight;
-        padCtx.putImageData(imgData, 0, 0);
-      }, 200);
     }
+
     function setPadColor(color, el) {
-      padColor = color; isEraser = false;
+      padColor = color;
+      isEraser = false;
       document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
       if (el) el.classList.add('active');
       document.getElementById('pad-eraser-btn').classList.remove('active');
-      padCtx.strokeStyle = padColor; padCtx.lineWidth = 3.5;
+      padCtx.strokeStyle = padColor;
+      padCtx.lineWidth = 3.5;
     }
+
     function togglePadEraser() {
       isEraser = !isEraser;
       document.getElementById('pad-eraser-btn').classList.toggle('active', isEraser);
       padCtx.strokeStyle = isEraser ? '#000000' : padColor;
       padCtx.lineWidth = isEraser ? 24 : 3.5;
     }
+
     function saveCanvasState() {
       if (historyArr.length > 20) historyArr.shift();
       historyArr.push(padCtx.getImageData(0, 0, padCanvas.width, padCanvas.height));
     }
+
     function undoPadStroke() {
       if (historyArr.length > 0) padCtx.putImageData(historyArr.pop(), 0, 0);
     }
+
     function clearPadCanvas() {
-      if (confirm('모두 지우시겠습니까?')) {
+      if (confirm('캔버스를 모두 지우시겠습니까?')) {
         saveCanvasState();
-        padCtx.fillStyle = '#000000'; padCtx.fillRect(0, 0, padCanvas.width, padCanvas.height);
+        padCtx.fillStyle = '#000000';
+        padCtx.fillRect(0, 0, padCanvas.width, padCanvas.height);
       }
     }
-    function saveMemoPadToDrawer() {
+
+    async function saveMemoPadToDrawer() {
       const text = document.getElementById('memopad-text-input').value.trim();
       const dataUrl = padCanvas.toDataURL('image/jpeg', 0.85);
-      saveThought('메모딱지', text, [{ type: '메모딱지', data: dataUrl, isVideo: false }]);
+      await saveThought('메모딱지', text, [{ type: '메모딱지', data: dataUrl, isVideo: false }]);
       closeMemoPadDirect();
-      switchMainMode('idea'); selectCategory('전체');
+      document.getElementById('memopad-text-input').value = '';
+      switchMainMode('idea');
+      selectCategory('전체');
     }
 
-    padCanvas = document.getElementById('memopad-canvas');
-    padCanvas.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      isDrawing = true;
-      saveCanvasState();
-      const t = e.touches[0];
-      const rect = padCanvas.getBoundingClientRect();
-      padCtx.beginPath();
-      padCtx.moveTo(t.clientX - rect.left, t.clientY - rect.top);
-    });
-    padCanvas.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-      if (!isDrawing) return;
-      const t = e.touches[0];
-      const rect = padCanvas.getBoundingClientRect();
-      padCtx.lineTo(t.clientX - rect.left, t.clientY - rect.top);
-      padCtx.stroke();
-    });
-    padCanvas.addEventListener('touchend', () => { isDrawing = false; });
+    // Pointer Events로 PC 마우스, 스마트폰 터치, S펜/애플펜슬 모두 호환
+    window.addEventListener('DOMContentLoaded', async () => {
+      await migrateLegacyStorage();
+      padCanvas = document.getElementById('memopad-canvas');
+      
+      padCanvas.addEventListener('pointerdown', (e) => {
+        padCanvas.setPointerCapture(e.pointerId);
+        isDrawing = true;
+        saveCanvasState();
+        const rect = padCanvas.getBoundingClientRect();
+        padCtx.beginPath();
+        padCtx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+      });
 
-    selectCategory('첫 생각');
+      padCanvas.addEventListener('pointermove', (e) => {
+        if (!isDrawing) return;
+        const rect = padCanvas.getBoundingClientRect();
+        padCtx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+        padCtx.stroke();
+      });
+
+      padCanvas.addEventListener('pointerup', (e) => {
+        if (isDrawing) {
+          isDrawing = false;
+          padCanvas.releasePointerCapture(e.pointerId);
+        }
+      });
+
+      selectCategory('첫 생각');
+    });
   </script>
 </body>
 </html>
