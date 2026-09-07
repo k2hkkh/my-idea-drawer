@@ -1322,6 +1322,18 @@
       });
 
       selectCategory('첫 생각');
+
+      /* URL 파라미터(?mode=voice) 감지 시 마이크 자동 실행 */
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('mode') === 'voice') {
+        switchMainMode('idea');
+        selectCategory('첫 생각');
+        setTimeout(() => {
+          if (!isVoiceRecording) {
+            toggleVoiceInput();
+          }
+        }, 350);
+      }
     });
   </script>
 </body>
