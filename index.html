@@ -21,7 +21,6 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
     
-    /* 100dvh 및 Safe-Area 최적화 */
     html, body {
       width: 100%;
       height: 100dvh;
@@ -215,7 +214,6 @@
     .plan-time-tab.active { background: #1e3a8a; color: #60a5fa; border-color: #3b82f6; }
     .plan-time-tab.focus-tab.active { background: #9a3412; color: #fdba74; border-color: #f97316; }
 
-    /* 하단 입력바 및 Safe Area 패딩 */
     .bottom-bar-wrapper {
       padding: 8px 14px calc(12px + env(safe-area-inset-bottom, 0px)) 14px;
       background: var(--bg);
@@ -300,7 +298,7 @@
       flex-direction: column;
       gap: 4px;
       z-index: 50;
-      min-width: 190px;
+      min-width: 200px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     }
     .plus-menu-popover.active { display: flex; }
@@ -313,10 +311,10 @@
       color: #ffffff;
       font-size: 0.88rem;
       cursor: pointer;
+      text-decoration: none;
     }
     .menu-item:active { background: var(--surface); }
 
-    /* 모달 공통 */
     .modal-backdrop {
       display: none;
       position: fixed;
@@ -380,7 +378,6 @@
       text-align: left;
     }
 
-    /* 메모딱지 화면 (포인터 이벤트 완벽 지원) */
     #memopad-screen {
       display: none;
       position: fixed;
@@ -450,12 +447,10 @@
     <div class="category-pill" onclick="selectCategory('전체')">📂 전체</div>
   </div>
 
-  <!-- 생각서랍 피드 -->
   <div class="view-container" id="idea-feed-container">
     <div class="empty-canvas">떠오르는 생각을 기록하세요. 저장 즉시 서랍으로 들어갑니다.</div>
   </div>
 
-  <!-- 나의계획 피드 -->
   <div class="view-container" id="plan-feed-container" style="display:none;">
     <div class="plan-time-tabs">
       <button class="plan-time-tab active" id="ptab-backlog" onclick="switchPlanSubtab('backlog')">🔄 대기</button>
@@ -468,21 +463,28 @@
     <div id="plan-card-list" style="display:flex; flex-direction:column; gap:12px;"></div>
   </div>
 
-  <!-- 첨부 미리보기 트레이 -->
   <div class="attachment-tray" id="attachment-tray" style="display:none; padding:8px 14px; gap:8px; overflow-x:auto; background:#121214;"></div>
 
-  <!-- HTML5 표준 독립형 카메라/비디오/갤러리 인풋 (권한 에러 100% 방지) -->
-  <input type="file" id="input-camera-photo" style="display:none;" accept="image/*" capture="environment" onchange="handleFileSelect(event, '사진')" />
-  <input type="file" id="input-camera-video" style="display:none;" accept="video/*" capture="camcorder" onchange="handleFileSelect(event, '동영상')" />
-  <input type="file" id="input-album-file" style="display:none;" accept="image/*,video/*" multiple onchange="handleFileSelect(event, null)" />
+  <!-- 브라우저 보안 차단을 완벽히 우회하는 투명 파일 입력기 -->
+  <input type="file" id="input-camera-photo" accept="image/*" capture="environment" onchange="handleFileSelect(event, '사진')" style="position:fixed; top:-9999px; left:-9999px; opacity:0; pointer-events:none;" />
+  <input type="file" id="input-camera-video" accept="video/*" capture="environment" onchange="handleFileSelect(event, '동영상')" style="position:fixed; top:-9999px; left:-9999px; opacity:0; pointer-events:none;" />
+  <input type="file" id="input-album-file" accept="image/*,video/*" multiple onchange="handleFileSelect(event, null)" style="position:fixed; top:-9999px; left:-9999px; opacity:0; pointer-events:none;" />
 
   <!-- 하단 입력바 -->
   <div class="bottom-bar-wrapper">
     <div class="plus-menu-popover" id="plus-menu">
-      <div class="menu-item" onclick="triggerPicker('photo')"><span>📷 카메라로 사진 촬영</span></div>
-      <div class="menu-item" onclick="triggerPicker('video')"><span>🎥 비디오로 영상 녹화</span></div>
-      <div class="menu-item" onclick="triggerPicker('album')"><span>📁 앨범 / 파일에서 선택</span></div>
-      <div class="menu-item" onclick="openMemoPadDirect()"><span>📑 메모딱지 작성</span></div>
+      <label for="input-camera-photo" class="menu-item" onclick="closePlusMenu()">
+        <span>📷 카메라로 사진 촬영</span>
+      </label>
+      <label for="input-camera-video" class="menu-item" onclick="closePlusMenu()">
+        <span>🎥 비디오로 영상 녹화</span>
+      </label>
+      <label for="input-album-file" class="menu-item" onclick="closePlusMenu()">
+        <span>📁 앨범 / 파일에서 선택</span>
+      </label>
+      <div class="menu-item" onclick="openMemoPadDirect()">
+        <span>📑 메모딱지 작성</span>
+      </div>
     </div>
     <div class="capsule-box">
       <button id="btn-plus" class="btn-plus" onclick="togglePlusMenu()">＋</button>
@@ -554,9 +556,6 @@
   </div>
 
   <script>
-    /* ==========================================================================
-       1. IndexedDB 고용량 로컬 영구 저장소 (LocalStorage 5MB 한계 극복)
-       ========================================================================== */
     const DB_NAME = 'IdeaDrawerDB';
     const DB_VERSION = 1;
     let dbInstance = null;
@@ -615,7 +614,6 @@
       });
     }
 
-    // 기존 LocalStorage 데이터가 있다면 IndexedDB로 자동 마이그레이션
     async function migrateLegacyStorage() {
       try {
         const oldThoughts = JSON.parse(localStorage.getItem('idea_drawer_storage') || '[]');
@@ -629,13 +627,10 @@
           localStorage.removeItem('plan_drawer_storage');
         }
       } catch (e) {
-        console.warn('Storage migration note:', e);
+        console.warn('Migration note:', e);
       }
     }
 
-    /* ==========================================================================
-       2. 메인 상태 및 모드 제어
-       ========================================================================== */
     let currentMainMode = 'idea';
     let currentCategory = '첫 생각';
     let currentAttachments = [];
@@ -670,16 +665,6 @@
     function closePlusMenu() {
       document.getElementById('plus-menu').classList.remove('active');
       document.getElementById('btn-plus').classList.remove('open');
-    }
-
-    /* ==========================================================================
-       3. HTML5 표준 카메라/비디오/앨범 연동 (100% 호환)
-       ========================================================================== */
-    function triggerPicker(type) {
-      closePlusMenu();
-      if (type === 'photo') document.getElementById('input-camera-photo').click();
-      else if (type === 'video') document.getElementById('input-camera-video').click();
-      else if (type === 'album') document.getElementById('input-album-file').click();
     }
 
     function handleFileSelect(event, defaultType) {
@@ -769,9 +754,6 @@
       }
     }
 
-    /* ==========================================================================
-       4. 비즈니스 로직 (IndexedDB 비동기 연동)
-       ========================================================================== */
     async function saveThought(cat, content, media) {
       const item = {
         id: Date.now() + Math.random(),
@@ -920,15 +902,12 @@
       closeEditModal();
     }
 
-    /* ==========================================================================
-       5. 뷰 렌더링
-       ========================================================================== */
     async function renderFeed() {
       const list = (await dbGetAll('thoughts')).reverse();
       const feed = document.getElementById('idea-feed-container');
       
       if (currentCategory === '첫 생각') {
-        feed.innerHTML = `<div class="empty-canvas">떠오르는 생각을 기록하세요.<br/>저장 즉시 서랍으로 보관됩니다.</div>`;
+        feed.innerHTML = `<div class="empty-canvas">떠오르는 생각을 기록하세요.<br/>저장 즉시 서랍으로 들어갑니다.</div>`;
         return;
       }
       
@@ -1022,9 +1001,6 @@
       renderPlanView();
     }
 
-    /* ==========================================================================
-       6. 메모딱지 (모바일 터치 & PC 마우스 Pointer Event 완벽 통합)
-       ========================================================================== */
     let padCanvas, padCtx, isDrawing = false, padColor = '#ffffff', isEraser = false, historyArr = [];
 
     function openMemoPadDirect() {
@@ -1096,7 +1072,6 @@
       selectCategory('전체');
     }
 
-    // Pointer Events로 PC 마우스, 스마트폰 터치, S펜/애플펜슬 모두 호환
     window.addEventListener('DOMContentLoaded', async () => {
       await migrateLegacyStorage();
       padCanvas = document.getElementById('memopad-canvas');
