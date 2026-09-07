@@ -210,7 +210,7 @@ jobs:
               .card-btn.delete { color: var(--danger); }
               .card-btn.plan-send { color: var(--accent); }
 
-              /* 쪽잠 1줄 슬림 바 */
+              /* 쪽잠 슬림 바 */
               .nap-slim-bar {
                 display: flex;
                 align-items: center;
@@ -237,7 +237,7 @@ jobs:
               }
               .nap-btn-mini.stop { background: var(--danger); border-color: #f87171; }
 
-              /* 나의계획 탭 바 */
+              /* 나의계획: 단일 화면 대형 탭 바 */
               .plan-time-tabs {
                 display: flex;
                 gap: 6px;
@@ -271,7 +271,7 @@ jobs:
                 border-color: #f97316;
               }
 
-              /* 큼직한 계획 카드 */
+              /* 큼직한 계획 카드 (가독성 1.5배 확대) */
               .plan-big-card {
                 background: var(--card);
                 border: 1px solid var(--border);
@@ -472,7 +472,6 @@ jobs:
                 font-size: 1rem;
               }
 
-              /* 모달 공통 */
               .modal-full {
                 display: none;
                 position: fixed;
@@ -767,7 +766,7 @@ jobs:
               <div class="category-pill" onclick="selectCategory('전체')">📂 전체</div>
             </div>
 
-            <!-- 생각서랍 뷰 -->
+            <!-- 생각서랍 피드 뷰 -->
             <div class="view-container" id="idea-feed-container">
               <div class="empty-canvas" id="empty-hint">
                 떠오르는 생각을 자유롭게 기록하세요.<br>
@@ -959,7 +958,7 @@ jobs:
               </div>
             </div>
 
-            <!-- 통합 보관함 -->
+            <!-- 통합 보관함 / 휴지통 / 백업 -->
             <div id="archive-modal" class="modal-full">
               <div class="modal-top">
                 <span style="font-weight:bold; font-size:1.05rem;">📂 생각보관함 & 관리</span>
@@ -974,17 +973,20 @@ jobs:
               </div>
 
               <div class="view-container" id="archive-feed"></div>
+              
+              <!-- 떡메모 휴지통 (영구 삭제 & 전체 비우기 정상 탑재) -->
               <div class="view-container" id="trash-feed" style="display:none;"></div>
 
+              <!-- 백업 및 복원 (다운로드 + 클립보드 복사 병행) -->
               <div class="view-container" id="backup-pane" style="display:none; gap:16px;">
                 <div class="thought-card">
                   <div style="font-weight:bold; font-size:1rem; color:var(--accent);">📥 전체 데이터 백업</div>
                   <div style="font-size:0.85rem; color:var(--muted); line-height:1.5;">
-                    모든 생각, 계획, 메모를 스마트폰 `Download` 폴더에 파일로 직접 저장하거나 클립보드에 복사합니다.
+                    작성된 모든 생각, 계획, 메모를 파일로 다운로드하거나 클립보드에 전체 복사합니다.
                   </div>
                   <div style="display:flex; gap:8px; margin-top:8px;">
                     <button class="card-btn" style="background:var(--primary); flex:1; justify-content:center; padding:10px;" onclick="exportBackupData()">
-                      💾 Download 폴더에 저장
+                      💾 백업 파일 다운로드
                     </button>
                     <button class="card-btn" style="background:var(--surface); border:1px solid #444; flex:1; justify-content:center; padding:10px;" onclick="copyBackupToClipboard()">
                       📋 클립보드 복사
@@ -1012,7 +1014,7 @@ jobs:
               <div class="modal-body">
                 <div class="thought-card">
                   <div style="font-weight:bold; color:var(--accent);">1. 나의계획 (단일 화면 탭)</div>
-                  <div style="font-size:0.85rem; color:#ccc;">`[⚡ 집중]` 및 `[오전/오후/저녁/심야]` 탭을 눌러 해당 시간대의 일과만 큼직한 카드로 시원하게 확인합니다.</div>
+                  <div style="font-size:0.85rem; color:#ccc;">`[⚡ 집중]` 및 `[오전/오후/저녁/심야]` 탭을 눌러 해당 시간대의 일과만 큼직한 카드로 확인합니다.</div>
                 </div>
                 <div class="thought-card">
                   <div style="font-weight:bold; color:var(--accent);">2. 원터치 지금 집중</div>
@@ -1058,6 +1060,7 @@ jobs:
               let lastProcessedVoice = '';
               let lastProcessedTime = 0;
 
+              /* 쪽잠 타이머 엔진 */
               let napTimerInterval = null;
               let napEndTime = null;
 
@@ -1392,7 +1395,7 @@ jobs:
                 webSpeechInstance.start();
               }
 
-              /* 띄어쓰기 공백 정밀 단일 제어 */
+              /* 띄어쓰기 공백 정밀 단일 제어 (이중 공백 완전 방지) */
               function appendVoiceResult(text) {
                 if (!text || !text.trim()) return;
                 const clean = text.trim().replace(/\s+/g, ' ');
@@ -1431,13 +1434,13 @@ jobs:
                 const before = val.substring(0, start);
                 const after = val.substring(end);
 
-                const needLeadingSpace = before.length > 0 && !/\s$/.test(before);
-                const needTrailingSpace = after.length > 0 && !/^\s/.test(after);
+                const needLeadSpace = before.length > 0 && !/\s$/.test(before);
+                const needTrailSpace = after.length > 0 && !/^\s/.test(after);
 
-                const insertChunk = (needLeadingSpace ? ' ' : '') + clean + (needTrailingSpace ? ' ' : '');
-                el.value = before + insertChunk + after;
+                const chunk = (needLeadSpace ? ' ' : '') + clean + (needTrailSpace ? ' ' : '');
+                el.value = before + chunk + after;
 
-                const nextPos = start + (needLeadingSpace ? 1 : 0) + clean.length;
+                const nextPos = start + (needLeadSpace ? 1 : 0) + clean.length;
                 cursorPositions[targetId] = { start: nextPos, end: nextPos };
 
                 try {
@@ -1546,7 +1549,6 @@ jobs:
                 }
               }
 
-              /* 나의계획 탭 전환 및 대형 카드 렌더링 */
               function switchPlanSubtab(tab) {
                 currentPlanSubtab = tab;
                 document.querySelectorAll('.plan-time-tab').forEach(b => b.classList.remove('active'));
@@ -1576,7 +1578,7 @@ jobs:
                 container.innerHTML = filtered.map(p => {
                   const isDone = p.status === '완료';
                   const statusClass = (p.status === '진행중') ? 'progress' : (isDone ? 'done' : 'waiting');
-                  const slotMap = { morning: '오전', afternoon: '오후', evening: '저녁', night: '심야', none: '미지정' };
+                  const slotMap = { morning: '오전', afternoon: '오후', evening: '저녁', night: '심야', none: '대기' };
                   const slotName = slotMap[p.timeSlot || 'none'];
 
                   return `
@@ -1693,7 +1695,6 @@ jobs:
                 closePlanEditModal();
               }
 
-              /* 생각서랍 피드 렌더링 */
               function renderFeed() {
                 const list = getThoughtStorage();
                 const feed = document.getElementById('idea-feed-container');
@@ -2114,9 +2115,8 @@ jobs:
                 };
                 const jsonStr = JSON.stringify(backupObj, null, 2);
 
-                if (window.AndroidBridge && window.AndroidBridge.saveBackupFile) {
-                  window.AndroidBridge.saveBackupFile(jsonStr);
-                  return;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                  navigator.clipboard.writeText(jsonStr).catch(() => {});
                 }
 
                 try {
@@ -2129,6 +2129,7 @@ jobs:
                   a.click();
                   document.body.removeChild(a);
                   URL.revokeObjectURL(url);
+                  alert('💾 백업 파일 다운로드 및 클립보드 복사가 완료되었습니다!\n(카카오톡이나 메모장에 붙여넣을 수도 있습니다)');
                 } catch (e) {
                   copyBackupToClipboard();
                 }
@@ -2175,7 +2176,7 @@ jobs:
           </html>
           EOF
 
-      - name: 5. 고정 Keystore 및 네이티브 백업/위젯 엔진 주입
+      - name: 5. 고정 Keystore 및 네이티브 위젯 엔진 주입
         run: |
           cat << 'EOF' > package.json
           {
@@ -2242,7 +2243,7 @@ jobs:
           let xml = fs.readFileSync(p, "utf8");
           const perms = "\n    <uses-permission android:name=\"android.permission.SYSTEM_ALERT_WINDOW\" />\n    <uses-permission android:name=\"android.permission.RECORD_AUDIO\" />\n    <uses-permission android:name=\"android.permission.CAMERA\" />\n    <uses-permission android:name=\"android.permission.VIBRATE\" />\n    <uses-permission android:name=\"android.permission.FOREGROUND_SERVICE\" />\n    <uses-permission android:name=\"android.permission.FOREGROUND_SERVICE_MICROPHONE\" />\n";
           const srv = "\n    <service android:name=\"com.k2hkkh.ideadrawer.FloatingWidgetService\" android:enabled=\"true\" android:exported=\"false\" android:foregroundServiceType=\"microphone\" />\n";
-          xml = xml.replace("<application", perms + "    <application android:usesCleartextTraffic=\"true\"");
+          xml = xml.replace("<application", perms + "    <application");
           xml = xml.replace("</application>", srv + "    </application>");
           fs.writeFileSync(p, xml, "utf8");
           '
@@ -2492,7 +2493,6 @@ jobs:
           import android.speech.RecognizerIntent;
           import android.speech.SpeechRecognizer;
           import android.webkit.JavascriptInterface;
-          import android.widget.Toast;
           import androidx.core.app.ActivityCompat;
           import androidx.core.content.ContextCompat;
           import com.getcapacitor.BridgeActivity;
@@ -2539,24 +2539,6 @@ jobs:
                                   prefs.edit().remove("PENDING_VOICE").apply();
                               }
                               return pending;
-                          }
-
-                          @JavascriptInterface
-                          public void saveBackupFile(String jsonContent) {
-                              new Handler(Looper.getMainLooper()).post(() -> {
-                                  try {
-                                      java.io.File downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS);
-                                      String fileName = "idea_drawer_backup_" + System.currentTimeMillis() + ".json";
-                                      java.io.File file = new java.io.File(downloadsDir, fileName);
-                                      java.io.FileWriter writer = new java.io.FileWriter(file);
-                                      writer.write(jsonContent);
-                                      writer.flush();
-                                      writer.close();
-                                      Toast.makeText(getApplicationContext(), "💾 [Download] 폴더에 저장 완료: " + fileName, Toast.LENGTH_LONG).show();
-                                  } catch (Exception e) {
-                                      Toast.makeText(getApplicationContext(), "저장 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                  }
-                              });
                           }
                       }, "AndroidBridge");
                   }
