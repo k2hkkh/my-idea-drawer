@@ -1,261 +1,1044 @@
-name: Build Idea Drawer Android APK
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>생각서랍</title>
+  <style>
+    :root {
+      --bg: #000000;
+      --card: #1c1c1e;
+      --surface: #2c2c2e;
+      --primary: #2563eb;
+      --accent: #38bdf8;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --muted: #8e8e93;
+      --border: #2c2c2e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding-top: env(safe-area-inset-top, 0px);
+    }
+    header {
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      gap: 6px;
+    }
+    .header-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: #ffffff;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.05rem;
+      flex-shrink: 0;
+    }
+    .main-mode-switch {
+      display: flex;
+      background: #141416;
+      padding: 3px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      gap: 2px;
+      flex: 1;
+      justify-content: center;
+      max-width: 320px;
+    }
+    .mode-btn {
+      padding: 6px clamp(6px, 1.8vw, 10px);
+      border-radius: 16px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: clamp(0.72rem, 2.2vw, 0.8rem);
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .mode-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.4);
+    }
+    .category-bar {
+      display: flex;
+      padding: 8px 12px;
+      background: #121214;
+      gap: 6px;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .category-pill {
+      padding: 5px 12px;
+      border-radius: 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      font-size: 0.78rem;
+      color: var(--muted);
+      cursor: pointer;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+    .category-pill.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+    .view-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .empty-canvas {
+      margin: auto;
+      text-align: center;
+      color: #52525b;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    .thought-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-badge {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .card-time { font-size: 0.75rem; color: var(--muted); }
+    .card-content { font-size: clamp(0.92rem, 2.7vw, 1.05rem); line-height: 1.5; white-space: pre-wrap; color: #ffffff; }
 
-on:
-  push:
-    branches: [ main, master ]
-  workflow_dispatch:
+    /* 정확히 5개 버튼 가로 정렬 바 (중립 기본 톤) */
+    .card-five-buttons {
+      display: flex;
+      gap: 5px;
+      overflow-x: auto;
+      white-space: nowrap;
+      border-top: 1px solid #27272a;
+      padding-top: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .card-five-buttons::-webkit-scrollbar { display: none; }
+    
+    .five-btn {
+      flex: 1;
+      min-width: 58px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 4px;
+      border-radius: 8px;
+      border: 1px solid #3f3f46;
+      background: #1c1c1e;
+      color: #a1a1aa;
+      font-size: clamp(0.72rem, 2.1vw, 0.78rem);
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .five-btn:active { transform: scale(0.96); }
+    .five-btn.active-backlog { background: #1e3a8a; border-color: #3b82f6; color: #ffffff; font-weight: 700; }
+    .five-btn.active-time { background: #0369a1; border-color: #38bdf8; color: #ffffff; font-weight: 700; }
+    .five-btn.active-focus { background: #7c2d12; border-color: #ea580c; color: #ffedd5; font-weight: 700; }
 
-permissions:
-  contents: write
+    /* 쪽잠 단일 버튼 */
+    .nap-single-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2px;
+    }
+    .nap-single-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      color: #ffffff;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .nap-single-btn.running { border-color: var(--accent); background: #0f172a; color: var(--accent); }
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+    /* 나의계획: 상단 대형 탭 */
+    .plan-time-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      flex-shrink: 0;
+    }
+    .plan-time-tab {
+      flex: 1;
+      min-width: 65px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 4px;
+      color: var(--muted);
+      font-size: clamp(0.74rem, 2.2vw, 0.82rem);
+      font-weight: bold;
+      text-align: center;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .plan-time-tab.active { background: #1e3a8a; color: #60a5fa; border-color: #3b82f6; }
+    .plan-time-tab.focus-tab.active { background: #9a3412; color: #fdba74; border-color: #f97316; }
 
-    steps:
-      - name: 1. 저장소 파일 가져오기
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    /* 큼직한 계획 카드 */
+    .plan-big-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+    }
+    .plan-big-card.completed { opacity: 0.45; border-color: #27272a; }
+    .plan-big-card-top { display: flex; align-items: flex-start; gap: 10px; }
+    .plan-big-title {
+      flex: 1;
+      font-size: clamp(1.1rem, 3.4vw, 1.3rem);
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+    .plan-big-title.completed { text-decoration: line-through; color: var(--muted); }
 
-      - name: 2. 자바 JDK 17 설정
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
+    .status-badge-lg {
+      font-size: 0.82rem;
+      font-weight: 800;
+      padding: 5px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .status-badge-lg.waiting { background: #3f3f46; color: #f4f4f5; }
+    .status-badge-lg.progress { background: #1e3a8a; color: #93c5fd; }
+    .status-badge-lg.done { background: #064e3b; color: #6ee7b7; }
 
-      - name: 3. Node.js 20 설정
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+    .bottom-bar-wrapper {
+      padding: 8px 14px calc(14px + env(safe-area-inset-bottom, 0px)) 14px;
+      background: var(--bg);
+      position: relative;
+      flex-shrink: 0;
+    }
+    .capsule-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-plus {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: none;
+      color: #ffffff;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .btn-plus.open { transform: rotate(45deg); background: var(--danger); }
+    .main-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      font-size: clamp(0.88rem, 2.6vw, 0.95rem);
+      outline: none;
+      min-height: 24px;
+      max-height: 90px;
+      resize: none;
+      line-height: 1.4;
+      user-select: text;
+    }
+    .main-input::placeholder { color: #636366; }
+    .btn-mic {
+      background: none;
+      border: none;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .btn-mic svg { width: 22px; height: 22px; fill: #8e8e93; }
+    .btn-action-send {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #2563eb;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      cursor: pointer;
+      color: #ffffff;
+      font-size: 1.2rem;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+    .wave-bar { width: 3px; height: 12px; background: #ffffff; border-radius: 2px; }
 
-      - name: 4. 빌드 에셋 준비
-        run: |
-          mkdir -p www
-          cp index.html www/index.html
+    .plus-menu-popover {
+      display: none;
+      position: absolute;
+      bottom: calc(74px + env(safe-area-inset-bottom, 0px));
+      left: 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 8px 6px;
+      flex-direction: column;
+      gap: 4px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      z-index: 50;
+      min-width: 170px;
+    }
+    .plus-menu-popover.active { display: flex; animation: slideUp 0.18s ease-out; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      color: #ffffff;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .menu-item:active { background: var(--surface); }
 
-      - name: 5. 고정 네이티브 셸 구성 (카메라/음성/실시간 URL 연동)
-        run: |
-          cat << 'EOF' > package.json
-          {
-            "name": "my-idea-drawer",
-            "version": "1.0.0",
-            "private": true,
-            "dependencies": {
-              "@capacitor/android": "^6.0.0",
-              "@capacitor/cli": "^6.0.0",
-              "@capacitor/core": "^6.0.0"
-            }
+    /* 팝업 공통 */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100dvh;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 3000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .modal-backdrop.active { display: flex; }
+    .pop-card {
+      background: #1c1c1e;
+      border: 1px solid #3a3a3c;
+      border-radius: 18px;
+      padding: 18px;
+      width: 100%;
+      max-width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+    .pop-btn-choice {
+      background: var(--surface);
+      border: 1px solid #3f3f46;
+      color: #ffffff;
+      padding: 13px 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .pop-btn-stop {
+      background: var(--danger);
+      border: none;
+      color: #fff;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+    .modal-full {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100dvh;
+      background: #000000;
+      z-index: 1000;
+      flex-direction: column;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .modal-full.active { display: flex; }
+    .modal-top {
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+      flex-shrink: 0;
+    }
+    .modal-body { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button class="header-btn" onclick="resetToIdeaDrawer()" title="첫 생각">💡</button>
+    <div class="main-mode-switch">
+      <button id="tab-btn-idea" class="mode-btn active" onclick="switchMainMode('idea')">💡 생각서랍</button>
+      <button id="tab-btn-plan" class="mode-btn" onclick="switchMainMode('plan')">📋 나의계획</button>
+    </div>
+    <div style="display:flex; gap:6px;">
+      <button class="header-btn" onclick="openArchiveModal()" title="보관함/백업">📂</button>
+    </div>
+  </header>
+
+  <div class="category-bar" id="idea-category-bar">
+    <div class="category-pill active" onclick="selectCategory('첫 생각')">💡 첫 생각</div>
+    <div class="category-pill" onclick="selectCategory('노트')">📝 노트</div>
+    <div class="category-pill" onclick="selectCategory('사진')">📷 사진</div>
+    <div class="category-pill" onclick="selectCategory('동영상')">🎬 동영상</div>
+    <div class="category-pill" onclick="selectCategory('전체')">📂 전체</div>
+  </div>
+
+  <div class="view-container" id="idea-feed-container">
+    <div class="empty-canvas">떠오르는 생각을 자유롭게 기록하세요.<br>저장 즉시 서랍으로 들어가 깨끗한 화면이 유지됩니다.</div>
+  </div>
+
+  <div class="view-container" id="plan-feed-container" style="display:none;">
+    <div class="nap-single-container">
+      <button id="nap-toggle-btn" class="nap-single-btn" onclick="openNapMenu()">
+        <span>⏱️ 쪽잠</span>
+        <span id="nap-badge-text" style="color:var(--accent);">(대기)</span>
+      </button>
+    </div>
+
+    <div class="plan-time-tabs">
+      <button class="plan-time-tab active" id="ptab-backlog" onclick="switchPlanSubtab('backlog')">🔄 대기</button>
+      <button class="plan-time-tab focus-tab" id="ptab-focus" onclick="switchPlanSubtab('focus')">⚡ 집중</button>
+      <button class="plan-time-tab" id="ptab-morning" onclick="switchPlanSubtab('morning')">🌅 오전</button>
+      <button class="plan-time-tab" id="ptab-afternoon" onclick="switchPlanSubtab('afternoon')">☀️ 오후</button>
+      <button class="plan-time-tab" id="ptab-evening" onclick="switchPlanSubtab('evening')">🌙 저녁</button>
+      <button class="plan-time-tab" id="ptab-night" onclick="switchPlanSubtab('night')">⏱️ 심야</button>
+    </div>
+
+    <div id="plan-card-list" style="display:flex; flex-direction:column; gap:12px;"></div>
+  </div>
+
+  <div class="attachment-tray" id="attachment-tray" style="display:none; padding:8px 14px; gap:8px; overflow-x:auto; background:#121214;"></div>
+
+  <div class="bottom-bar-wrapper">
+    <div class="plus-menu-popover" id="plus-menu">
+      <div class="menu-item" onclick="triggerNativeCamera()"><span>📷 카메라 촬영 추가</span></div>
+      <div class="menu-item" onclick="triggerNativeGallery()"><span>🖼️ 사진 선택 (다중)</span></div>
+      <div class="menu-item" onclick="triggerNativeVideo()"><span>🎬 동영상 촬영 추가</span></div>
+    </div>
+
+    <div class="capsule-box">
+      <button id="btn-plus" class="btn-plus" onclick="togglePlusMenu()">＋</button>
+      <textarea id="prompt-input" class="main-input" placeholder="생각을 입력하거나 사진·영상을 덧붙이세요..." rows="1" oninput="handleInputChange(this); trackCursor(this);" onclick="trackCursor(this)"></textarea>
+      <button id="btn-mic-main" class="btn-mic" onpointerdown="event.preventDefault()" onclick="triggerVoiceInput()">
+        <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+      </button>
+      <button id="btn-wave" class="btn-action-send" onpointerdown="event.preventDefault()" onclick="handleSendAction()">
+        <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+      </button>
+    </div>
+  </div>
+
+  <!-- 표준 파일 인풋 -->
+  <input type="file" id="camera-file" accept="image/*" capture="environment" style="display:none;" onchange="processMediaFiles(this, '사진')" />
+  <input type="file" id="gallery-file" accept="image/*" multiple style="display:none;" onchange="processMediaFiles(this, '사진')" />
+  <input type="file" id="video-file" accept="video/*" capture="environment" style="display:none;" onchange="processVideoFile(this)" />
+  <input type="file" id="backup-import-file" accept=".json" style="display:none;" onchange="importBackupData(this)" />
+
+  <!-- 쪽잠 설정 레이어 팝업 -->
+  <div id="nap-menu-modal" class="modal-backdrop" onclick="closeNapMenu(event)">
+    <div class="pop-card" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-weight:bold; font-size:1.05rem; color:#fff;">⏱️ 쪽잠 타이머</span>
+        <button onclick="closeNapMenu()" style="background:transparent; border:none; color:#8e8e93; font-size:1.2rem; cursor:pointer;">✕</button>
+      </div>
+      <div id="nap-modal-status" style="font-size:0.85rem; color:#a1a1aa;">원하는 휴식 시간을 선택하세요:</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
+        <button class="five-btn" style="padding:12px 0;" onclick="startNapTimer(15)">15분</button>
+        <button class="five-btn" style="padding:12px 0;" onclick="startNapTimer(30)">30분</button>
+        <button class="five-btn" style="padding:12px 0;" onclick="startNapTimer(45)">45분</button>
+      </div>
+      <button id="nap-modal-stop-btn" class="pop-btn-stop" style="display:none;" onclick="stopNapTimer()">⏹️ 타이머 중단</button>
+    </div>
+  </div>
+
+  <!-- [🕒 계획시간] 할당 팝업 (오전, 오후, 저녁, 심야만 노출) -->
+  <div id="time-sub-modal" class="modal-backdrop" onclick="closeTimeSlotModal(event)">
+    <div class="pop-card" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-weight:bold; font-size:1.05rem; color:#fff;">🕒 계획시간 지정</span>
+        <button onclick="closeTimeSlotModal()" style="background:transparent; border:none; color:#8e8e93; font-size:1.2rem; cursor:pointer;">✕</button>
+      </div>
+      <div style="font-size:0.85rem; color:#a1a1aa;">원하는 일과 시간대를 선택하세요:</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button class="pop-btn-choice" onclick="confirmTimeSlotAssign('morning')">🌅 오전 (06:00 ~ 12:00)</button>
+        <button class="pop-btn-choice" onclick="confirmTimeSlotAssign('afternoon')">☀️ 오후 (12:00 ~ 18:00)</button>
+        <button class="pop-btn-choice" onclick="confirmTimeSlotAssign('evening')">🌙 저녁 (18:00 ~ 24:00)</button>
+        <button class="pop-btn-choice" onclick="confirmTimeSlotAssign('night')">⏱️ 심야 (00:00 ~ 06:00)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 백업/보관함 모달 -->
+  <div id="archive-modal" class="modal-full">
+    <div class="modal-top">
+      <span style="font-weight:bold; font-size:1.05rem;">📂 생각보관함 & 백업</span>
+      <button class="five-btn" style="border:none; padding:6px 12px; color:#f87171;" onclick="closeArchiveModal()">닫기</button>
+    </div>
+    <div class="modal-body">
+      <div class="thought-card">
+        <div style="font-weight:bold; color:var(--accent);">📥 전체 데이터 백업</div>
+        <div style="font-size:0.85rem; color:var(--muted);">모든 데이터를 파일로 저장하거나 클립보드에 복사합니다.</div>
+        <div style="display:flex; gap:8px; margin-top:6px;">
+          <button class="five-btn active-backlog" style="flex:1;" onclick="exportBackupData()">💾 파일 다운로드</button>
+          <button class="five-btn" style="flex:1;" onclick="copyBackupToClipboard()">📋 클립보드 복사</button>
+        </div>
+      </div>
+      <div class="thought-card">
+        <div style="font-weight:bold; color:var(--success);">📤 데이터 복원</div>
+        <button class="five-btn" style="width:100%; margin-top:6px;" onclick="document.getElementById('backup-import-file').click()">📂 백업 파일 선택 복원</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentMainMode = 'idea';
+    let currentCategory = '첫 생각';
+    let currentAttachments = [];
+    let currentPlanSubtab = 'backlog';
+    let targetSlotItemId = null;
+    let targetSlotSource = 'thought';
+
+    let cursorPositions = { 'prompt-input': { start: 0, end: 0 } };
+    function trackCursor(el) {
+      if (el && typeof el.selectionStart === 'number') {
+        cursorPositions[el.id] = { start: el.selectionStart, end: el.selectionEnd };
+      }
+    }
+
+    /* 쪽잠 타이머 */
+    let napTimerInterval = null, napEndTime = null;
+    function openNapMenu() { document.getElementById('nap-menu-modal').classList.add('active'); }
+    function closeNapMenu(e) {
+      if (e && e.target && e.target.id !== 'nap-menu-modal') return;
+      document.getElementById('nap-menu-modal').classList.remove('active');
+    }
+    function startNapTimer(mins) {
+      stopNapTimer();
+      napEndTime = Date.now() + mins * 60 * 1000;
+      document.getElementById('nap-toggle-btn').classList.add('running');
+      document.getElementById('nap-modal-stop-btn').style.display = 'block';
+      document.getElementById('nap-menu-modal').classList.remove('active');
+      updateNapDisplay();
+      napTimerInterval = setInterval(checkNapTimer, 1000);
+    }
+    function stopNapTimer() {
+      if (napTimerInterval) clearInterval(napTimerInterval);
+      napTimerInterval = null; napEndTime = null;
+      document.getElementById('nap-toggle-btn').classList.remove('running');
+      document.getElementById('nap-badge-text').innerText = '(대기)';
+      document.getElementById('nap-modal-status').innerText = '원하는 휴식 시간을 선택하세요:';
+      document.getElementById('nap-modal-stop-btn').style.display = 'none';
+      document.getElementById('nap-menu-modal').classList.remove('active');
+    }
+    function checkNapTimer() {
+      if (!napEndTime) return;
+      const rem = napEndTime - Date.now();
+      if (rem <= 0) { stopNapTimer(); alert('⏰ 쪽잠 시간이 종료되었습니다.'); }
+      else { updateNapDisplay(rem); }
+    }
+    function updateNapDisplay(rem) {
+      if (!rem) return;
+      const sec = Math.floor(rem / 1000);
+      const m = Math.floor(sec / 60), s = sec % 60;
+      const str = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      document.getElementById('nap-badge-text').innerText = `${str} 남음`;
+      document.getElementById('nap-modal-status').innerText = `타이머 가동 중 (${str} 남음)`;
+    }
+
+    /* 모드 전환 */
+    function switchMainMode(mode) {
+      currentMainMode = mode;
+      document.getElementById('tab-btn-idea').classList.toggle('active', mode === 'idea');
+      document.getElementById('tab-btn-plan').classList.toggle('active', mode === 'plan');
+      document.getElementById('idea-category-bar').style.display = (mode === 'idea') ? 'flex' : 'none';
+      document.getElementById('idea-feed-container').style.display = (mode === 'idea') ? 'flex' : 'none';
+      document.getElementById('plan-feed-container').style.display = (mode === 'plan') ? 'flex' : 'none';
+      document.getElementById('btn-plus').style.display = (mode === 'idea') ? 'flex' : 'none';
+      document.getElementById('prompt-input').placeholder = (mode === 'idea') ? '생각을 입력하거나 사진·영상을 덧붙이세요...' : '새로운 계획을 입력하세요 (대기모드로 등록)...';
+      if (mode === 'idea') renderFeed(); else renderPlanView();
+    }
+    function resetToIdeaDrawer() { switchMainMode('idea'); selectCategory('첫 생각'); }
+    function selectCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.category-pill').forEach(p => p.classList.toggle('active', p.innerText.includes(cat)));
+      renderFeed();
+    }
+    function togglePlusMenu() {
+      const menu = document.getElementById('plus-menu');
+      const btn = document.getElementById('btn-plus');
+      menu.classList.toggle('active'); btn.classList.toggle('open');
+    }
+    function closePlusMenu() {
+      document.getElementById('plus-menu').classList.remove('active');
+      document.getElementById('btn-plus').classList.remove('open');
+    }
+
+    /* 카메라/갤러리 네이티브 & 웹 이중 트리거 */
+    function triggerNativeCamera() {
+      closePlusMenu();
+      if (window.AndroidBridge && window.AndroidBridge.openCamera) window.AndroidBridge.openCamera();
+      else document.getElementById('camera-file').click();
+    }
+    function triggerNativeGallery() {
+      closePlusMenu();
+      if (window.AndroidBridge && window.AndroidBridge.openGallery) window.AndroidBridge.openGallery();
+      else document.getElementById('gallery-file').click();
+    }
+    function triggerNativeVideo() {
+      closePlusMenu();
+      if (window.AndroidBridge && window.AndroidBridge.openVideo) window.AndroidBridge.openVideo();
+      else document.getElementById('video-file').click();
+    }
+
+    window.receiveMediaResult = function(base64Data, type) {
+      if (base64Data) {
+        currentAttachments.push({ type: type, data: base64Data, isVideo: (type === '동영상') });
+        renderAttachmentTray();
+        updateSendButtonState();
+      }
+    };
+
+    function processMediaFiles(input, type) {
+      const files = input.files;
+      if (files && files.length > 0) {
+        for (let file of Array.from(files)) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            currentAttachments.push({ type: type, data: e.target.result, isVideo: false });
+            renderAttachmentTray();
+            updateSendButtonState();
+          };
+          reader.readAsDataURL(file);
+        }
+        input.value = '';
+      }
+    }
+    function processVideoFile(input) {
+      const file = input.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          currentAttachments.push({ type: '동영상', data: e.target.result, isVideo: true });
+          renderAttachmentTray();
+          updateSendButtonState();
+        };
+        reader.readAsDataURL(file);
+        input.value = '';
+      }
+    }
+
+    function renderAttachmentTray() {
+      const tray = document.getElementById('attachment-tray');
+      if (currentAttachments.length === 0) { tray.style.display = 'none'; tray.innerHTML = ''; return; }
+      tray.style.display = 'flex';
+      tray.innerHTML = currentAttachments.map((item, idx) => `
+        <div style="position:relative; width:60px; height:60px; flex-shrink:0;">
+          <img src="${item.data}" style="width:100%; height:100%; object-fit:cover; border-radius:8px; border:1px solid var(--accent);" />
+          <button style="position:absolute; top:-4px; right:-4px; width:18px; height:18px; border-radius:50%; background:var(--danger); color:#fff; border:none;" onclick="removeAttachment(${idx})">✕</button>
+        </div>
+      `).join('');
+    }
+    function removeAttachment(idx) {
+      currentAttachments.splice(idx, 1);
+      renderAttachmentTray();
+      updateSendButtonState();
+    }
+
+    function handleInputChange(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 90) + 'px';
+      updateSendButtonState();
+    }
+    function updateSendButtonState() {
+      const text = document.getElementById('prompt-input').value.trim();
+      const hasAttachments = currentAttachments.length > 0;
+      document.getElementById('btn-wave').innerHTML = (text || hasAttachments) ? '↑' : '<div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>';
+    }
+
+    function handleSendAction() {
+      const input = document.getElementById('prompt-input');
+      const text = input.value.trim();
+      const hasAttachments = currentAttachments.length > 0;
+      if (text || hasAttachments) {
+        if (currentMainMode === 'idea') {
+          let category = '노트';
+          if (hasAttachments) {
+            if (currentAttachments.some(a => a.type === '동영상')) category = '동영상';
+            else if (currentAttachments.some(a => a.type === '사진')) category = '사진';
           }
-          EOF
+          saveThought(category, text, [...currentAttachments]);
+          selectCategory('첫 생각');
+        } else {
+          savePlanToBacklog(text);
+          renderPlanView();
+        }
+        input.value = ''; input.style.height = 'auto';
+        currentAttachments = [];
+        cursorPositions['prompt-input'] = { start: 0, end: 0 };
+        renderAttachmentTray();
+        updateSendButtonState();
+      } else {
+        triggerVoiceInput();
+      }
+    }
 
-          cat << 'EOF' > capacitor.config.json
-          {
-            "appId": "com.k2hkkh.ideadrawer",
-            "appName": "생각서랍",
-            "webDir": "www",
-            "server": {
-              "url": "https://k2hkkh.github.io/my-idea-drawer/",
-              "cleartext": true
-            }
-          }
-          EOF
+    /* 구글 음성 다이얼로그 */
+    function triggerVoiceInput() {
+      closePlusMenu();
+      const el = document.getElementById('prompt-input');
+      if (el && typeof el.selectionStart === 'number') trackCursor(el);
+      if (window.AndroidBridge && window.AndroidBridge.openSpeechDialog) {
+        window.AndroidBridge.openSpeechDialog();
+      } else {
+        const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (Speech) {
+          const rec = new Speech();
+          rec.lang = 'ko-KR';
+          rec.onresult = (e) => appendVoiceResult(e.results[0][0].transcript);
+          rec.start();
+        }
+      }
+    }
+    function appendVoiceResult(text) {
+      if (!text || !text.trim()) return;
+      const clean = text.trim().replace(/\s+/g, ' ');
+      const el = document.getElementById('prompt-input');
+      if (!el) return;
+      let start = (typeof el.selectionStart === 'number') ? el.selectionStart : el.value.length;
+      let end = (typeof el.selectionEnd === 'number') ? el.selectionEnd : el.value.length;
+      if (document.activeElement !== el && cursorPositions['prompt-input']) {
+        start = cursorPositions['prompt-input'].start; end = cursorPositions['prompt-input'].end;
+      }
+      let val = el.value;
+      let before = val.substring(0, start);
+      let after = val.substring(end);
+      let needBefore = (before.length > 0 && !/\s$/.test(before));
+      let needAfter = (after.length > 0 && !/^\s/.test(after));
+      let combined = (before + (needBefore ? ' ' : '') + clean + (needAfter ? ' ' : '') + after).replace(/ {2,}/g, ' ');
+      let nextPos = (before + (needBefore ? ' ' : '') + clean).replace(/ {2,}/g, ' ').length;
+      el.value = combined;
+      cursorPositions['prompt-input'] = { start: nextPos, end: nextPos };
+      try { el.setSelectionRange(nextPos, nextPos); } catch(e) {}
+      handleInputChange(el);
+    }
+    window.receiveVoiceResult = function(text) { appendVoiceResult(text); };
 
-          npm install
-          npx cap add android
+    /* 저장소 */
+    function getThoughtStorage() {
+      try { return JSON.parse(localStorage.getItem('idea_drawer_storage') || '[]'); } catch(e) { return []; }
+    }
+    function setThoughtStorage(arr) {
+      try { localStorage.setItem('idea_drawer_storage', JSON.stringify(arr)); } catch(e) {}
+      renderFeed();
+    }
+    function saveThought(cat, content, media) {
+      const list = getThoughtStorage();
+      list.unshift({
+        id: Date.now(), category: cat, content: content || '', mediaList: media || [],
+        time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+      });
+      setThoughtStorage(list);
+    }
+    function getPlanStorage() {
+      try { return JSON.parse(localStorage.getItem('plan_drawer_storage') || '[]'); } catch(e) { return []; }
+    }
+    function setPlanStorage(arr) {
+      try { localStorage.setItem('plan_drawer_storage', JSON.stringify(arr)); } catch(e) {}
+      renderPlanView();
+    }
 
-          if [ -f "release.keystore" ]; then
-            cp release.keystore android/app/release.keystore
-          else
-            keytool -genkey -v -keystore android/app/release.keystore -alias ideadrawer -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=IdeaDrawer, OU=Dev, O=Idea, L=Seoul, S=Seoul, C=KR"
-            cp android/app/release.keystore release.keystore
-            git config --global user.name "github-actions"
-            git config --global user.email "github-actions@github.com"
-            git add release.keystore
-            git commit -m "Save permanent keystore [skip ci]" || true
-            git push origin HEAD || true
-          fi
+    /* 기본 대기모드로 시작 */
+    function savePlanToBacklog(title) {
+      if (!title || !title.trim()) return;
+      const list = getPlanStorage();
+      list.unshift({
+        id: Date.now(), title: title.trim(), status: '대기', timeSlot: 'none', isFocus: false,
+        notes: [], updatedAt: new Date().toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })
+      });
+      setPlanStorage(list);
+      switchPlanSubtab('backlog');
+    }
 
-          node -e '
-          const fs = require("fs");
-          const p = "android/app/build.gradle";
-          let gradle = fs.readFileSync(p, "utf8");
-          const signBlock = `
-              signingConfigs {
-                  release {
-                      storeFile file("release.keystore")
-                      storePassword "android"
-                      keyAlias "ideadrawer"
-                      keyPassword "android"
-                  }
-              }
-          `;
-          gradle = gradle.replace("android {", "android {" + signBlock);
-          gradle = gradle.replace(/buildTypes\s*\{[\s\S]*?release\s*\{/, "buildTypes {\n        debug {\n            signingConfig signingConfigs.release\n        }\n        release {\n            signingConfig signingConfigs.release\n");
-          fs.writeFileSync(p, gradle, "utf8");
-          '
+    /* 생각서랍 원터치 이동 (대기 / 지금집중) - 서랍 원본 자동 삭제 */
+    function transferThoughtDirect(id, type) {
+      const thoughts = getThoughtStorage();
+      const item = thoughts.find(t => t.id === id);
+      if (!item) return;
+      const title = item.content ? item.content.trim() : `[${item.category || '노트'}] 메모`;
+      const plans = getPlanStorage();
+      const isFocus = (type === 'focus');
 
-          BUILD_NUM=${{ github.run_number }}
-          sed -i "s/versionCode 1/versionCode $BUILD_NUM/g" android/app/build.gradle
-          sed -i "s/versionName \"1.0\"/versionName \"1.0.$BUILD_NUM\"/g" android/app/build.gradle
+      plans.unshift({
+        id: Date.now(), title: title, status: '대기', timeSlot: 'none', isFocus: isFocus,
+        notes: [], mediaList: item.mediaList || [],
+        updatedAt: new Date().toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })
+      });
+      setPlanStorage(plans);
+      setThoughtStorage(thoughts.filter(t => t.id !== id));
+      alert(isFocus ? '⚡ [지금집중] 일과로 이동되었습니다!' : '🔄 [대기] 일과로 이동되었습니다!');
+    }
 
-          node -e '
-          const fs = require("fs");
-          const p = "android/app/src/main/AndroidManifest.xml";
-          let xml = fs.readFileSync(p, "utf8");
-          const perms = "\n    <uses-permission android:name=\"android.permission.RECORD_AUDIO\" />\n    <uses-permission android:name=\"android.permission.CAMERA\" />\n    <uses-permission android:name=\"android.permission.VIBRATE\" />\n";
-          xml = xml.replace("<application", perms + "    <application android:usesCleartextTraffic=\"true\"");
-          fs.writeFileSync(p, xml, "utf8");
-          '
+    /* 나의계획 내부 원터치 변경 */
+    function reassignPlanSlotDirect(id, type) {
+      const plans = getPlanStorage();
+      const item = plans.find(p => p.id === id);
+      if (item) {
+        if (type === 'focus') item.isFocus = !item.isFocus;
+        else if (type === 'backlog') { item.isFocus = false; item.timeSlot = 'none'; }
+        setPlanStorage(plans);
+      }
+    }
 
-          cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/MainActivity.java
-          package com.k2hkkh.ideadrawer;
+    /* [🕒 계획시간] 팝업 제어 (오전, 오후, 저녁, 심야만 노출) */
+    function openTimeSlotModal(id, source) {
+      targetSlotItemId = id; targetSlotSource = source;
+      document.getElementById('time-sub-modal').classList.add('active');
+    }
+    function closeTimeSlotModal(e) {
+      if (e && e.target && e.target.id !== 'time-sub-modal') return;
+      document.getElementById('time-sub-modal').classList.remove('active');
+      targetSlotItemId = null;
+    }
+    function confirmTimeSlotAssign(chosenSlot) {
+      if (!targetSlotItemId) return;
+      const labels = { morning: '오전', afternoon: '오후', evening: '저녁', night: '심야' };
+      if (targetSlotSource === 'thought') {
+        const thoughts = getThoughtStorage();
+        const item = thoughts.find(t => t.id === targetSlotItemId);
+        if (item) {
+          const title = item.content ? item.content.trim() : `[${item.category || '노트'}] 메모`;
+          const plans = getPlanStorage();
+          plans.unshift({
+            id: Date.now(), title: title, status: '대기', timeSlot: chosenSlot, isFocus: false,
+            notes: [], mediaList: item.mediaList || [],
+            updatedAt: new Date().toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })
+          });
+          setPlanStorage(plans);
+          setThoughtStorage(thoughts.filter(t => t.id !== targetSlotItemId));
+          alert(`📋 [${labels[chosenSlot]}] 일과로 이동되었습니다!`);
+        }
+      } else if (targetSlotSource === 'plan') {
+        const plans = getPlanStorage();
+        const item = plans.find(p => p.id === targetSlotItemId);
+        if (item) { item.isFocus = false; item.timeSlot = chosenSlot; setPlanStorage(plans); }
+      }
+      document.getElementById('time-sub-modal').classList.remove('active');
+      targetSlotItemId = null;
+    }
 
-          import android.Manifest;
-          import android.content.Intent;
-          import android.content.pm.PackageManager;
-          import android.graphics.Bitmap;
-          import android.net.Uri;
-          import android.os.Build;
-          import android.os.Bundle;
-          import android.provider.MediaStore;
-          import android.speech.RecognizerIntent;
-          import android.util.Base64;
-          import android.webkit.JavascriptInterface;
-          import androidx.core.app.ActivityCompat;
-          import androidx.core.content.ContextCompat;
-          import com.getcapacitor.BridgeActivity;
-          import java.io.ByteArrayOutputStream;
-          import java.util.ArrayList;
+    /* 복사 */
+    function copyCardContent(text) {
+      if (!text || !text.trim()) { alert('복사할 텍스트가 없습니다.'); return; }
+      navigator.clipboard.writeText(text).then(() => alert('📋 클립보드에 복사되었습니다.'));
+    }
 
-          public class MainActivity extends BridgeActivity {
-              private static final int SPEECH_REQ = 1002;
-              private static final int REQ_CAMERA = 2001;
-              private static final int REQ_GALLERY = 2002;
-              private static final int REQ_VIDEO = 2003;
+    /* 생각서랍 렌더링: 오직 '대기'에만 파란 불, 나머지는 중립 회색 */
+    function renderFeed() {
+      const list = getThoughtStorage();
+      const feed = document.getElementById('idea-feed-container');
+      if (currentCategory === '첫 생각') {
+        feed.innerHTML = `<div class="empty-canvas">떠오르는 생각을 자유롭게 기록하세요.<br>저장 즉시 서랍으로 들어가 깨끗한 화면이 유지됩니다.</div>`;
+        return;
+      }
+      const filtered = (currentCategory === '전체') ? list : list.filter(i => (i.category || i.type || '').includes(currentCategory));
+      if (filtered.length === 0) {
+        feed.innerHTML = `<div class="empty-canvas">저장된 [${currentCategory}] 생각이 없습니다.</div>`;
+        return;
+      }
 
-              @Override
-              public void onCreate(Bundle savedInstanceState) {
-                  super.onCreate(savedInstanceState);
-                  requestAppPermissions();
+      feed.innerHTML = filtered.map(item => {
+        const safe = (item.content || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        return `
+          <div class="thought-card">
+            <div class="card-header"><span class="card-badge">${item.category || '노트'}</span><span class="card-time">${item.time}</span></div>
+            ${item.mediaList && item.mediaList.length > 0 ? `<div>${item.mediaList.map(m => `<img src="${m.data}" style="width:100%; max-height:240px; object-fit:contain; border-radius:8px; background:#000;" />`).join('')}</div>` : ''}
+            ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
+            
+            <!-- 1.대기(불 ON) 2.계획시간 3.지금집중 4.복사 5.삭제 -->
+            <div class="card-five-buttons">
+              <button class="five-btn active-backlog" onclick="transferThoughtDirect(${item.id}, 'backlog')">🔄 대기</button>
+              <button class="five-btn" onclick="openTimeSlotModal(${item.id}, 'thought')">🕒 계획시간</button>
+              <button class="five-btn" onclick="transferThoughtDirect(${item.id}, 'focus')">⚡ 지금집중</button>
+              <button class="five-btn" onclick="copyCardContent('${safe}')">📋 복사</button>
+              <button class="five-btn" style="color:#f87171;" onclick="deleteThought(${item.id})">🗑️ 삭제</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    function deleteThought(id) {
+      if (confirm('이 생각을 삭제하시겠습니까?')) setThoughtStorage(getThoughtStorage().filter(i => i.id !== id));
+    }
 
-                  if (getBridge() != null && getBridge().getWebView() != null) {
-                      getBridge().getWebView().addJavascriptInterface(new Object() {
-                          @JavascriptInterface
-                          public void openSpeechDialog() {
-                              Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-                              intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-                              intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
-                              intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "생각을 말씀하세요...");
-                              try {
-                                  startActivityForResult(intent, SPEECH_REQ);
-                              } catch (Exception ignored) {}
-                          }
+    /* 나의계획 렌더링: 현재 상태인 단 1개 버튼에만 불 켜짐 */
+    function switchPlanSubtab(tab) {
+      currentPlanSubtab = tab;
+      document.querySelectorAll('.plan-time-tab').forEach(b => b.classList.remove('active'));
+      const cur = document.getElementById(`ptab-${tab}`);
+      if (cur) cur.classList.add('active');
+      renderPlanView();
+    }
+    function renderPlanView() {
+      const list = getPlanStorage();
+      const container = document.getElementById('plan-card-list');
+      let filtered = [];
+      if (currentPlanSubtab === 'focus') filtered = list.filter(p => p.isFocus);
+      else if (currentPlanSubtab === 'backlog') filtered = list.filter(p => !p.isFocus && (!p.timeSlot || p.timeSlot === 'none'));
+      else filtered = list.filter(p => !p.isFocus && p.timeSlot === currentPlanSubtab);
 
-                          @JavascriptInterface
-                          public void openCamera() {
-                              Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                              startActivityForResult(intent, REQ_CAMERA);
-                          }
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="empty-canvas" style="padding:40px 0;">해당 탭에 등록된 일과가 없습니다.</div>';
+        return;
+      }
 
-                          @JavascriptInterface
-                          public void openGallery() {
-                              Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                              startActivityForResult(intent, REQ_GALLERY);
-                          }
+      container.innerHTML = filtered.map(p => {
+        const isDone = p.status === '완료';
+        const safe = (p.title || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        const isBacklogActive = (!p.isFocus && (p.timeSlot === 'none' || !p.timeSlot));
+        const isTimeActive = (!p.isFocus && ['morning', 'afternoon', 'evening', 'night'].includes(p.timeSlot));
+        const isFocusActive = p.isFocus;
 
-                          @JavascriptInterface
-                          public void openVideo() {
-                              Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-                              startActivityForResult(intent, REQ_VIDEO);
-                          }
-                      }, "AndroidBridge");
-                  }
-              }
+        return `
+          <div class="plan-big-card ${isDone ? 'completed' : ''}">
+            <div class="plan-big-card-top">
+              <span class="status-badge-lg ${(p.status === '진행중') ? 'progress' : (isDone ? 'done' : 'waiting')}" onclick="cyclePlanStatus(${p.id})">${p.status}</span>
+              <div class="plan-big-title ${isDone ? 'completed' : ''}">${p.title}</div>
+            </div>
+            ${p.mediaList && p.mediaList.length > 0 ? `<div>${p.mediaList.map(m => `<img src="${m.data}" style="width:100%; max-height:180px; object-fit:contain; border-radius:8px; background:#000;" />`).join('')}</div>` : ''}
+            
+            <!-- 1.대기 2.계획시간 3.지금집중 4.복사 5.삭제 -->
+            <div class="card-five-buttons">
+              <button class="five-btn ${isBacklogActive ? 'active-backlog' : ''}" onclick="reassignPlanSlotDirect(${p.id}, 'backlog')">🔄 대기</button>
+              <button class="five-btn ${isTimeActive ? 'active-time' : ''}" onclick="openTimeSlotModal(${p.id}, 'plan')">🕒 계획시간</button>
+              <button class="five-btn ${isFocusActive ? 'active-focus' : ''}" onclick="reassignPlanSlotDirect(${p.id}, 'focus')">⚡ 지금집중</button>
+              <button class="five-btn" onclick="copyCardContent('${safe}')">📋 복사</button>
+              <button class="five-btn" style="color:#f87171;" onclick="deletePlan(${p.id})">🗑️ 삭제</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    function cyclePlanStatus(id) {
+      const list = getPlanStorage();
+      const item = list.find(p => p.id === id);
+      if (item) {
+        item.status = (item.status === '대기') ? '진행중' : ((item.status === '진행중') ? '완료' : '대기');
+        setPlanStorage(list);
+      }
+    }
+    function deletePlan(id) {
+      if (confirm('이 계획을 삭제하시겠습니까?')) setPlanStorage(getPlanStorage().filter(p => p.id !== id));
+    }
 
-              @Override
-              protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-                  super.onActivityResult(requestCode, resultCode, data);
-                  if (resultCode != RESULT_OK || data == null) return;
+    /* 백업 */
+    function openArchiveModal() { document.getElementById('archive-modal').classList.add('active'); }
+    function closeArchiveModal() { document.getElementById('archive-modal').classList.remove('active'); }
+    function exportBackupData() {
+      const data = { thoughts: getThoughtStorage(), plans: getPlanStorage() };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = `idea_backup_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+    }
+    function copyBackupToClipboard() {
+      const data = { thoughts: getThoughtStorage(), plans: getPlanStorage() };
+      navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => alert('📋 백업 데이터가 복사되었습니다.'));
+    }
+    function importBackupData(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed.thoughts) setThoughtStorage(parsed.thoughts);
+          if (parsed.plans) setPlanStorage(parsed.plans);
+          alert('🎉 복원 완료되었습니다.'); location.reload();
+        } catch(err) { alert('파일 오류'); }
+      };
+      reader.readAsText(file);
+    }
 
-                  if (requestCode == SPEECH_REQ) {
-                      ArrayList<String> results = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-                      if (results != null && !results.isEmpty()) {
-                          String spokenText = results.get(0).replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ");
-                          evalJS("if (window.receiveVoiceResult) window.receiveVoiceResult('" + spokenText + "');");
-                      }
-                  } else if (requestCode == REQ_CAMERA) {
-                      Bitmap photo = (Bitmap) data.getExtras().get("data");
-                      if (photo != null) {
-                          ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                          photo.compress(Bitmap.CompressFormat.JPEG, 75, stream);
-                          String base64 = "data:image/jpeg;base64," + Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP);
-                          evalJS("if (window.receiveMediaResult) window.receiveMediaResult('" + base64 + "', '사진');");
-                      }
-                  } else if (requestCode == REQ_GALLERY) {
-                      Uri selected = data.getData();
-                      if (selected != null) {
-                          try {
-                              Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selected);
-                              int maxDim = 800;
-                              if (bitmap.getWidth() > maxDim || bitmap.getHeight() > maxDim) {
-                                  float ratio = Math.min((float) maxDim / bitmap.getWidth(), (float) maxDim / bitmap.getHeight());
-                                  bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(bitmap.getWidth() * ratio), Math.round(bitmap.getHeight() * ratio), true);
-                              }
-                              ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                              bitmap.compress(Bitmap.CompressFormat.JPEG, 70, stream);
-                              String base64 = "data:image/jpeg;base64," + Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP);
-                              evalJS("if (window.receiveMediaResult) window.receiveMediaResult('" + base64 + "', '사진');");
-                          } catch (Exception ignored) {}
-                      }
-                  } else if (requestCode == REQ_VIDEO) {
-                      Uri videoUri = data.getData();
-                      try {
-                          android.media.MediaMetadataRetriever retriever = new android.media.MediaMetadataRetriever();
-                          retriever.setDataSource(this, videoUri);
-                          Bitmap thumb = retriever.getFrameAtTime(500000);
-                          if (thumb == null) thumb = retriever.getFrameAtTime();
-                          retriever.release();
-                          if (thumb != null) {
-                              ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                              thumb.compress(Bitmap.CompressFormat.JPEG, 70, stream);
-                              String base64 = "data:image/jpeg;base64," + Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP);
-                              evalJS("if (window.receiveMediaResult) window.receiveMediaResult('" + base64 + "', '동영상');");
-                          }
-                      } catch (Exception ignored) {}
-                  }
-              }
-
-              private void evalJS(String script) {
-                  if (getBridge() != null && getBridge().getWebView() != null) {
-                      getBridge().getWebView().post(() -> getBridge().getWebView().evaluateJavascript(script, null));
-                  }
-              }
-
-              private void requestAppPermissions() {
-                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                      if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED ||
-                          ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                          ActivityCompat.requestPermissions(this, new String[]{
-                                  Manifest.permission.RECORD_AUDIO,
-                                  Manifest.permission.CAMERA
-                          }, 200);
-                      }
-                  }
-              }
-          }
-          EOF
-
-          npx cap sync android
-
-      - name: 6. APK 빌드 실행
-        run: |
-          cd android
-          chmod +x ./gradlew
-          ./gradlew assembleDebug --no-daemon
-
-      - name: 7. 완성된 APK 배포 업로드
-        uses: actions/upload-artifact@v4
-        with:
-          name: 생각서랍-통합완성판-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+    selectCategory('첫 생각');
+  </script>
+</body>
+</html>
