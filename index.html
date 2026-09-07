@@ -54,7 +54,7 @@
     .menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; color: #ffffff; font-size: 0.9rem; cursor: pointer; }
     .menu-item:active { background: var(--surface); }
 
-    /* 암전 메모딱지 UI */
+    /* 메모딱지 UI */
     #memopad-screen { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: #000000; z-index: 2000; overflow: hidden; flex-direction: column; }
     #memopad-screen.active { display: flex; }
     
@@ -71,10 +71,15 @@
     #memopad-canvas-container { flex: 1; position: relative; width: 100%; overflow: hidden; background: #000000; }
     #memopad-canvas { width: 100%; height: 100%; display: block; touch-action: none; }
 
+    /* 커스텀 수정 팝업창 스타일 */
     .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.75); z-index: 3000; justify-content: center; align-items: center; padding: 20px; }
     .modal-backdrop.active { display: flex; }
-    .pop-card { background: #1c1c1e; border: 1px solid #3a3a3c; border-radius: 18px; padding: 18px; width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-    .pop-btn-choice { background: var(--surface); border: 1px solid #3f3f46; color: #ffffff; padding: 13px 14px; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; text-align: left; display: flex; align-items: center; justify-content: space-between; }
+    .pop-card { background: #1c1c1e; border: 1px solid #3a3a3c; border-radius: 18px; padding: 18px; width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+    .pop-textarea { width: 100%; height: 120px; background: #121214; border: 1px solid #3a3a3c; border-radius: 10px; padding: 10px; color: #fff; font-size: 0.95rem; resize: none; outline: none; user-select: text; }
+    .pop-btn-row { display: flex; gap: 8px; }
+    .pop-btn { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: bold; font-size: 0.9rem; cursor: pointer; }
+    .pop-btn.cancel { background: #2c2c2e; color: #8e8e93; }
+    .pop-btn.confirm { background: var(--primary); color: #fff; }
   </style>
 </head>
 <body>
@@ -113,13 +118,13 @@
 
   <div class="attachment-tray" id="attachment-tray" style="display:none; padding:8px 14px; gap:8px; overflow-x:auto; background:#121214;"></div>
 
-  <!-- 표준 파일 선택기 (사진/동영상 즉시 첨부) -->
-  <input type="file" id="hidden-file-input" style="display:none;" accept="image/*,video/*" multiple onchange="handleFileSelect(this)" />
+  <!-- 카메라와 갤러리를 모두 호출할 수 있도록 명확히 연동된 파일 입력기 -->
+  <input type="file" id="hidden-file-input" style="display:none;" accept="image/*,video/*" capture="environment" onchange="handleFileSelect(event)" />
 
   <div class="bottom-bar-wrapper">
     <div class="plus-menu-popover" id="plus-menu">
-      <div class="menu-item" onclick="triggerFilePicker('image/*')"><span>📷 사진 첨부하기</span></div>
-      <div class="menu-item" onclick="triggerFilePicker('video/*')"><span>🎬 동영상 첨부하기</span></div>
+      <div class="menu-item" onclick="triggerFilePicker('image/*')"><span>📷 사진 촬영 및 첨부</span></div>
+      <div class="menu-item" onclick="triggerFilePicker('video/*')"><span>🎬 동영상 촬영 및 첨부</span></div>
       <div class="menu-item" onclick="openMemoPadDirect()"><span>📑 메모딱지 작성</span></div>
     </div>
     <div class="capsule-box">
@@ -129,6 +134,18 @@
         <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
       </button>
       <button id="btn-wave" class="btn-action-send" onpointerdown="event.preventDefault()" onclick="handleSendAction()">↑</button>
+    </div>
+  </div>
+
+  <!-- 커스텀 수정 모달창 -->
+  <div id="custom-edit-modal" class="modal-backdrop">
+    <div class="pop-card" onclick="event.stopPropagation()">
+      <div style="font-weight:bold; font-size:1.05rem; color:#fff;">✏️ 내용 수정</div>
+      <textarea id="edit-modal-textarea" class="pop-textarea"></textarea>
+      <div class="pop-btn-row">
+        <button class="pop-btn cancel" onclick="closeEditModal()">취소</button>
+        <button class="pop-btn confirm" onclick="confirmEditModal()">저장</button>
+      </div>
     </div>
   </div>
 
@@ -181,6 +198,7 @@
   <script>
     let currentMainMode = 'idea', currentCategory = '첫 생각', currentAttachments = [];
     let currentPlanSubtab = 'backlog', targetSlotItemId = null, targetSlotSource = 'thought';
+    let editingTargetId = null, editingTargetType = 'thought';
 
     function switchMainMode(mode) {
       currentMainMode = mode;
@@ -192,7 +210,6 @@
       document.getElementById('btn-plus').style.display = (mode === 'idea') ? 'flex' : 'none';
       if (mode === 'idea') renderFeed(); else renderPlanView();
     }
-    function resetToIdeaDrawer() { switchMainMode('idea'); selectCategory('첫 생각'); }
     function selectCategory(cat) {
       currentCategory = cat;
       document.querySelectorAll('.category-pill').forEach(p => p.classList.toggle('active', p.innerText.includes(cat)));
@@ -201,15 +218,17 @@
     function togglePlusMenu() { document.getElementById('plus-menu').classList.toggle('active'); }
     function closePlusMenu() { document.getElementById('plus-menu').classList.remove('active'); }
 
+    /* 카메라 및 갤러리 파일 선택 안정화 */
     function triggerFilePicker(acceptType) {
       closePlusMenu();
       const fi = document.getElementById('hidden-file-input');
       fi.accept = acceptType;
       fi.click();
     }
-    function handleFileSelect(input) {
-      if (input.files && input.files.length > 0) {
-        Array.from(input.files).forEach(file => {
+    function handleFileSelect(event) {
+      const files = event.target.files;
+      if (files && files.length > 0) {
+        Array.from(files).forEach(file => {
           const reader = new FileReader();
           reader.onload = function(e) {
             const isVid = file.type.startsWith('video');
@@ -219,7 +238,7 @@
           reader.readAsDataURL(file);
         });
       }
-      input.value = '';
+      event.target.value = '';
     }
 
     function renderAttachmentTray() {
@@ -355,27 +374,48 @@
       targetSlotItemId = null;
     }
 
-    function editThoughtContent(id) {
-      const list = getThoughtStorage();
-      const item = list.find(i => i.id === id);
-      if (!item) return;
-      const currentText = item.content || '';
-      const newText = prompt('기존 내용을 수정하세요:', currentText);
-      if (newText !== null) {
-        item.content = newText.trim();
-        setThoughtStorage(list);
+    /* 기존 내용이 정확히 채워지는 커스텀 수정 팝업창 연동 */
+    function openEditModal(id, type) {
+      editingTargetId = id;
+      editingTargetType = type;
+      const modal = document.getElementById('custom-edit-modal');
+      const textarea = document.getElementById('edit-modal-textarea');
+      
+      if (type === 'thought') {
+        const list = getThoughtStorage();
+        const item = list.find(i => i.id === id);
+        textarea.value = item ? (item.content || '') : '';
+      } else {
+        const list = getPlanStorage();
+        const item = list.find(p => p.id === id);
+        textarea.value = item ? (item.title || '') : '';
       }
+      modal.classList.add('active');
     }
-    function editPlanContent(id) {
-      const list = getPlanStorage();
-      const item = list.find(p => p.id === id);
-      if (!item) return;
-      const currentTitle = item.title || '';
-      const newText = prompt('기존 계획을 수정하세요:', currentTitle);
-      if (newText !== null) {
-        item.title = newText.trim();
-        setPlanStorage(list);
+    function closeEditModal() {
+      document.getElementById('custom-edit-modal').classList.remove('active');
+      editingTargetId = null;
+    }
+    function confirmEditModal() {
+      const newVal = document.getElementById('edit-modal-textarea').value.trim();
+      if (!editingTargetId) return;
+      
+      if (editingTargetType === 'thought') {
+        const list = getThoughtStorage();
+        const item = list.find(i => i.id === editingTargetId);
+        if (item) {
+          item.content = newVal;
+          setThoughtStorage(list);
+        }
+      } else {
+        const list = getPlanStorage();
+        const item = list.find(p => p.id === editingTargetId);
+        if (item) {
+          item.title = newVal;
+          setPlanStorage(list);
+        }
       }
+      closeEditModal();
     }
 
     function renderFeed() {
@@ -399,7 +439,7 @@
             <button class="five-btn active-backlog" onclick="transferThoughtDirect(${item.id}, 'backlog')">🔄 대기</button>
             <button class="five-btn" onclick="openTimeSlotModal(${item.id}, 'thought')">🕒 계획</button>
             <button class="five-btn" onclick="transferThoughtDirect(${item.id}, 'focus')">⚡ 집중</button>
-            <button class="five-btn" onclick="editThoughtContent(${item.id})">✏️ 수정</button>
+            <button class="five-btn" onclick="openEditModal(${item.id}, 'thought')">✏️ 수정</button>
             <button class="five-btn" onclick="navigator.clipboard.writeText('${(item.content||'').replace(/'/g, '&#39;')}')">📋 복사</button>
             <button class="five-btn" style="color:#f87171;" onclick="setThoughtStorage(getThoughtStorage().filter(i=>i.id !== ${item.id}))">🗑️ 삭제</button>
           </div>
@@ -438,7 +478,7 @@
             <button class="five-btn active-backlog" onclick="reassignPlanSlotDirect(${p.id}, 'backlog')">🔄 대기</button>
             <button class="five-btn" onclick="openTimeSlotModal(${p.id}, 'plan')">🕒 계획</button>
             <button class="five-btn" onclick="reassignPlanSlotDirect(${p.id}, 'focus')">⚡ 집중</button>
-            <button class="five-btn" onclick="editPlanContent(${p.id})">✏️ 수정</button>
+            <button class="five-btn" onclick="openEditModal(${p.id}, 'plan')">✏️ 수정</button>
             <button class="five-btn" style="color:#f87171;" onclick="setPlanStorage(getPlanStorage().filter(x=>x.id !== ${p.id}))">🗑️ 삭제</button>
           </div>
         </div>
