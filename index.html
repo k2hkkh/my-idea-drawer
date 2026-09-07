@@ -1,547 +1,261 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <title>생각서랍 - AI 아이디어 파이프라인</title>
+name: Build Idea Drawer Android APK
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brandDark: '#171412',
-            cardDark: '#24201d',
-            borderDark: '#38322d',
-            accentGreen: '#709b78',
-            accentYellow: '#eab308'
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. 저장소 파일 가져오기
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 2. 자바 JDK 17 설정
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: 3. Node.js 20 설정
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 4. 빌드 에셋 준비
+        run: |
+          mkdir -p www
+          cp index.html www/index.html
+
+      - name: 5. 고정 네이티브 셸 구성 (카메라/음성/실시간 URL 연동)
+        run: |
+          cat << 'EOF' > package.json
+          {
+            "name": "my-idea-drawer",
+            "version": "1.0.0",
+            "private": true,
+            "dependencies": {
+              "@capacitor/android": "^6.0.0",
+              "@capacitor/cli": "^6.0.0",
+              "@capacitor/core": "^6.0.0"
+            }
           }
-        }
-      }
-    }
-  </script>
+          EOF
 
-  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-
-  <style>
-    body {
-      background-color: #171412;
-      color: #f3f4f6;
-      -webkit-tap-highlight-color: transparent;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-    textarea { resize: none; }
-    .recording-pulse {
-      animation: pulse 1.5s infinite;
-    }
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-    }
-  </style>
-</head>
-<body class="bg-[#171412] text-gray-200 min-h-screen pb-24">
-  <div id="root"></div>
-
-  <script type="text/babel">
-    const { useState, useEffect, Component, useRef } = React;
-
-    function analyzeAndClassifyAI(text) {
-      if (!text) text = "";
-      const clean = text.toLowerCase();
-      
-      let category = "제품";
-      if (/특허|기구|원천기술|메커니즘|센서|회로|장치|구조|출원|도면/.test(clean)) {
-        category = "특허";
-      } else if (/앱|웹|플랫폼|sw|솔루션|api|ui|ux|알고리즘|ai|서버|소프트웨어/.test(clean)) {
-        category = "앱/SW";
-      } else if (/비즈니스|구독|bm|수익|마케팅|영업|단가|시장|공공기관|납품|지자체|b2b/.test(clean)) {
-        category = "비즈니스";
-      } else if (/코드|버그|깃|github|라이브러리|db|개발|스택|에러/.test(clean)) {
-        category = "개발메모";
-      }
-
-      let hash = 0;
-      for (let i = 0; i < clean.length; i++) {
-        hash = (hash << 5) - hash + clean.charCodeAt(i);
-        hash |= 0;
-      }
-      const seed = Math.abs(hash);
-
-      let b2b = 68 + (seed % 14);
-      if (/공공|기관|기업|b2b|납품|솔루션|플랫폼|지자체|행정|시스템|데이터/.test(clean)) b2b += 14;
-      if (/초간편|단순|개인|일상|취미|메모|딱지/.test(clean)) b2b -= 6;
-      b2b = Math.min(98, Math.max(55, b2b));
-
-      let cost = 72 + ((seed >> 2) % 15);
-      if (/초간편|간단|단순|원클릭|자동|절감|단축|즉시|녹음|빠른|효율/.test(clean)) cost += 13;
-      if (/공공기관|심사|복잡|공정|대규모/.test(clean)) cost -= 5;
-      cost = Math.min(98, Math.max(58, cost));
-
-      let patent = 65 + ((seed >> 4) % 16);
-      if (category === "특허" || /특허|장치|구조|기구|메커니즘|센서|하드웨어|원천기술/.test(clean)) patent += 16;
-      if (/메모|딱지|간단|단순/.test(clean)) patent -= 4;
-      patent = Math.min(98, Math.max(52, patent));
-
-      let execution = 70 + ((seed >> 6) % 15);
-      if (/1인|혼자|초간편|단순|앱|가벼운|웹|바로/.test(clean)) execution += 14;
-      if (/공공기관|하드웨어|금형|공장|인가|인허가|법률|대규모/.test(clean)) execution -= 12;
-      execution = Math.min(98, Math.max(50, execution));
-
-      let advice = "";
-      if (execution >= 85 && cost >= 85) {
-        advice = "1인 린 스타트업으로 즉시 개발 및 출시하기에 최적입니다. 최소 기능(MVP)으로 빠르게 피드백을 수집하세요.";
-      } else if (patent >= 85) {
-        advice = "독창적인 구조와 기술적 차별점이 돋보입니다. 선행기술조사 후 특허 가출원을 권장합니다.";
-      } else if (b2b >= 85) {
-        advice = "공공/기업 타깃 시장 규모가 큽니다. 시범 사업 제안서(PoC) 형태로 접근하는 것이 유리합니다.";
-      } else if (execution < 65) {
-        advice = "잠재력은 높으나 초기 리소스가 많이 듭니다. 1단계 범위를 축소해 보세요.";
-      } else {
-        advice = "핵심 가치 제안이 명확합니다. 사용자의 가장 큰 불편을 해결하는 단일 핵심 기능에 집중하세요.";
-      }
-
-      const avg = (b2b + cost + patent + execution) / 4;
-      const statusBadge = avg >= 78 ? "승인" : avg >= 68 ? "검토" : "보완";
-
-      return { category, b2b, cost, patent, execution, advice, statusBadge };
-    }
-
-    function loadAndMigrateAllData() {
-      const STORAGE_KEY = "my_idea_drawer_data_v2";
-      let allFoundItems = [];
-      const seenTexts = new Set();
-
-      const normalize = (raw) => {
-        const text = typeof raw === 'string' ? raw : (raw.text || raw.content || raw.title || raw.memo || "");
-        if (!text || seenTexts.has(text.trim())) return null;
-        seenTexts.add(text.trim());
-
-        const evaluation = (typeof raw === 'object' && raw.evaluation) ? raw.evaluation : analyzeAndClassifyAI(text);
-        const category = (typeof raw === 'object' && raw.category) ? raw.category : evaluation.category;
-        const pipeline = (typeof raw === 'object' && raw.pipeline) ? raw.pipeline : "02";
-        const image = (typeof raw === 'object' && raw.image) ? raw.image : null;
-
-        return {
-          id: (typeof raw === 'object' && raw.id) ? String(raw.id) : (Date.now().toString() + Math.random().toString(36).substr(2, 4)),
-          category,
-          text: text.trim(),
-          image,
-          createdAt: (typeof raw === 'object' && raw.createdAt) ? raw.createdAt : new Date().toISOString(),
-          pipeline,
-          evaluation
-        };
-      };
-
-      const knownKeys = [STORAGE_KEY, "my_idea_drawer_data", "ideas", "my_ideas", "idea_drawer", "my-idea-drawer", "ideaDrawer"];
-      knownKeys.forEach(k => {
-        try {
-          const raw = localStorage.getItem(k);
-          if (raw) {
-            const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed)) parsed.forEach(item => {
-              const norm = normalize(item);
-              if (norm) allFoundItems.push(norm);
-            });
+          cat << 'EOF' > capacitor.config.json
+          {
+            "appId": "com.k2hkkh.ideadrawer",
+            "appName": "생각서랍",
+            "webDir": "www",
+            "server": {
+              "url": "https://k2hkkh.github.io/my-idea-drawer/",
+              "cleartext": true
+            }
           }
-        } catch (e) {}
-      });
+          EOF
 
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(allFoundItems));
-      return allFoundItems;
-    }
+          npm install
+          npx cap add android
 
-    function IdeaDrawerApp() {
-      const [tab, setTab] = useState("01");
-      const [inputText, setInputText] = useState("");
-      const [attachedImage, setAttachedImage] = useState(null);
-      const [ideas, setIdeas] = useState([]);
-      const [editingId, setEditingId] = useState(null);
-      const [editText, setEditText] = useState("");
-      const [isRecording, setIsRecording] = useState(false);
-      const [autoVoiceMode, setAutoVoiceMode] = useState(false);
+          if [ -f "release.keystore" ]; then
+            cp release.keystore android/app/release.keystore
+          else
+            keytool -genkey -v -keystore android/app/release.keystore -alias ideadrawer -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=IdeaDrawer, OU=Dev, O=Idea, L=Seoul, S=Seoul, C=KR"
+            cp android/app/release.keystore release.keystore
+            git config --global user.name "github-actions"
+            git config --global user.email "github-actions@github.com"
+            git add release.keystore
+            git commit -m "Save permanent keystore [skip ci]" || true
+            git push origin HEAD || true
+          fi
 
-      const fileInputRef = useRef(null);
-      const recognitionRef = useRef(null);
-
-      const saveIdeas = (newIdeas) => {
-        setIdeas(newIdeas);
-        localStorage.setItem("my_idea_drawer_data_v2", JSON.stringify(newIdeas));
-      };
-
-      const startListening = () => {
-        if (recognitionRef.current && !isRecording) {
-          try {
-            recognitionRef.current.start();
-            setIsRecording(true);
-          } catch(e) {}
-        }
-      };
-
-      const stopListening = () => {
-        if (recognitionRef.current) {
-          try { recognitionRef.current.stop(); } catch(e) {}
-          setIsRecording(false);
-        }
-      };
-
-      useEffect(() => {
-        const restored = loadAndMigrateAllData();
-        setIdeas(restored);
-
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
-          const rec = new SpeechRecognition();
-          rec.lang = 'ko-KR';
-          rec.continuous = true;
-          rec.interimResults = false;
-
-          rec.onresult = (event) => {
-            let transcript = '';
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-              if (event.results[i].isFinal) {
-                transcript += event.results[i][0].transcript;
+          node -e '
+          const fs = require("fs");
+          const p = "android/app/build.gradle";
+          let gradle = fs.readFileSync(p, "utf8");
+          const signBlock = `
+              signingConfigs {
+                  release {
+                      storeFile file("release.keystore")
+                      storePassword "android"
+                      keyAlias "ideadrawer"
+                      keyPassword "android"
+                  }
               }
-            }
-            if (transcript) {
-              setInputText((prev) => (prev ? prev + ' ' + transcript : transcript));
-            }
-          };
+          `;
+          gradle = gradle.replace("android {", "android {" + signBlock);
+          gradle = gradle.replace(/buildTypes\s*\{[\s\S]*?release\s*\{/, "buildTypes {\n        debug {\n            signingConfig signingConfigs.release\n        }\n        release {\n            signingConfig signingConfigs.release\n");
+          fs.writeFileSync(p, gradle, "utf8");
+          '
 
-          rec.onerror = () => setIsRecording(false);
-          rec.onend = () => setIsRecording(false);
-          recognitionRef.current = rec;
-        }
+          BUILD_NUM=${{ github.run_number }}
+          sed -i "s/versionCode 1/versionCode $BUILD_NUM/g" android/app/build.gradle
+          sed -i "s/versionName \"1.0\"/versionName \"1.0.$BUILD_NUM\"/g" android/app/build.gradle
 
-        // URL 파라미터 확인 및 접속 즉시 마이크 자동 시작
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('voice') === '1' || urlParams.get('mic') === '1') {
-          setAutoVoiceMode(true);
-          setTimeout(() => {
-            startListening();
-          }, 500);
-        }
-      }, []);
+          node -e '
+          const fs = require("fs");
+          const p = "android/app/src/main/AndroidManifest.xml";
+          let xml = fs.readFileSync(p, "utf8");
+          const perms = "\n    <uses-permission android:name=\"android.permission.RECORD_AUDIO\" />\n    <uses-permission android:name=\"android.permission.CAMERA\" />\n    <uses-permission android:name=\"android.permission.VIBRATE\" />\n";
+          xml = xml.replace("<application", perms + "    <application android:usesCleartextTraffic=\"true\"");
+          fs.writeFileSync(p, xml, "utf8");
+          '
 
-      const toggleVoiceRecognition = () => {
-        if (isRecording) stopListening();
-        else startListening();
-      };
+          cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/MainActivity.java
+          package com.k2hkkh.ideadrawer;
 
-      const handleImageUpload = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (event) => setAttachedImage(event.target.result);
-        reader.readAsDataURL(file);
-      };
+          import android.Manifest;
+          import android.content.Intent;
+          import android.content.pm.PackageManager;
+          import android.graphics.Bitmap;
+          import android.net.Uri;
+          import android.os.Build;
+          import android.os.Bundle;
+          import android.provider.MediaStore;
+          import android.speech.RecognizerIntent;
+          import android.util.Base64;
+          import android.webkit.JavascriptInterface;
+          import androidx.core.app.ActivityCompat;
+          import androidx.core.content.ContextCompat;
+          import com.getcapacitor.BridgeActivity;
+          import java.io.ByteArrayOutputStream;
+          import java.util.ArrayList;
 
-      const handleAddIdea = () => {
-        if (!inputText.trim() && !attachedImage) return;
-        
-        const analysis = analyzeAndClassifyAI(inputText);
-        const newIdea = {
-          id: Date.now().toString(),
-          category: analysis.category,
-          text: inputText.trim(),
-          image: attachedImage,
-          createdAt: new Date().toISOString(),
-          pipeline: "02",
-          evaluation: analysis
-        };
+          public class MainActivity extends BridgeActivity {
+              private static final int SPEECH_REQ = 1002;
+              private static final int REQ_CAMERA = 2001;
+              private static final int REQ_GALLERY = 2002;
+              private static final int REQ_VIDEO = 2003;
 
-        const updated = [newIdea, ...ideas];
-        saveIdeas(updated);
-        setInputText("");
-        setAttachedImage(null);
-        stopListening();
-        setTab("02");
-      };
+              @Override
+              public void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  requestAppPermissions();
 
-      const movePipeline = (id, targetPipeline) => {
-        const updated = ideas.map(item => item.id === id ? { ...item, pipeline: targetPipeline } : item);
-        saveIdeas(updated);
-      };
+                  if (getBridge() != null && getBridge().getWebView() != null) {
+                      getBridge().getWebView().addJavascriptInterface(new Object() {
+                          @JavascriptInterface
+                          public void openSpeechDialog() {
+                              Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                              intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                              intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
+                              intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "생각을 말씀하세요...");
+                              try {
+                                  startActivityForResult(intent, SPEECH_REQ);
+                              } catch (Exception ignored) {}
+                          }
 
-      const deleteIdea = (id) => {
-        if (confirm("이 아이디어를 삭제하시겠습니까?")) {
-          saveIdeas(ideas.filter(item => item.id !== id));
-        }
-      };
+                          @JavascriptInterface
+                          public void openCamera() {
+                              Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                              startActivityForResult(intent, REQ_CAMERA);
+                          }
 
-      const startEditing = (item) => {
-        setEditingId(item.id);
-        setEditText(item.text);
-      };
+                          @JavascriptInterface
+                          public void openGallery() {
+                              Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                              startActivityForResult(intent, REQ_GALLERY);
+                          }
 
-      const saveEdit = (id) => {
-        if (!editText.trim()) return;
-        const updated = ideas.map(item => {
-          if (item.id === id) {
-            const reAnalysis = analyzeAndClassifyAI(editText);
-            return {
-              ...item,
-              text: editText.trim(),
-              category: reAnalysis.category,
-              evaluation: reAnalysis,
-              updatedAt: new Date().toISOString()
-            };
+                          @JavascriptInterface
+                          public void openVideo() {
+                              Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                              startActivityForResult(intent, REQ_VIDEO);
+                          }
+                      }, "AndroidBridge");
+                  }
+              }
+
+              @Override
+              protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+                  super.onActivityResult(requestCode, resultCode, data);
+                  if (resultCode != RESULT_OK || data == null) return;
+
+                  if (requestCode == SPEECH_REQ) {
+                      ArrayList<String> results = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                      if (results != null && !results.isEmpty()) {
+                          String spokenText = results.get(0).replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ");
+                          evalJS("if (window.receiveVoiceResult) window.receiveVoiceResult('" + spokenText + "');");
+                      }
+                  } else if (requestCode == REQ_CAMERA) {
+                      Bitmap photo = (Bitmap) data.getExtras().get("data");
+                      if (photo != null) {
+                          ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                          photo.compress(Bitmap.CompressFormat.JPEG, 75, stream);
+                          String base64 = "data:image/jpeg;base64," + Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP);
+                          evalJS("if (window.receiveMediaResult) window.receiveMediaResult('" + base64 + "', '사진');");
+                      }
+                  } else if (requestCode == REQ_GALLERY) {
+                      Uri selected = data.getData();
+                      if (selected != null) {
+                          try {
+                              Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selected);
+                              int maxDim = 800;
+                              if (bitmap.getWidth() > maxDim || bitmap.getHeight() > maxDim) {
+                                  float ratio = Math.min((float) maxDim / bitmap.getWidth(), (float) maxDim / bitmap.getHeight());
+                                  bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(bitmap.getWidth() * ratio), Math.round(bitmap.getHeight() * ratio), true);
+                              }
+                              ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                              bitmap.compress(Bitmap.CompressFormat.JPEG, 70, stream);
+                              String base64 = "data:image/jpeg;base64," + Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP);
+                              evalJS("if (window.receiveMediaResult) window.receiveMediaResult('" + base64 + "', '사진');");
+                          } catch (Exception ignored) {}
+                      }
+                  } else if (requestCode == REQ_VIDEO) {
+                      Uri videoUri = data.getData();
+                      try {
+                          android.media.MediaMetadataRetriever retriever = new android.media.MediaMetadataRetriever();
+                          retriever.setDataSource(this, videoUri);
+                          Bitmap thumb = retriever.getFrameAtTime(500000);
+                          if (thumb == null) thumb = retriever.getFrameAtTime();
+                          retriever.release();
+                          if (thumb != null) {
+                              ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                              thumb.compress(Bitmap.CompressFormat.JPEG, 70, stream);
+                              String base64 = "data:image/jpeg;base64," + Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP);
+                              evalJS("if (window.receiveMediaResult) window.receiveMediaResult('" + base64 + "', '동영상');");
+                          }
+                      } catch (Exception ignored) {}
+                  }
+              }
+
+              private void evalJS(String script) {
+                  if (getBridge() != null && getBridge().getWebView() != null) {
+                      getBridge().getWebView().post(() -> getBridge().getWebView().evaluateJavascript(script, null));
+                  }
+              }
+
+              private void requestAppPermissions() {
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                      if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED ||
+                          ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                          ActivityCompat.requestPermissions(this, new String[]{
+                                  Manifest.permission.RECORD_AUDIO,
+                                  Manifest.permission.CAMERA
+                          }, 200);
+                      }
+                  }
+              }
           }
-          return item;
-        });
-        saveIdeas(updated);
-        setEditingId(null);
-        setEditText("");
-      };
+          EOF
 
-      return (
-        <div class="max-w-md mx-auto px-4 pt-5">
-          <header class="mb-4 flex justify-between items-center">
-            <div>
-              <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">생각서랍</h1>
-              <p class="text-xs text-stone-400">1인 기업가를 위한 AI 아이디어 파이프라인</p>
-            </div>
-          </header>
+          npx cap sync android
 
-          {/* 탭 01: 대형 전체화면 몰입형 에디터 */}
-          {tab === "01" && (
-            <div class="space-y-3">
-              <div class="bg-[#24201d] border border-stone-800 rounded-2xl p-4 relative shadow-xl flex flex-col h-[70vh] justify-between">
-                
-                {/* 상단 툴바 */}
-                <div class="flex justify-between items-center pb-2 border-b border-stone-800/80">
-                  <div class="flex items-center gap-2">
-                    <button
-                      onClick={toggleVoiceRecognition}
-                      class={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
-                        isRecording 
-                          ? "bg-red-600 text-white recording-pulse" 
-                          : "bg-stone-800 text-stone-300 border border-stone-700"
-                      }`}
-                    >
-                      <span>🎤</span>
-                      <span>{isRecording ? "음성 인식 중..." : "음성입력"}</span>
-                    </button>
+      - name: 6. APK 빌드 실행
+        run: |
+          cd android
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon
 
-                    <button
-                      onClick={() => fileInputRef.current.click()}
-                      class="px-3 py-1.5 rounded-xl text-xs font-bold bg-stone-800 text-stone-300 border border-stone-700 flex items-center gap-1.5"
-                    >
-                      <span>📷</span>
-                      <span>사진/스케치</span>
-                    </button>
-                    <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" class="hidden" />
-                  </div>
-
-                  {inputText && (
-                    <button 
-                      onClick={() => { setInputText(""); setAttachedImage(null); }}
-                      class="text-xs text-stone-400 hover:text-stone-200 px-2 py-1 rounded bg-stone-800"
-                    >
-                      지움 ✕
-                    </button>
-                  )}
-                </div>
-
-                {/* 입력창 */}
-                <div class="flex-1 py-3 flex flex-col">
-                  <textarea
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    placeholder="떠오른 비즈니스, 발명 특허 구조, 개발 아이디어를 자유롭게 적거나 마이크로 말씀해보세요..."
-                    class="w-full flex-1 bg-transparent text-gray-100 placeholder-stone-600 text-base focus:outline-none leading-relaxed"
-                  />
-
-                  {attachedImage && (
-                    <div class="relative mt-2 inline-block max-w-[120px]">
-                      <img src={attachedImage} alt="첨부" class="w-24 h-24 object-cover rounded-xl border border-stone-700 shadow-md" />
-                      <button onClick={() => setAttachedImage(null)} class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">✕</button>
-                    </div>
-                  )}
-                </div>
-
-                {/* 하단 바 */}
-                <div class="pt-3 border-t border-stone-800 flex justify-between items-center">
-                  <span class="text-xs text-stone-500">
-                    {inputText.length}자 • <span class="text-amber-400">AI 자동분류</span>
-                  </span>
-                  <button
-                    onClick={handleAddIdea}
-                    disabled={!inputText.trim() && !attachedImage}
-                    class={`px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-md ${
-                      inputText.trim() || attachedImage
-                        ? "bg-amber-500 text-stone-950 hover:bg-amber-400 active:scale-95 cursor-pointer font-extrabold"
-                        : "bg-stone-800 text-stone-600 cursor-not-allowed"
-                    }`}
-                  >
-                    서랍에 넣고 AI 검증하기 →
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 탭 02, 03, 04 리스트 화면 */}
-          {tab !== "01" && (
-            <div class="space-y-4">
-              {ideas.filter(item => item.pipeline === tab).length === 0 ? (
-                <div class="text-center py-16 bg-[#24201d]/50 rounded-2xl border border-dashed border-stone-800">
-                  <p class="text-stone-400 text-sm">보관된 아이디어가 없습니다.</p>
-                  <button onClick={() => setTab("01")} class="mt-4 px-4 py-2 bg-stone-800 text-amber-400 rounded-xl text-xs font-semibold">
-                    + 새 생각 기록하기
-                  </button>
-                </div>
-              ) : (
-                ideas
-                  .filter(item => item.pipeline === tab)
-                  .map((item) => {
-                    const evalData = item.evaluation || analyzeAndClassifyAI(item.text);
-                    const isEditing = editingId === item.id;
-
-                    return (
-                      <div key={item.id} class="bg-[#24201d] border border-stone-800 rounded-2xl p-4 shadow-md">
-                        <div class="flex justify-between items-center mb-3">
-                          <div class="flex items-center gap-2">
-                            <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[11px] font-semibold border border-amber-500/30">
-                              🤖 {item.category || evalData.category}
-                            </span>
-                            <span class="px-2 py-0.5 rounded border border-emerald-600/40 text-emerald-400 text-[11px] font-bold">
-                              {evalData.statusBadge || "승인"}
-                            </span>
-                          </div>
-
-                          <div class="flex items-center gap-1.5">
-                            {!isEditing && (
-                              <button onClick={() => startEditing(item)} class="text-xs text-stone-300 px-2.5 py-1 bg-stone-800 rounded-lg">
-                                ✏️ 수정
-                              </button>
-                            )}
-                            <button onClick={() => deleteIdea(item.id)} class="text-xs text-stone-500 hover:text-red-400 p-1">
-                              ✕
-                            </button>
-                          </div>
-                        </div>
-
-                        {isEditing ? (
-                          <div class="space-y-2 mb-3">
-                            <textarea
-                              value={editText}
-                              onChange={(e) => setEditText(e.target.value)}
-                              rows={4}
-                              class="w-full p-3 bg-stone-900 border border-amber-500/50 rounded-xl text-sm text-gray-100 focus:outline-none"
-                            />
-                            <div class="flex justify-end gap-2">
-                              <button onClick={() => setEditingId(null)} class="px-3 py-1.5 bg-stone-800 text-stone-400 text-xs rounded-lg">
-                                취소
-                              </button>
-                              <button onClick={() => saveEdit(item.id)} class="px-3 py-1.5 bg-emerald-700 text-white text-xs font-bold rounded-lg">
-                                저장 & AI 재검증
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div>
-                            <p class="text-sm font-medium text-gray-100 leading-relaxed mb-3 whitespace-pre-wrap">
-                              {item.text}
-                            </p>
-                            {item.image && (
-                              <div class="mb-3">
-                                <img src={item.image} alt="첨부" class="max-h-48 rounded-xl object-cover border border-stone-800" />
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        <div class="space-y-2 mb-3 text-xs">
-                          <ScoreBar label="B2B 확장성" score={evalData.b2b} />
-                          <ScoreBar label="시간/비용 절감" score={evalData.cost} />
-                          <ScoreBar label="특허 진입장벽" score={evalData.patent} />
-                          <ScoreBar label="1인 실행력" score={evalData.execution} />
-                        </div>
-
-                        <div class="p-3 bg-[#1c1815] rounded-xl border border-stone-800/80 mb-3">
-                          <div class="text-[11px] font-bold text-amber-400 mb-1">✨ AI 맞춤 조언</div>
-                          <p class="text-xs text-stone-300 leading-relaxed">{evalData.advice}</p>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-2 pt-1">
-                          {tab === "02" && (
-                            <>
-                              <button onClick={() => movePipeline(item.id, "04")} class="py-2.5 bg-emerald-800/80 text-emerald-100 font-semibold text-xs rounded-xl">실행으로 이동</button>
-                              <button onClick={() => movePipeline(item.id, "03")} class="py-2.5 bg-stone-800 text-stone-300 font-semibold text-xs rounded-xl">보류함으로 이동</button>
-                            </>
-                          )}
-                          {tab === "03" && (
-                            <>
-                              <button onClick={() => movePipeline(item.id, "02")} class="py-2.5 bg-amber-800/70 text-amber-100 font-semibold text-xs rounded-xl">검증으로 복원</button>
-                              <button onClick={() => movePipeline(item.id, "04")} class="py-2.5 bg-emerald-800/80 text-emerald-100 font-semibold text-xs rounded-xl">실행으로 이동</button>
-                            </>
-                          )}
-                          {tab === "04" && (
-                            <>
-                              <button onClick={() => movePipeline(item.id, "02")} class="py-2.5 bg-stone-800 text-stone-300 font-semibold text-xs rounded-xl">검증단계로 복귀</button>
-                              <button onClick={() => movePipeline(item.id, "03")} class="py-2.5 bg-stone-800 text-stone-300 font-semibold text-xs rounded-xl">보류함으로 이동</button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
-              )}
-            </div>
-          )}
-
-          {/* 하단 내비게이션 바 */}
-          <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#1a1715]/95 backdrop-blur-md border-t border-stone-800 px-2 py-2.5 flex justify-around items-center z-40">
-            <NavTabButton active={tab === "01"} onClick={() => setTab("01")} icon="✏️" label="01 생각" />
-            <NavTabButton active={tab === "02"} onClick={() => setTab("02")} icon="📋" label="02 검증" count={ideas.filter(i => i.pipeline === "02").length} />
-            <NavTabButton active={tab === "03"} onClick={() => setTab("03")} icon="📥" label="03 보류" count={ideas.filter(i => i.pipeline === "03").length} />
-            <NavTabButton active={tab === "04"} onClick={() => setTab("04")} icon="🚀" label="04 실행" count={ideas.filter(i => i.pipeline === "04").length} />
-          </nav>
-        </div>
-      );
-    }
-
-    function ScoreBar({ label, score }) {
-      return (
-        <div class="flex items-center justify-between gap-3 text-stone-300">
-          <span class="w-24 text-stone-400 font-medium">{label}</span>
-          <div class="flex-1 bg-stone-800 h-2 rounded-full overflow-hidden">
-            <div class="bg-emerald-600/80 h-full rounded-full" style={{ width: `${score}%` }} />
-          </div>
-          <span class="w-6 text-right font-semibold text-stone-200">{score}</span>
-        </div>
-      );
-    }
-
-    function NavTabButton({ active, onClick, icon, label, count }) {
-      return (
-        <button
-          onClick={onClick}
-          class={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all relative ${
-            active ? "text-amber-400 font-bold" : "text-stone-500 hover:text-stone-300"
-          }`}
-        >
-          <span class="text-base mb-0.5">{icon}</span>
-          <span class="text-[11px] tracking-tight">{label}</span>
-          {count > 0 && (
-            <span class="absolute top-0 right-1 px-1.5 py-0.2 bg-amber-500/30 border border-amber-500/50 text-amber-300 rounded-full text-[9px] font-bold">
-              {count}
-            </span>
-          )}
-        </button>
-      );
-    }
-
-    ReactDOM.createRoot(document.getElementById('root')).render(<IdeaDrawerApp />);
-  </script>
-</body>
-</html>
+      - name: 7. 완성된 APK 배포 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: 생각서랍-통합완성판-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
