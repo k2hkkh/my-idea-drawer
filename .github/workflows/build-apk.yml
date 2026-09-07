@@ -37,7 +37,7 @@ jobs:
           <html lang="ko">
           <head>
             <meta charset="UTF-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
             <title>생각서랍</title>
             <style>
               :root {
@@ -59,9 +59,11 @@ jobs:
                 background-color: var(--bg);
                 color: var(--text);
                 height: 100vh;
+                height: 100dvh;
                 display: flex;
                 flex-direction: column;
                 overflow: hidden;
+                padding-top: env(safe-area-inset-top, 0px);
               }
               header {
                 padding: 10px 12px;
@@ -100,12 +102,12 @@ jobs:
                 max-width: 320px;
               }
               .mode-btn {
-                padding: 6px 10px;
+                padding: 6px clamp(6px, 1.8vw, 10px);
                 border-radius: 16px;
                 border: none;
                 background: transparent;
                 color: var(--muted);
-                font-size: 0.8rem;
+                font-size: clamp(0.72rem, 2.2vw, 0.8rem);
                 font-weight: 700;
                 cursor: pointer;
                 display: flex;
@@ -185,7 +187,7 @@ jobs:
                 font-weight: 600;
               }
               .card-time { font-size: 0.75rem; color: var(--muted); }
-              .card-content { font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap; }
+              .card-content { font-size: clamp(0.88rem, 2.5vw, 0.95rem); line-height: 1.5; white-space: pre-wrap; }
               .card-actions {
                 display: flex;
                 justify-content: flex-end;
@@ -355,8 +357,9 @@ jobs:
                 background: var(--danger); color: #fff; font-size: 0.7rem; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer;
               }
 
+              /* 하단 고정 UI (safe-area-inset-bottom 적용) */
               .bottom-bar-wrapper {
-                padding: 8px 14px 14px 14px;
+                padding: 8px 14px calc(14px + env(safe-area-inset-bottom, 0px)) 14px;
                 background: var(--bg);
                 position: relative;
                 flex-shrink: 0;
@@ -390,7 +393,7 @@ jobs:
                 background: transparent;
                 border: none;
                 color: #ffffff;
-                font-size: 0.95rem;
+                font-size: clamp(0.88rem, 2.6vw, 0.95rem);
                 outline: none;
                 min-height: 24px;
                 max-height: 90px;
@@ -441,7 +444,7 @@ jobs:
               .plus-menu-popover {
                 display: none;
                 position: absolute;
-                bottom: 74px;
+                bottom: calc(74px + env(safe-area-inset-bottom, 0px));
                 left: 14px;
                 background: var(--card);
                 border: 1px solid var(--border);
@@ -478,13 +481,18 @@ jobs:
                 font-size: 1rem;
               }
 
+              /* 모달 전체화면 (100dvh + safe-area) */
               .modal-full {
                 display: none;
                 position: fixed;
-                top: 0; left: 0; width: 100vw; height: 100vh;
+                top: 0; left: 0; width: 100vw;
+                height: 100vh;
+                height: 100dvh;
                 background: #000000;
                 z-index: 1000;
                 flex-direction: column;
+                padding-top: env(safe-area-inset-top, 0px);
+                padding-bottom: env(safe-area-inset-bottom, 0px);
               }
               .modal-full.active { display: flex; }
               .modal-top {
@@ -513,7 +521,7 @@ jobs:
                 border: 1px solid var(--border);
                 border-radius: 14px;
                 padding: 16px 50px 16px 16px;
-                font-size: 1.05rem;
+                font-size: clamp(0.95rem, 2.7vw, 1.05rem);
                 line-height: 1.6;
                 color: #ffffff;
                 resize: none;
@@ -549,11 +557,13 @@ jobs:
               }
               .edit-mic-btn.listening svg { fill: #ffffff; }
 
-              /* 암전 메모딱지 */
+              /* 암전 메모딱지 (100dvh) */
               #memopad-screen {
                 display: none;
                 position: fixed;
-                top: 0; left: 0; width: 100vw; height: 100vh;
+                top: 0; left: 0; width: 100vw;
+                height: 100vh;
+                height: 100dvh;
                 background: #000000;
                 z-index: 2000;
                 touch-action: none;
@@ -563,6 +573,7 @@ jobs:
               #memopad-canvas {
                 width: 100vw;
                 height: 100vh;
+                height: 100dvh;
                 display: block;
                 background: #000000;
               }
@@ -570,7 +581,7 @@ jobs:
               .memopad-toolbar {
                 display: none;
                 position: absolute;
-                top: 8px;
+                top: calc(8px + env(safe-area-inset-top, 0px));
                 left: 8px;
                 right: 8px;
                 background: rgba(28, 28, 30, 0.97);
@@ -609,10 +620,10 @@ jobs:
                 background: var(--surface);
                 border: 1px solid #3a3a3c;
                 border-radius: 7px;
-                font-size: 0.74rem;
+                font-size: clamp(0.7rem, 2vw, 0.74rem);
                 color: #ffffff;
                 cursor: pointer;
-                padding: 4px 6px;
+                padding: 4px clamp(4px, 1.2vw, 6px);
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
@@ -638,7 +649,7 @@ jobs:
                 background: transparent;
                 border: none;
                 color: #ffffff;
-                font-size: 0.88rem;
+                font-size: clamp(0.82rem, 2.4vw, 0.88rem);
                 outline: none;
                 user-select: text;
               }
@@ -663,7 +674,7 @@ jobs:
                 color: #ffffff;
                 padding: 5px 9px;
                 border-radius: 7px;
-                font-size: 0.78rem;
+                font-size: clamp(0.74rem, 2vw, 0.78rem);
                 font-weight: bold;
                 cursor: pointer;
                 white-space: nowrap;
@@ -693,7 +704,7 @@ jobs:
                 color: #ffffff;
                 padding: 8px 12px;
                 border-radius: 10px;
-                font-size: 0.92rem;
+                font-size: clamp(0.85rem, 2.5vw, 0.92rem);
                 font-weight: bold;
                 z-index: 2050;
                 cursor: move;
@@ -709,8 +720,8 @@ jobs:
 
               .corner-guide {
                 position: absolute;
-                bottom: 12px;
-                font-size: 0.72rem;
+                bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+                font-size: clamp(0.68rem, 2vw, 0.72rem);
                 color: #52525b;
                 pointer-events: none;
                 z-index: 2020;
@@ -775,7 +786,6 @@ jobs:
 
             <!-- 나의계획 뷰: 쪽잠 타이머 + 하루 일과 타임라인 + 집중/대기열 -->
             <div class="view-container" id="plan-feed-container" style="display:none;">
-              <!-- 쪽잠 퀵 타이머 -->
               <div class="nap-timer-panel">
                 <div class="nap-timer-top">
                   <div class="nap-title">⏱️ 쪽잠 리셋 타이머</div>
@@ -789,7 +799,6 @@ jobs:
                 </div>
               </div>
 
-              <!-- 하루 일과 타임라인 -->
               <div class="plan-section-title">
                 <span>🗓️ 하루 일과 타임라인</span>
               </div>
@@ -812,14 +821,12 @@ jobs:
                 </div>
               </div>
 
-              <!-- 지금 집중 -->
               <div class="plan-section-title">
                 <span>⚡ 지금 집중 (Focus)</span>
                 <span class="plan-count-badge" id="focus-count-badge">0건</span>
               </div>
               <div id="focus-plan-list" style="display:flex; flex-direction:column; gap:8px;"></div>
 
-              <!-- 할 일 대기열 -->
               <div class="plan-section-title">
                 <span>🔄 할 일 대기열 (Backlog)</span>
                 <span class="plan-count-badge" id="backlog-count-badge">0건</span>
@@ -919,7 +926,7 @@ jobs:
               <div class="corner-guide right">💾 우측 쓸어올려 저장</div>
             </div>
 
-            <!-- 풀스크린 생각 수정 모달 -->
+            <!-- 풀스크린 생각 수정 모달 (100dvh) -->
             <div id="edit-modal" class="modal-full">
               <div class="modal-top">
                 <span id="edit-modal-title" style="font-weight:bold; font-size:1rem;">✏️ 생각 수정</span>
@@ -928,7 +935,7 @@ jobs:
                   <button class="card-btn" style="background:var(--danger);" onclick="closeEditModal()">취소</button>
                 </div>
               </div>
-              <div class="modal-body" style="padding:14px; display:flex; flex-direction:column; height:calc(100vh - 65px);">
+              <div class="modal-body" style="padding:14px; display:flex; flex-direction:column; height:calc(100dvh - 65px);">
                 <div id="edit-media-preview" style="flex-shrink:0; display:flex; flex-direction:column; gap:8px;"></div>
                 <div class="edit-input-wrapper" style="flex:1; margin-top:8px;">
                   <textarea id="edit-input" class="fullscreen-editor-area" placeholder="수정할 내용을 자유롭게 입력하세요..."
@@ -1070,7 +1077,6 @@ jobs:
               let lastProcessedVoice = '';
               let lastProcessedTime = 0;
 
-              /* 쪽잠 퀵 타이머 엔진 */
               let napTimerInterval = null;
               let napEndTime = null;
 
@@ -1405,7 +1411,6 @@ jobs:
                 webSpeechInstance.start();
               }
 
-              /* 수정: 공백 중첩 제거 및 단어 누락 방지 */
               function appendVoiceResult(text) {
                 if (!text || !text.trim()) return;
                 const clean = text.trim();
@@ -1444,7 +1449,6 @@ jobs:
                 const before = val.substring(0, start);
                 const after = val.substring(end);
 
-                // 정밀 공백: 커서 바로 앞이 공백/줄바꿈이 아닐 때만 1칸 띄움
                 const needsSpace = before.length > 0 && !/\s$/.test(before);
                 const insertChunk = (needsSpace ? ' ' : '') + clean;
                 el.value = before + insertChunk + after;
@@ -1504,7 +1508,6 @@ jobs:
                 setThoughtStorage(list);
               }
 
-              /* 타임라인 계획 저장 엔진 */
               function getPlanStorage() {
                 const data = localStorage.getItem('plan_drawer_storage') || '[]';
                 try { return JSON.parse(data); } catch (e) { return []; }
@@ -1546,11 +1549,9 @@ jobs:
                 }
               }
 
-              /* 타임라인 & 계획표 렌더링 */
               function renderPlanView() {
                 const list = getPlanStorage();
                 
-                // 타임라인 4슬롯 렌더링
                 const slots = ['morning', 'afternoon', 'evening', 'night'];
                 slots.forEach(s => {
                   const el = document.getElementById(`slot-items-${s}`);
@@ -1566,7 +1567,6 @@ jobs:
                   }
                 });
 
-                // 지금 집중
                 const focusList = list.filter(p => p.isFocus);
                 document.getElementById('focus-count-badge').innerText = `${focusList.length}건`;
                 const focusContainer = document.getElementById('focus-plan-list');
@@ -1574,7 +1574,6 @@ jobs:
                   ? '<div style="color:#52525b; font-size:0.8rem; padding:6px 2px;">⚡ 현재 집중 작업이 없습니다.</div>'
                   : focusList.map(p => renderPlanCardHtml(p)).join('');
 
-                // 대기열 (미지정 또는 집중 외 작업)
                 const backlogList = list.filter(p => !p.isFocus);
                 document.getElementById('backlog-count-badge').innerText = `${backlogList.length}건`;
                 const backlogContainer = document.getElementById('backlog-plan-list');
@@ -1680,7 +1679,6 @@ jobs:
                 closePlanEditModal();
               }
 
-              /* 생각서랍 렌더링 */
               function renderFeed() {
                 const list = getThoughtStorage();
                 const feed = document.getElementById('idea-feed-container');
