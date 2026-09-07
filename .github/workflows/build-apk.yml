@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: 4. 생각서랍 전체 통합 웹 UI 구성
+      - name: 4. 생각서랍 전체 통합 웹 UI 구성 및 Vercel 동기화
         run: |
           mkdir -p www
           cat << 'EOF' > www/index.html
@@ -159,7 +159,7 @@ jobs:
               .empty-canvas {
                 margin: auto;
                 text-align: center;
-                color: #48484a;
+                color: #52525b;
                 font-size: 0.95rem;
                 line-height: 1.6;
               }
@@ -199,9 +199,9 @@ jobs:
                 background: var(--surface);
                 border: none;
                 color: #ffffff;
-                padding: 5px 10px;
-                border-radius: 6px;
-                font-size: 0.75rem;
+                padding: 6px 12px;
+                border-radius: 8px;
+                font-size: 0.78rem;
                 cursor: pointer;
                 display: flex;
                 align-items: center;
@@ -210,134 +210,126 @@ jobs:
               .card-btn.delete { color: var(--danger); }
               .card-btn.plan-send { color: var(--accent); }
 
-              /* 쪽잠 퀵 타이머 */
-              .nap-timer-panel {
-                background: #18181b;
-                border: 1px solid #27272a;
-                border-radius: 14px;
-                padding: 10px 12px;
+              /* 쪽잠 1줄 슬림 바 */
+              .nap-slim-bar {
                 display: flex;
-                flex-direction: column;
-                gap: 8px;
-              }
-              .nap-timer-top {
-                display: flex;
+                align-items: center;
                 justify-content: space-between;
-                align-items: center;
-              }
-              .nap-title {
-                font-size: 0.85rem;
-                font-weight: 700;
-                color: #e4e4e7;
-                display: flex;
-                align-items: center;
+                background: #141416;
+                border: 1px solid #27272a;
+                border-radius: 12px;
+                padding: 6px 10px;
                 gap: 6px;
+                flex-shrink: 0;
               }
-              .nap-display {
-                font-size: 0.85rem;
-                font-family: monospace;
-                color: var(--accent);
-                font-weight: bold;
-              }
-              .nap-btn-group {
-                display: flex;
-                gap: 6px;
-              }
-              .nap-btn {
-                flex: 1;
+              .nap-label { font-size: 0.78rem; font-weight: bold; color: #a1a1aa; white-space: nowrap; }
+              .nap-display { font-size: 0.78rem; font-family: monospace; color: var(--accent); font-weight: bold; }
+              .nap-btn-mini {
                 background: var(--surface);
                 border: 1px solid #3f3f46;
                 color: #ffffff;
-                padding: 6px 0;
-                border-radius: 8px;
-                font-size: 0.78rem;
+                padding: 4px 8px;
+                border-radius: 6px;
+                font-size: 0.74rem;
                 font-weight: 600;
-                cursor: pointer;
-              }
-              .nap-btn.stop {
-                background: var(--danger);
-                border-color: #f87171;
-              }
-
-              /* 타임라인 일과 섹션 */
-              .timeline-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 8px;
-              }
-              .timeline-slot {
-                background: #121214;
-                border: 1px solid #27272a;
-                border-radius: 12px;
-                padding: 10px;
-                display: flex;
-                flex-direction: column;
-                gap: 6px;
-                min-height: 90px;
-              }
-              .slot-header {
-                font-size: 0.78rem;
-                font-weight: 700;
-                color: #a1a1aa;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                border-bottom: 1px solid #222;
-                padding-bottom: 4px;
-              }
-              .slot-card-item {
-                background: #1c1c1e;
-                border-radius: 6px;
-                padding: 6px 8px;
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-                font-size: 0.8rem;
-                border-left: 2px solid var(--primary);
-              }
-              .slot-card-item.completed { opacity: 0.5; text-decoration: line-through; }
-
-              .plan-section-title {
-                font-size: 0.9rem;
-                font-weight: 700;
-                color: #ffffff;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                margin-top: 6px;
-                padding-left: 2px;
-              }
-              .plan-count-badge {
-                font-size: 0.72rem;
-                background: var(--surface);
-                color: var(--accent);
-                padding: 2px 7px;
-                border-radius: 8px;
-              }
-              .plan-card {
-                background: var(--card);
-                border: 1px solid var(--border);
-                border-radius: 12px;
-                padding: 10px 12px;
-                display: flex;
-                flex-direction: column;
-                gap: 6px;
-              }
-              .plan-card.completed { opacity: 0.55; border-color: #27272a; }
-              .plan-card-top { display: flex; align-items: center; gap: 8px; }
-              .status-tag {
-                font-size: 0.72rem;
-                font-weight: 700;
-                padding: 3px 6px;
-                border-radius: 6px;
                 cursor: pointer;
                 white-space: nowrap;
               }
-              .status-tag.waiting { background: #3f3f46; color: #d4d4d8; }
-              .status-tag.progress { background: #1e3a8a; color: #60a5fa; }
-              .status-tag.done { background: #064e3b; color: #34d399; }
-              .plan-title { flex: 1; font-size: 0.9rem; font-weight: 500; color: #ffffff; }
-              .plan-title.completed { text-decoration: line-through; color: var(--muted); }
+              .nap-btn-mini.stop { background: var(--danger); border-color: #f87171; }
+
+              /* 나의계획: 단일 화면 대형 탭 바 */
+              .plan-time-tabs {
+                display: flex;
+                gap: 6px;
+                overflow-x: auto;
+                padding-bottom: 2px;
+                flex-shrink: 0;
+              }
+              .plan-time-tab {
+                flex: 1;
+                min-width: 65px;
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                padding: 8px 4px;
+                color: var(--muted);
+                font-size: 0.78rem;
+                font-weight: bold;
+                text-align: center;
+                cursor: pointer;
+                white-space: nowrap;
+                transition: all 0.2s;
+              }
+              .plan-time-tab.active {
+                background: #1e3a8a;
+                color: #60a5fa;
+                border-color: #3b82f6;
+              }
+              .plan-time-tab.focus-tab.active {
+                background: #9a3412;
+                color: #fdba74;
+                border-color: #f97316;
+              }
+
+              /* 큼직한 계획 카드 (1.5배 확대 및 시원한 여백) */
+              .plan-big-card {
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: 16px;
+                padding: 16px 14px;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+              }
+              .plan-big-card.completed { opacity: 0.45; border-color: #27272a; }
+              .plan-big-card-top { display: flex; align-items: flex-start; gap: 10px; }
+              .plan-big-title {
+                flex: 1;
+                font-size: clamp(1.05rem, 3.2vw, 1.25rem);
+                font-weight: 700;
+                color: #ffffff;
+                line-height: 1.45;
+                word-break: break-word;
+              }
+              .plan-big-title.completed { text-decoration: line-through; color: var(--muted); }
+
+              .status-badge-lg {
+                font-size: 0.8rem;
+                font-weight: 800;
+                padding: 5px 10px;
+                border-radius: 8px;
+                cursor: pointer;
+                white-space: nowrap;
+                flex-shrink: 0;
+              }
+              .status-badge-lg.waiting { background: #3f3f46; color: #f4f4f5; }
+              .status-badge-lg.progress { background: #1e3a8a; color: #93c5fd; }
+              .status-badge-lg.done { background: #064e3b; color: #6ee7b7; }
+
+              .plan-actions-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 6px;
+                border-top: 1px solid #27272a;
+                padding-top: 10px;
+                flex-wrap: wrap;
+              }
+              .btn-action-focus {
+                background: #7c2d12;
+                border: 1px solid #ea580c;
+                color: #ffedd5;
+                font-weight: bold;
+                padding: 6px 12px;
+                border-radius: 8px;
+                font-size: 0.82rem;
+                cursor: pointer;
+              }
+              .btn-action-focus.active {
+                background: #ea580c;
+                color: #ffffff;
+              }
 
               .attachment-tray {
                 display: none;
@@ -357,7 +349,7 @@ jobs:
                 background: var(--danger); color: #fff; font-size: 0.7rem; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer;
               }
 
-              /* 하단 고정 UI (safe-area-inset-bottom 적용) */
+              /* 하단 고정 UI */
               .bottom-bar-wrapper {
                 padding: 8px 14px calc(14px + env(safe-area-inset-bottom, 0px)) 14px;
                 background: var(--bg);
@@ -481,7 +473,7 @@ jobs:
                 font-size: 1rem;
               }
 
-              /* 모달 전체화면 (100dvh + safe-area) */
+              /* 모달 공통 */
               .modal-full {
                 display: none;
                 position: fixed;
@@ -557,7 +549,7 @@ jobs:
               }
               .edit-mic-btn.listening svg { fill: #ffffff; }
 
-              /* 암전 메모딱지 (100dvh) */
+              /* 암전 메모딱지 */
               #memopad-screen {
                 display: none;
                 position: fixed;
@@ -776,7 +768,7 @@ jobs:
               <div class="category-pill" onclick="selectCategory('전체')">📂 전체</div>
             </div>
 
-            <!-- 생각서랍 뷰 -->
+            <!-- 생각서랍 피드 뷰 -->
             <div class="view-container" id="idea-feed-container">
               <div class="empty-canvas" id="empty-hint">
                 떠오르는 생각을 자유롭게 기록하세요.<br>
@@ -784,54 +776,32 @@ jobs:
               </div>
             </div>
 
-            <!-- 나의계획 뷰: 쪽잠 타이머 + 하루 일과 타임라인 + 집중/대기열 -->
+            <!-- 나의계획: 단일 화면 대형 탭 뷰 (오전/오후/저녁/심야/집중) -->
             <div class="view-container" id="plan-feed-container" style="display:none;">
-              <div class="nap-timer-panel">
-                <div class="nap-timer-top">
-                  <div class="nap-title">⏱️ 쪽잠 리셋 타이머</div>
-                  <div class="nap-display" id="nap-time-display">대기 중</div>
-                </div>
-                <div class="nap-btn-group">
-                  <button class="nap-btn" onclick="startNapTimer(15)">15분</button>
-                  <button class="nap-btn" onclick="startNapTimer(30)">30분</button>
-                  <button class="nap-btn" onclick="startNapTimer(45)">45분</button>
-                  <button class="nap-btn stop" id="nap-stop-btn" style="display:none;" onclick="stopNapTimer()">정지</button>
-                </div>
-              </div>
-
-              <div class="plan-section-title">
-                <span>🗓️ 하루 일과 타임라인</span>
-              </div>
-              <div class="timeline-grid">
-                <div class="timeline-slot" id="slot-morning">
-                  <div class="slot-header"><span>🌅 오전</span><span>06-12</span></div>
-                  <div class="slot-items" id="slot-items-morning"></div>
-                </div>
-                <div class="timeline-slot" id="slot-afternoon">
-                  <div class="slot-header"><span>☀️ 오후</span><span>12-18</span></div>
-                  <div class="slot-items" id="slot-items-afternoon"></div>
-                </div>
-                <div class="timeline-slot" id="slot-evening">
-                  <div class="slot-header"><span>🌙 저녁/야간</span><span>18-24</span></div>
-                  <div class="slot-items" id="slot-items-evening"></div>
-                </div>
-                <div class="timeline-slot" id="slot-night">
-                  <div class="slot-header"><span>⏱️ 심야/휴식</span><span>00-06</span></div>
-                  <div class="slot-items" id="slot-items-night"></div>
+              <!-- 쪽잠 슬림 바 -->
+              <div class="nap-slim-bar">
+                <span class="nap-label">⏱️ 쪽잠</span>
+                <span class="nap-display" id="nap-time-display">대기</span>
+                <div style="display:flex; gap:4px;">
+                  <button class="nap-btn-mini" onclick="startNapTimer(15)">15분</button>
+                  <button class="nap-btn-mini" onclick="startNapTimer(30)">30분</button>
+                  <button class="nap-btn-mini" onclick="startNapTimer(45)">45분</button>
+                  <button class="nap-btn-mini stop" id="nap-stop-btn" style="display:none;" onclick="stopNapTimer()">정지</button>
                 </div>
               </div>
 
-              <div class="plan-section-title">
-                <span>⚡ 지금 집중 (Focus)</span>
-                <span class="plan-count-badge" id="focus-count-badge">0건</span>
+              <!-- 상단 대형 탭 바 (화면별 1개씩 단독 표시) -->
+              <div class="plan-time-tabs">
+                <button class="plan-time-tab focus-tab active" id="ptab-focus" onclick="switchPlanSubtab('focus')">⚡ 집중</button>
+                <button class="plan-time-tab" id="ptab-morning" onclick="switchPlanSubtab('morning')">🌅 오전</button>
+                <button class="plan-time-tab" id="ptab-afternoon" onclick="switchPlanSubtab('afternoon')">☀️ 오후</button>
+                <button class="plan-time-tab" id="ptab-evening" onclick="switchPlanSubtab('evening')">🌙 저녁</button>
+                <button class="plan-time-tab" id="ptab-night" onclick="switchPlanSubtab('night')">⏱️ 심야</button>
+                <button class="plan-time-tab" id="ptab-backlog" onclick="switchPlanSubtab('backlog')">🔄 대기</button>
               </div>
-              <div id="focus-plan-list" style="display:flex; flex-direction:column; gap:8px;"></div>
 
-              <div class="plan-section-title">
-                <span>🔄 할 일 대기열 (Backlog)</span>
-                <span class="plan-count-badge" id="backlog-count-badge">0건</span>
-              </div>
-              <div id="backlog-plan-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+              <!-- 선택된 시간대의 대형 카드 목록 -->
+              <div id="plan-card-list" style="display:flex; flex-direction:column; gap:12px;"></div>
             </div>
 
             <div class="attachment-tray" id="attachment-tray"></div>
@@ -926,7 +896,7 @@ jobs:
               <div class="corner-guide right">💾 우측 쓸어올려 저장</div>
             </div>
 
-            <!-- 풀스크린 생각 수정 모달 (100dvh) -->
+            <!-- 풀스크린 생각 수정 모달 -->
             <div id="edit-modal" class="modal-full">
               <div class="modal-top">
                 <span id="edit-modal-title" style="font-weight:bold; font-size:1rem;">✏️ 생각 수정</span>
@@ -993,7 +963,7 @@ jobs:
               </div>
             </div>
 
-            <!-- 통합 보관함 -->
+            <!-- 통합 보관함 / 휴지통 / 백업 -->
             <div id="archive-modal" class="modal-full">
               <div class="modal-top">
                 <span style="font-weight:bold; font-size:1.05rem;">📂 생각보관함 & 관리</span>
@@ -1008,17 +978,33 @@ jobs:
               </div>
 
               <div class="view-container" id="archive-feed"></div>
+              
+              <!-- 휴지통 (영구 삭제 및 전체 비우기 정상 탑재) -->
               <div class="view-container" id="trash-feed" style="display:none;"></div>
+
+              <!-- 백업 및 복원 -->
               <div class="view-container" id="backup-pane" style="display:none; gap:16px;">
                 <div class="thought-card">
-                  <div style="font-weight:bold; font-size:1rem; color:var(--accent);">📥 전체 데이터 백업 (파일 다운로드)</div>
-                  <button class="card-btn" style="background:var(--primary); padding:10px; justify-content:center; margin-top:6px;" onclick="exportBackupData()">
-                    💾 백업 파일 다운로드
-                  </button>
+                  <div style="font-weight:bold; font-size:1rem; color:var(--accent);">📥 전체 데이터 백업</div>
+                  <div style="font-size:0.85rem; color:var(--muted); line-height:1.5;">
+                    작성된 모든 생각, 계획, 메모를 스마트폰 `Download` 폴더에 파일로 직접 저장하거나 클립보드에 복사합니다.
+                  </div>
+                  <div style="display:flex; gap:8px; margin-top:8px;">
+                    <button class="card-btn" style="background:var(--primary); flex:1; justify-content:center; padding:10px;" onclick="exportBackupData()">
+                      💾 Download 폴더에 저장
+                    </button>
+                    <button class="card-btn" style="background:var(--surface); border:1px solid #444; flex:1; justify-content:center; padding:10px;" onclick="copyBackupToClipboard()">
+                      📋 클립보드 전체 복사
+                    </button>
+                  </div>
                 </div>
+
                 <div class="thought-card">
                   <div style="font-weight:bold; font-size:1rem; color:var(--success);">📤 데이터 복원 (기기 변경 시)</div>
-                  <button class="card-btn" style="background:var(--surface); border:1px solid var(--border); padding:10px; justify-content:center; margin-top:6px;" onclick="document.getElementById('backup-import-file').click()">
+                  <div style="font-size:0.85rem; color:var(--muted); line-height:1.5;">
+                    저장해 둔 백업 파일을 선택하여 모든 데이터를 원상 복원합니다.
+                  </div>
+                  <button class="card-btn" style="background:var(--surface); border:1px solid var(--border); padding:10px; justify-content:center; margin-top:8px;" onclick="document.getElementById('backup-import-file').click()">
                     📂 백업 파일 선택하여 복원
                   </button>
                 </div>
@@ -1027,17 +1013,17 @@ jobs:
 
             <div id="manual-modal" class="modal-full">
               <div class="modal-top">
-                <span style="font-weight:bold; font-size:1.05rem;">💡 가이드</span>
+                <span style="font-weight:bold; font-size:1.05rem;">💡 생각서랍 가이드</span>
                 <button class="card-btn" style="background:var(--danger);" onclick="closeManualModal()">닫기</button>
               </div>
               <div class="modal-body">
                 <div class="thought-card">
-                  <div style="font-weight:bold; color:var(--accent);">1. 쪽잠 타이머</div>
-                  <div style="font-size:0.85rem; color:#ccc;">15/30/45분 원터치 타이머로 종료 시 진동 및 알람이 작동합니다.</div>
+                  <div style="font-weight:bold; color:var(--accent);">1. 나의계획 (단일 화면 탭)</div>
+                  <div style="font-size:0.85rem; color:#ccc;">`[⚡ 집중]` 및 `[오전/오후/저녁/심야]` 탭을 눌러 해당 시간대의 일과만 큼직한 카드로 시원하게 확인합니다.</div>
                 </div>
                 <div class="thought-card">
-                  <div style="font-weight:bold; color:var(--accent);">2. 하루 일과 타임라인</div>
-                  <div style="font-size:0.85rem; color:#ccc;">오전, 오후, 저녁/야간, 심야 4개 시간대로 작업 일과가 배치됩니다.</div>
+                  <div style="font-weight:bold; color:var(--accent);">2. 원터치 지금 집중</div>
+                  <div style="font-size:0.85rem; color:#ccc;">카드 우측 하단의 `[⚡ 집중]` 버튼을 누르면 즉시 최우선 집중 작업으로 등록됩니다.</div>
                 </div>
               </div>
             </div>
@@ -1049,6 +1035,8 @@ jobs:
               let editingThoughtId = null;
               let editingMediaList = [];
               let editingPlanId = null;
+
+              let currentPlanSubtab = 'focus';
 
               let activeTargetContext = 'main';
               let activeVoiceTarget = 'main';
@@ -1077,6 +1065,7 @@ jobs:
               let lastProcessedVoice = '';
               let lastProcessedTime = 0;
 
+              /* 쪽잠 타이머 */
               let napTimerInterval = null;
               let napEndTime = null;
 
@@ -1092,7 +1081,7 @@ jobs:
                 if (napTimerInterval) clearInterval(napTimerInterval);
                 napTimerInterval = null;
                 napEndTime = null;
-                document.getElementById('nap-time-display').innerText = '대기 중';
+                document.getElementById('nap-time-display').innerText = '대기';
                 document.getElementById('nap-stop-btn').style.display = 'none';
               }
 
@@ -1113,7 +1102,7 @@ jobs:
                 const m = Math.floor(totalSec / 60);
                 const s = totalSec % 60;
                 document.getElementById('nap-time-display').innerText = 
-                  `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')} 남음`;
+                  `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
               }
 
               function triggerNapAlarm() {
@@ -1154,7 +1143,7 @@ jobs:
                   ideaFeed.style.display = 'none';
                   planFeed.style.display = 'flex';
                   plusBtn.style.display = 'none';
-                  input.placeholder = '새로운 계획을 입력하세요 (시간대 자동배치)...';
+                  input.placeholder = '새로운 계획/일과를 입력하세요...';
                   renderPlanView();
                 }
               }
@@ -1315,7 +1304,7 @@ jobs:
                     saveThought(category, text, [...currentAttachments]);
                     selectCategory('첫 생각');
                   } else {
-                    savePlanAutoSlot(text);
+                    savePlanCurrentSlot(text);
                     renderPlanView();
                   }
 
@@ -1411,9 +1400,10 @@ jobs:
                 webSpeechInstance.start();
               }
 
+              /* 띄어쓰기 공백 정밀 단일 제어 */
               function appendVoiceResult(text) {
                 if (!text || !text.trim()) return;
-                const clean = text.trim();
+                const clean = text.trim().replace(/\s+/g, ' ');
                 const now = Date.now();
 
                 if (clean === lastProcessedVoice && (now - lastProcessedTime < 350)) return;
@@ -1449,11 +1439,13 @@ jobs:
                 const before = val.substring(0, start);
                 const after = val.substring(end);
 
-                const needsSpace = before.length > 0 && !/\s$/.test(before);
-                const insertChunk = (needsSpace ? ' ' : '') + clean;
+                const needLeadingSpace = before.length > 0 && !/\s$/.test(before);
+                const needTrailingSpace = after.length > 0 && !/^\s/.test(after);
+
+                const insertChunk = (needLeadingSpace ? ' ' : '') + clean + (needTrailingSpace ? ' ' : '');
                 el.value = before + insertChunk + after;
 
-                const nextPos = start + insertChunk.length;
+                const nextPos = start + (needLeadingSpace ? 1 : 0) + clean.length;
                 cursorPositions[targetId] = { start: nextPos, end: nextPos };
 
                 try {
@@ -1525,15 +1517,18 @@ jobs:
                 return 'night';
               }
 
-              function savePlanAutoSlot(title) {
+              function savePlanCurrentSlot(title) {
                 if (!title || !title.trim()) return;
                 const list = getPlanStorage();
+                const slot = (currentPlanSubtab === 'focus') ? getAutoTimeSlot() : ((currentPlanSubtab === 'backlog') ? 'none' : currentPlanSubtab);
+                const isFocus = (currentPlanSubtab === 'focus');
+
                 list.unshift({
                   id: Date.now(),
                   title: title.trim(),
                   status: '대기',
-                  timeSlot: getAutoTimeSlot(),
-                  isFocus: false,
+                  timeSlot: slot,
+                  isFocus: isFocus,
                   notes: [],
                   updatedAt: new Date().toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })
                 });
@@ -1544,68 +1539,84 @@ jobs:
                 const thought = getThoughtStorage().find(t => t.id === id);
                 if (thought) {
                   const title = thought.content ? thought.content.split('\n')[0] : `[${thought.category}] 계획`;
-                  savePlanAutoSlot(title);
-                  alert('🗓️ 오늘 타임라인 일과에 등록되었습니다.');
+                  const list = getPlanStorage();
+                  list.unshift({
+                    id: Date.now(),
+                    title: title.trim(),
+                    status: '대기',
+                    timeSlot: getAutoTimeSlot(),
+                    isFocus: true,
+                    notes: [],
+                    updatedAt: new Date().toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })
+                  });
+                  setPlanStorage(list);
+                  alert('⚡ [지금 집중] 계획으로 등록되었습니다.');
                 }
+              }
+
+              /* 나의계획 탭 전환 및 대형 카드 렌더링 */
+              function switchPlanSubtab(tab) {
+                currentPlanSubtab = tab;
+                document.querySelectorAll('.plan-time-tab').forEach(b => b.classList.remove('active'));
+                const curBtn = document.getElementById(`ptab-${tab}`);
+                if (curBtn) curBtn.classList.add('active');
+                renderPlanView();
               }
 
               function renderPlanView() {
                 const list = getPlanStorage();
-                
-                const slots = ['morning', 'afternoon', 'evening', 'night'];
-                slots.forEach(s => {
-                  const el = document.getElementById(`slot-items-${s}`);
-                  const items = list.filter(p => p.timeSlot === s);
-                  if (items.length === 0) {
-                    el.innerHTML = '<span style="font-size:0.7rem; color:#444;">배치된 일과 없음</span>';
-                  } else {
-                    el.innerHTML = items.map(p => `
-                      <div class="slot-card-item ${p.status === '완료' ? 'completed' : ''}" onclick="openPlanEditModal(${p.id})">
-                        <span>${p.title}</span>
+                const container = document.getElementById('plan-card-list');
+
+                let filtered = [];
+                if (currentPlanSubtab === 'focus') {
+                  filtered = list.filter(p => p.isFocus);
+                } else if (currentPlanSubtab === 'backlog') {
+                  filtered = list.filter(p => !p.timeSlot || p.timeSlot === 'none');
+                } else {
+                  filtered = list.filter(p => p.timeSlot === currentPlanSubtab);
+                }
+
+                if (filtered.length === 0) {
+                  container.innerHTML = '<div class="empty-canvas" style="padding:40px 0;">해당 탭에 등록된 일과가 없습니다.</div>';
+                  return;
+                }
+
+                container.innerHTML = filtered.map(p => {
+                  const isDone = p.status === '완료';
+                  const statusClass = (p.status === '진행중') ? 'progress' : (isDone ? 'done' : 'waiting');
+                  const slotMap = { morning: '오전', afternoon: '오후', evening: '저녁', night: '심야', none: '미지정' };
+                  const slotName = slotMap[p.timeSlot || 'none'];
+
+                  return `
+                    <div class="plan-big-card ${isDone ? 'completed' : ''}">
+                      <div class="plan-big-card-top">
+                        <span class="status-badge-lg ${statusClass}" onclick="cyclePlanStatus(${p.id})">${p.status}</span>
+                        <div class="plan-big-title ${isDone ? 'completed' : ''}">${p.title}</div>
                       </div>
-                    `).join('');
-                  }
-                });
 
-                const focusList = list.filter(p => p.isFocus);
-                document.getElementById('focus-count-badge').innerText = `${focusList.length}건`;
-                const focusContainer = document.getElementById('focus-plan-list');
-                focusContainer.innerHTML = focusList.length === 0
-                  ? '<div style="color:#52525b; font-size:0.8rem; padding:6px 2px;">⚡ 현재 집중 작업이 없습니다.</div>'
-                  : focusList.map(p => renderPlanCardHtml(p)).join('');
+                      ${p.notes && p.notes.length > 0 ? `
+                        <div style="font-size:0.85rem; color:#a1a1aa; background:#121214; padding:8px 12px; border-radius:8px; line-height:1.4;">
+                          ${p.notes.map(n => `<div>• ${n}</div>`).join('')}
+                        </div>
+                      ` : ''}
 
-                const backlogList = list.filter(p => !p.isFocus);
-                document.getElementById('backlog-count-badge').innerText = `${backlogList.length}건`;
-                const backlogContainer = document.getElementById('backlog-plan-list');
-                backlogContainer.innerHTML = backlogList.length === 0
-                  ? '<div style="color:#52525b; font-size:0.8rem; padding:6px 2px;">대기열이 비어 있습니다.</div>'
-                  : backlogList.map(p => renderPlanCardHtml(p)).join('');
-              }
-
-              function renderPlanCardHtml(p) {
-                const isDone = p.status === '완료';
-                const statusClass = (p.status === '진행중') ? 'progress' : (isDone ? 'done' : 'waiting');
-                const slotNames = { morning: '오전', afternoon: '오후', evening: '저녁', night: '심야', none: '미지정' };
-
-                return `
-                  <div class="plan-card ${isDone ? 'completed' : ''}">
-                    <div class="plan-card-top">
-                      <span class="status-tag ${statusClass}" onclick="cyclePlanStatus(${p.id})">${p.status}</span>
-                      <div class="plan-title ${isDone ? 'completed' : ''}">${p.title}</div>
-                      <span style="font-size:0.72rem; color:var(--muted);">${slotNames[p.timeSlot || 'none']}</span>
-                    </div>
-                    ${p.notes && p.notes.length > 0 ? `
-                      <div style="font-size:0.78rem; color:#888; background:#141416; padding:6px 8px; border-radius:6px;">
-                        ${p.notes.map(n => `<div>• ${n}</div>`).join('')}
+                      <div class="plan-actions-row">
+                        <div style="display:flex; align-items:center; gap:6px;">
+                          <button class="btn-action-focus ${p.isFocus ? 'active' : ''}" onclick="toggleFocusFlag(${p.id})">
+                            ${p.isFocus ? '⚡ 집중 해제' : '⚡ 지금 집중'}
+                          </button>
+                          <button class="card-btn" onclick="cycleTimeSlot(${p.id})">
+                            🕒 ${slotName} ➔
+                          </button>
+                        </div>
+                        <div style="display:flex; gap:6px;">
+                          <button class="card-btn" onclick="openPlanEditModal(${p.id})">✏️ 메모</button>
+                          <button class="card-btn delete" onclick="deletePlan(${p.id})">🗑️</button>
+                        </div>
                       </div>
-                    ` : ''}
-                    <div class="card-actions" style="margin-top:2px;">
-                      <button class="card-btn" onclick="toggleFocusFlag(${p.id})">${p.isFocus ? '⚡ 집중 해제' : '⚡ 지금 집중'}</button>
-                      <button class="card-btn" onclick="openPlanEditModal(${p.id})">✏️ 설정</button>
-                      <button class="card-btn delete" onclick="deletePlan(${p.id})">🗑️ 삭제</button>
                     </div>
-                  </div>
-                `;
+                  `;
+                }).join('');
               }
 
               function cyclePlanStatus(id) {
@@ -1624,6 +1635,17 @@ jobs:
                 const item = list.find(p => p.id === id);
                 if (item) {
                   item.isFocus = !item.isFocus;
+                  setPlanStorage(list);
+                }
+              }
+
+              function cycleTimeSlot(id) {
+                const order = ['morning', 'afternoon', 'evening', 'night', 'none'];
+                const list = getPlanStorage();
+                const item = list.find(p => p.id === id);
+                if (item) {
+                  const idx = order.indexOf(item.timeSlot || 'none');
+                  item.timeSlot = order[(idx + 1) % order.length];
                   setPlanStorage(list);
                 }
               }
@@ -1679,6 +1701,7 @@ jobs:
                 closePlanEditModal();
               }
 
+              /* 생각서랍 피드 렌더링 */
               function renderFeed() {
                 const list = getThoughtStorage();
                 const feed = document.getElementById('idea-feed-container');
@@ -1719,7 +1742,7 @@ jobs:
                       ` : ''}
                       ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
                       <div class="card-actions">
-                        <button class="card-btn plan-send" onclick="sendThoughtToPlan(${item.id})">📋 일과로</button>
+                        <button class="card-btn plan-send" onclick="sendThoughtToPlan(${item.id})">📋 집중계획으로</button>
                         <button class="card-btn" onclick="openEditModal(${item.id})">✏️ 수정</button>
                         <button class="card-btn delete" onclick="deleteThought(${item.id})">🗑️ 삭제</button>
                       </div>
@@ -1784,7 +1807,7 @@ jobs:
                 closeEditModal();
               }
 
-              /* 메모딱지 인터랙션 */
+              /* 암전 메모딱지 */
               const padScreen = document.getElementById('memopad-screen');
               const padCanvas = document.getElementById('memopad-canvas');
               const padCtx = padCanvas.getContext('2d');
@@ -2013,17 +2036,52 @@ jobs:
                 document.getElementById('trash-feed').style.display = (tab === 'trash') ? 'flex' : 'none';
                 document.getElementById('backup-pane').style.display = (tab === 'backup') ? 'flex' : 'none';
 
-                if (tab === 'trash') renderTrashFeed();
+                if (tab === 'archive') renderArchiveFeed();
+                else if (tab === 'trash') renderTrashFeed();
               }
 
+              function renderArchiveFeed() {
+                const list = getThoughtStorage();
+                const feed = document.getElementById('archive-feed');
+                feed.innerHTML = list.length === 0 ? '<p style="color:#555; text-align:center; padding:40px 0;">보관된 생각이 없습니다.</p>' : list.map(item => `
+                  <div class="thought-card">
+                    <div class="card-header">
+                      <span class="card-badge">${item.category || item.type || '노트'}</span>
+                      <span class="card-time">${item.time}</span>
+                    </div>
+                    ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
+                    <div class="card-actions">
+                      <button class="card-btn" onclick="openEditModal(${item.id})">✏️ 수정</button>
+                      <button class="card-btn delete" onclick="deleteThought(${item.id}); renderArchiveFeed();">🗑️ 삭제</button>
+                    </div>
+                  </div>
+                `).join('');
+              }
+
+              /* 떡메모지 휴지통: 영구 삭제 및 전체 비우기 정상 렌더링 */
               function renderTrashFeed() {
                 const list = getPadTrashStorage();
                 const feed = document.getElementById('trash-feed');
-                feed.innerHTML = list.length === 0 ? '<p style="color:#555; text-align:center;">비어 있음</p>' : list.map(item => `
+                if (list.length === 0) {
+                  feed.innerHTML = '<p style="color:#555; text-align:center; padding:40px 0;">휴지통이 비어 있습니다.</p>';
+                  return;
+                }
+
+                feed.innerHTML = `
+                  <div style="display:flex; justify-content:flex-end; margin-bottom:6px;">
+                    <button class="card-btn delete" onclick="clearAllTrash()">🗑️ 휴지통 전체 비우기</button>
+                  </div>
+                ` + list.map(item => `
                   <div class="thought-card">
-                    <img src="${item.imageData}" style="width:100%; max-height:160px; object-fit:contain; background:#000;" />
+                    <div class="card-header">
+                      <span class="card-badge" style="color:var(--danger);">🗑️ 버려진 떡메모</span>
+                      <span class="card-time">${item.date} ${item.time}</span>
+                    </div>
+                    <img src="${item.imageData}" style="width:100%; max-height:180px; object-fit:contain; border-radius:8px; border:1px solid var(--border); background:#000;" />
+                    ${item.text ? `<div class="card-content">${item.text}</div>` : ''}
                     <div class="card-actions">
-                      <button class="card-btn" onclick="restoreTrashItem(${item.id})">↩️ 복원</button>
+                      <button class="card-btn" style="background:var(--primary);" onclick="restoreTrashItem(${item.id})">↩️ 복원</button>
+                      <button class="card-btn delete" onclick="deleteTrashItemPermanently(${item.id})">🗑️ 영구 삭제</button>
                     </div>
                   </div>
                 `).join('');
@@ -2036,23 +2094,68 @@ jobs:
                   saveThought('메모딱지', item.text || '', [{ type: '메모딱지', data: item.imageData, isVideo: false }]);
                   setPadTrashStorage(trashList.filter(t => t.id !== id));
                   renderTrashFeed();
+                  alert('✨ 메모딱지가 생각서랍으로 복원되었습니다.');
                 }
               }
 
+              function deleteTrashItemPermanently(id) {
+                if (confirm('이 메모딱지를 완전히 영구 삭제하시겠습니까?')) {
+                  const list = getPadTrashStorage().filter(t => t.id !== id);
+                  setPadTrashStorage(list);
+                  renderTrashFeed();
+                }
+              }
+
+              function clearAllTrash() {
+                if (confirm('휴지통을 완전히 비우시겠습니까? 영구 삭제되어 되돌릴 수 없습니다.')) {
+                  setPadTrashStorage([]);
+                  renderTrashFeed();
+                }
+              }
+
+              /* 네이티브 다운로드 연동 백업 */
               function exportBackupData() {
                 const backupObj = {
-                  version: '2.0',
+                  version: '3.0',
                   exportDate: new Date().toISOString(),
                   thoughts: getThoughtStorage(),
                   plans: getPlanStorage(),
                   trash: getPadTrashStorage()
                 };
-                const blob = new Blob([JSON.stringify(backupObj, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `idea_drawer_backup_${new Date().toISOString().slice(0,10)}.json`;
-                a.click();
+                const jsonStr = JSON.stringify(backupObj, null, 2);
+
+                if (window.AndroidBridge && window.AndroidBridge.saveBackupFile) {
+                  window.AndroidBridge.saveBackupFile(jsonStr);
+                  return;
+                }
+
+                try {
+                  const blob = new Blob([jsonStr], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `idea_drawer_backup_${new Date().toISOString().slice(0,10)}.json`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                } catch (e) {
+                  copyBackupToClipboard();
+                }
+              }
+
+              function copyBackupToClipboard() {
+                const backupObj = {
+                  version: '3.0',
+                  exportDate: new Date().toISOString(),
+                  thoughts: getThoughtStorage(),
+                  plans: getPlanStorage(),
+                  trash: getPadTrashStorage()
+                };
+                const jsonStr = JSON.stringify(backupObj, null, 2);
+                navigator.clipboard.writeText(jsonStr).then(() => {
+                  alert('📋 모든 백업 데이터가 클립보드에 복사되었습니다!\n카카오톡이나 메모장에 붙여넣으세요.');
+                });
               }
 
               function importBackupData(input) {
@@ -2065,11 +2168,12 @@ jobs:
                     if (parsed.thoughts) setThoughtStorage(parsed.thoughts);
                     if (parsed.plans) setPlanStorage(parsed.plans);
                     if (parsed.trash) setPadTrashStorage(parsed.trash);
-                    alert('복원이 완료되었습니다.');
+                    alert('🎉 모든 데이터가 완벽하게 복원되었습니다.');
                     location.reload();
-                  } catch (err) { alert('파일 오류'); }
+                  } catch (err) { alert('백업 파일 형식이 올바르지 않습니다.'); }
                 };
                 reader.readAsText(file);
+                input.value = '';
               }
 
               function openManualModal() { document.getElementById('manual-modal').classList.add('active'); }
@@ -2081,7 +2185,15 @@ jobs:
           </html>
           EOF
 
-      - name: 5. 고정 Keystore 및 노란 전구 플로팅 엔진 주입
+          # 저장소 루트의 index.html을 동기화하여 Vercel 자동 배포 트리거
+          cp www/index.html index.html
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add index.html
+          git commit -m "Sync index.html for Vercel live updates [skip ci]" || true
+          git push origin HEAD || true
+
+      - name: 5. Vercel 원격 URL 연결 및 네이티브 백업 저장 엔진 주입
         run: |
           cat << 'EOF' > package.json
           {
@@ -2096,11 +2208,16 @@ jobs:
           }
           EOF
 
+          # Vercel 라이브 URL을 직접 로드하도록 설정 (닫았다 열면 실시간 자동 반영)
           cat << 'EOF' > capacitor.config.json
           {
             "appId": "com.k2hkkh.ideadrawer",
             "appName": "생각서랍",
-            "webDir": "www"
+            "webDir": "www",
+            "server": {
+              "url": "https://my-idea-drawer.vercel.app",
+              "cleartext": true
+            }
           }
           EOF
 
@@ -2148,7 +2265,7 @@ jobs:
           let xml = fs.readFileSync(p, "utf8");
           const perms = "\n    <uses-permission android:name=\"android.permission.SYSTEM_ALERT_WINDOW\" />\n    <uses-permission android:name=\"android.permission.RECORD_AUDIO\" />\n    <uses-permission android:name=\"android.permission.CAMERA\" />\n    <uses-permission android:name=\"android.permission.VIBRATE\" />\n    <uses-permission android:name=\"android.permission.FOREGROUND_SERVICE\" />\n    <uses-permission android:name=\"android.permission.FOREGROUND_SERVICE_MICROPHONE\" />\n";
           const srv = "\n    <service android:name=\"com.k2hkkh.ideadrawer.FloatingWidgetService\" android:enabled=\"true\" android:exported=\"false\" android:foregroundServiceType=\"microphone\" />\n";
-          xml = xml.replace("<application", perms + "    <application");
+          xml = xml.replace("<application", perms + "    <application android:usesCleartextTraffic=\"true\"");
           xml = xml.replace("</application>", srv + "    </application>");
           fs.writeFileSync(p, xml, "utf8");
           '
@@ -2183,7 +2300,6 @@ jobs:
           import android.view.View;
           import android.view.WindowManager;
           import android.widget.TextView;
-          import android.widget.Toast;
           import androidx.core.app.NotificationCompat;
           import java.util.ArrayList;
 
@@ -2399,6 +2515,7 @@ jobs:
           import android.speech.RecognizerIntent;
           import android.speech.SpeechRecognizer;
           import android.webkit.JavascriptInterface;
+          import android.widget.Toast;
           import androidx.core.app.ActivityCompat;
           import androidx.core.content.ContextCompat;
           import com.getcapacitor.BridgeActivity;
@@ -2445,6 +2562,24 @@ jobs:
                                   prefs.edit().remove("PENDING_VOICE").apply();
                               }
                               return pending;
+                          }
+
+                          @JavascriptInterface
+                          public void saveBackupFile(String jsonContent) {
+                              new Handler(Looper.getMainLooper()).post(() -> {
+                                  try {
+                                      java.io.File downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS);
+                                      String fileName = "idea_drawer_backup_" + System.currentTimeMillis() + ".json";
+                                      java.io.File file = new java.io.File(downloadsDir, fileName);
+                                      java.io.FileWriter writer = new java.io.FileWriter(file);
+                                      writer.write(jsonContent);
+                                      writer.flush();
+                                      writer.close();
+                                      Toast.makeText(getApplicationContext(), "💾 [Download] 폴더에 백업 저장 완료: " + fileName, Toast.LENGTH_LONG).show();
+                                  } catch (Exception e) {
+                                      Toast.makeText(getApplicationContext(), "백업 저장 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                  }
+                              });
                           }
                       }, "AndroidBridge");
                   }
