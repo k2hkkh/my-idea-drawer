@@ -185,20 +185,6 @@ jobs:
                 font-weight: 600;
               }
               .card-time { font-size: 0.75rem; color: var(--muted); }
-              .card-media-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-                gap: 6px;
-                margin-top: 4px;
-              }
-              .media-thumb-item {
-                width: 100%;
-                height: 110px;
-                object-fit: cover;
-                border-radius: 8px;
-                border: 1px solid var(--border);
-                background: #000;
-              }
               .card-content { font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap; }
               .card-actions {
                 display: flex;
@@ -222,39 +208,125 @@ jobs:
               .card-btn.delete { color: var(--danger); }
               .card-btn.plan-send { color: var(--accent); }
 
+              /* 쪽잠 퀵 타이머 */
+              .nap-timer-panel {
+                background: #18181b;
+                border: 1px solid #27272a;
+                border-radius: 14px;
+                padding: 10px 12px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+              }
+              .nap-timer-top {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              }
+              .nap-title {
+                font-size: 0.85rem;
+                font-weight: 700;
+                color: #e4e4e7;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+              }
+              .nap-display {
+                font-size: 0.85rem;
+                font-family: monospace;
+                color: var(--accent);
+                font-weight: bold;
+              }
+              .nap-btn-group {
+                display: flex;
+                gap: 6px;
+              }
+              .nap-btn {
+                flex: 1;
+                background: var(--surface);
+                border: 1px solid #3f3f46;
+                color: #ffffff;
+                padding: 6px 0;
+                border-radius: 8px;
+                font-size: 0.78rem;
+                font-weight: 600;
+                cursor: pointer;
+              }
+              .nap-btn.stop {
+                background: var(--danger);
+                border-color: #f87171;
+              }
+
+              /* 타임라인 일과 섹션 */
+              .timeline-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+              }
+              .timeline-slot {
+                background: #121214;
+                border: 1px solid #27272a;
+                border-radius: 12px;
+                padding: 10px;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                min-height: 90px;
+              }
+              .slot-header {
+                font-size: 0.78rem;
+                font-weight: 700;
+                color: #a1a1aa;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px solid #222;
+                padding-bottom: 4px;
+              }
+              .slot-card-item {
+                background: #1c1c1e;
+                border-radius: 6px;
+                padding: 6px 8px;
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                font-size: 0.8rem;
+                border-left: 2px solid var(--primary);
+              }
+              .slot-card-item.completed { opacity: 0.5; text-decoration: line-through; }
+
               .plan-section-title {
-                font-size: 0.95rem;
+                font-size: 0.9rem;
                 font-weight: 700;
                 color: #ffffff;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                margin-top: 4px;
-                margin-bottom: 2px;
+                margin-top: 6px;
                 padding-left: 2px;
               }
               .plan-count-badge {
-                font-size: 0.75rem;
+                font-size: 0.72rem;
                 background: var(--surface);
                 color: var(--accent);
-                padding: 2px 8px;
-                border-radius: 10px;
+                padding: 2px 7px;
+                border-radius: 8px;
               }
               .plan-card {
                 background: var(--card);
                 border: 1px solid var(--border);
-                border-radius: 14px;
-                padding: 12px 14px;
+                border-radius: 12px;
+                padding: 10px 12px;
                 display: flex;
                 flex-direction: column;
-                gap: 8px;
+                gap: 6px;
               }
-              .plan-card.completed { opacity: 0.6; border-color: #27272a; }
-              .plan-card-top { display: flex; align-items: center; gap: 10px; }
+              .plan-card.completed { opacity: 0.55; border-color: #27272a; }
+              .plan-card-top { display: flex; align-items: center; gap: 8px; }
               .status-tag {
                 font-size: 0.72rem;
                 font-weight: 700;
-                padding: 4px 8px;
+                padding: 3px 6px;
                 border-radius: 6px;
                 cursor: pointer;
                 white-space: nowrap;
@@ -262,20 +334,8 @@ jobs:
               .status-tag.waiting { background: #3f3f46; color: #d4d4d8; }
               .status-tag.progress { background: #1e3a8a; color: #60a5fa; }
               .status-tag.done { background: #064e3b; color: #34d399; }
-              .plan-title { flex: 1; font-size: 0.95rem; font-weight: 500; color: #ffffff; }
+              .plan-title { flex: 1; font-size: 0.9rem; font-weight: 500; color: #ffffff; }
               .plan-title.completed { text-decoration: line-through; color: var(--muted); }
-              .plan-notes-box {
-                background: #121214;
-                border-radius: 8px;
-                padding: 8px 10px;
-                font-size: 0.8rem;
-                color: #a1a1aa;
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-                border-left: 2px solid var(--primary);
-              }
-              .plan-note-item { line-height: 1.4; }
 
               .attachment-tray {
                 display: none;
@@ -489,7 +549,7 @@ jobs:
               }
               .edit-mic-btn.listening svg { fill: #ffffff; }
 
-              /* ================== 암전 풀스크린 메모딱지 ================== */
+              /* 암전 메모딱지 */
               #memopad-screen {
                 display: none;
                 position: fixed;
@@ -678,18 +738,6 @@ jobs:
                 background: var(--primary);
                 color: #ffffff;
               }
-
-              .manual-card {
-                background: var(--card);
-                border: 1px solid var(--border);
-                border-radius: 14px;
-                padding: 14px;
-                display: flex;
-                flex-direction: column;
-                gap: 6px;
-              }
-              .manual-title { font-size: 0.95rem; font-weight: bold; color: var(--accent); }
-              .manual-desc { font-size: 0.85rem; color: #d4d4d8; line-height: 1.5; }
             </style>
           </head>
           <body>
@@ -704,7 +752,7 @@ jobs:
               </div>
 
               <div style="display:flex; gap:6px;">
-                <button class="header-btn" onclick="openManualModal()" title="1분 가이드">❓</button>
+                <button class="header-btn" onclick="openManualModal()" title="가이드">❓</button>
                 <button class="header-btn" onclick="openArchiveModal()" title="보관함/휴지통/백업">📂</button>
               </div>
             </header>
@@ -717,6 +765,7 @@ jobs:
               <div class="category-pill" onclick="selectCategory('전체')">📂 전체</div>
             </div>
 
+            <!-- 생각서랍 뷰 -->
             <div class="view-container" id="idea-feed-container">
               <div class="empty-canvas" id="empty-hint">
                 떠오르는 생각을 자유롭게 기록하세요.<br>
@@ -724,15 +773,55 @@ jobs:
               </div>
             </div>
 
+            <!-- 나의계획 뷰: 쪽잠 타이머 + 하루 일과 타임라인 + 집중/대기열 -->
             <div class="view-container" id="plan-feed-container" style="display:none;">
-              <div class="plan-section-title">
-                <span>⚡ 오늘 집중 (Today Focus)</span>
-                <span class="plan-count-badge" id="today-count-badge">0건</span>
+              <!-- 쪽잠 퀵 타이머 -->
+              <div class="nap-timer-panel">
+                <div class="nap-timer-top">
+                  <div class="nap-title">⏱️ 쪽잠 리셋 타이머</div>
+                  <div class="nap-display" id="nap-time-display">대기 중</div>
+                </div>
+                <div class="nap-btn-group">
+                  <button class="nap-btn" onclick="startNapTimer(15)">15분</button>
+                  <button class="nap-btn" onclick="startNapTimer(30)">30분</button>
+                  <button class="nap-btn" onclick="startNapTimer(45)">45분</button>
+                  <button class="nap-btn stop" id="nap-stop-btn" style="display:none;" onclick="stopNapTimer()">정지</button>
+                </div>
               </div>
-              <div id="today-plan-list" style="display:flex; flex-direction:column; gap:8px;"></div>
 
-              <div class="plan-section-title" style="margin-top:16px;">
-                <span>🔄 진행 중 및 보관 (Backlog)</span>
+              <!-- 하루 일과 타임라인 -->
+              <div class="plan-section-title">
+                <span>🗓️ 하루 일과 타임라인</span>
+              </div>
+              <div class="timeline-grid">
+                <div class="timeline-slot" id="slot-morning">
+                  <div class="slot-header"><span>🌅 오전</span><span>06-12</span></div>
+                  <div class="slot-items" id="slot-items-morning"></div>
+                </div>
+                <div class="timeline-slot" id="slot-afternoon">
+                  <div class="slot-header"><span>☀️ 오후</span><span>12-18</span></div>
+                  <div class="slot-items" id="slot-items-afternoon"></div>
+                </div>
+                <div class="timeline-slot" id="slot-evening">
+                  <div class="slot-header"><span>🌙 저녁/야간</span><span>18-24</span></div>
+                  <div class="slot-items" id="slot-items-evening"></div>
+                </div>
+                <div class="timeline-slot" id="slot-night">
+                  <div class="slot-header"><span>⏱️ 심야/휴식</span><span>00-06</span></div>
+                  <div class="slot-items" id="slot-items-night"></div>
+                </div>
+              </div>
+
+              <!-- 지금 집중 -->
+              <div class="plan-section-title">
+                <span>⚡ 지금 집중 (Focus)</span>
+                <span class="plan-count-badge" id="focus-count-badge">0건</span>
+              </div>
+              <div id="focus-plan-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+
+              <!-- 할 일 대기열 -->
+              <div class="plan-section-title">
+                <span>🔄 할 일 대기열 (Backlog)</span>
                 <span class="plan-count-badge" id="backlog-count-badge">0건</span>
               </div>
               <div id="backlog-plan-list" style="display:flex; flex-direction:column; gap:8px;"></div>
@@ -785,7 +874,7 @@ jobs:
             <input type="file" id="video-file" accept="video/*" capture="environment" style="display:none;" onchange="processVideoFile(this)" />
             <input type="file" id="backup-import-file" accept=".json" style="display:none;" onchange="importBackupData(this)" />
 
-            <!-- ================== 암전 풀스크린 메모딱지 ================== -->
+            <!-- 암전 메모딱지 -->
             <div id="memopad-screen">
               <div id="memopad-toolbar" class="memopad-toolbar">
                 <div class="pad-toolbar-row1">
@@ -830,7 +919,7 @@ jobs:
               <div class="corner-guide right">💾 우측 쓸어올려 저장</div>
             </div>
 
-            <!-- 풀스크린 생각 수정 모달 (그림 전체 비율 온전 표시) -->
+            <!-- 풀스크린 생각 수정 모달 -->
             <div id="edit-modal" class="modal-full">
               <div class="modal-top">
                 <span id="edit-modal-title" style="font-weight:bold; font-size:1rem;">✏️ 생각 수정</span>
@@ -840,7 +929,6 @@ jobs:
                 </div>
               </div>
               <div class="modal-body" style="padding:14px; display:flex; flex-direction:column; height:calc(100vh - 65px);">
-                <!-- 그림 전체가 잘림 없이 보이는 전용 뷰어 컨테이너 -->
                 <div id="edit-media-preview" style="flex-shrink:0; display:flex; flex-direction:column; gap:8px;"></div>
                 <div class="edit-input-wrapper" style="flex:1; margin-top:8px;">
                   <textarea id="edit-input" class="fullscreen-editor-area" placeholder="수정할 내용을 자유롭게 입력하세요..."
@@ -857,22 +945,31 @@ jobs:
               </div>
             </div>
 
-            <!-- 나의계획 상세 수정 모달 -->
+            <!-- 계획 상세 수정 모달 -->
             <div id="plan-edit-modal" class="modal-full">
               <div class="modal-top">
-                <span style="font-weight:bold; font-size:1rem;">📋 계획 및 진행상황 기록</span>
+                <span style="font-weight:bold; font-size:1rem;">📋 계획 및 일과 상세 설정</span>
                 <div style="display:flex; gap:8px;">
                   <button class="card-btn" style="background:var(--primary);" onclick="confirmEditPlan()">💾 저장</button>
                   <button class="card-btn" style="background:var(--danger);" onclick="closePlanEditModal()">취소</button>
                 </div>
               </div>
               <div class="modal-body">
-                <label style="font-size:0.8rem; color:var(--muted);">할 일 / 프로젝트 제목</label>
+                <label style="font-size:0.8rem; color:var(--muted);">할 일 / 계획 제목</label>
                 <input id="plan-edit-title" class="main-input" style="background:var(--card); border:1px solid var(--border); border-radius:10px; padding:10px; font-size:1rem; font-weight:bold;" />
+
+                <label style="font-size:0.8rem; color:var(--muted); margin-top:8px;">시간대 배치 (타임라인)</label>
+                <select id="plan-edit-timeslot" style="background:var(--card); border:1px solid var(--border); border-radius:10px; padding:10px; color:#ffffff; font-size:0.9rem; outline:none;">
+                  <option value="none">🔄 미지정 (대기열 보관)</option>
+                  <option value="morning">🌅 오전 (06:00 ~ 12:00)</option>
+                  <option value="afternoon">☀️ 오후 (12:00 ~ 18:00)</option>
+                  <option value="evening">🌙 저녁/야간 (18:00 ~ 24:00)</option>
+                  <option value="night">⏱️ 심야/휴식 (00:00 ~ 06:00)</option>
+                </select>
 
                 <label style="font-size:0.8rem; color:var(--muted); margin-top:8px;">새로운 진행 메모</label>
                 <div class="edit-input-wrapper">
-                  <textarea id="plan-edit-newnote" class="main-input" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 50px 12px 14px; min-height:90px; width:100%;" placeholder="새로운 진행상황을 말씀하시거나 입력하세요..."
+                  <textarea id="plan-edit-newnote" class="main-input" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 50px 12px 14px; min-height:85px; width:100%;" placeholder="진행 상황을 입력하세요..."
                     oninput="trackCursor(this)"
                     onclick="trackCursor(this)"
                     onkeyup="trackCursor(this)" 
@@ -885,11 +982,11 @@ jobs:
                 </div>
 
                 <label style="font-size:0.8rem; color:var(--muted); margin-top:8px;">누적된 진행 기록</label>
-                <div id="plan-edit-history" class="plan-notes-box" style="min-height:80px; max-height:160px; overflow-y:auto;"></div>
+                <div id="plan-edit-history" class="plan-notes-box" style="min-height:70px; max-height:140px; overflow-y:auto;"></div>
               </div>
             </div>
 
-            <!-- 통합 보관함 / 휴지통 / 백업 모달 -->
+            <!-- 통합 보관함 -->
             <div id="archive-modal" class="modal-full">
               <div class="modal-top">
                 <span style="font-weight:bold; font-size:1.05rem;">📂 생각보관함 & 관리</span>
@@ -908,19 +1005,12 @@ jobs:
               <div class="view-container" id="backup-pane" style="display:none; gap:16px;">
                 <div class="thought-card">
                   <div style="font-weight:bold; font-size:1rem; color:var(--accent);">📥 전체 데이터 백업 (파일 다운로드)</div>
-                  <div style="font-size:0.85rem; color:var(--muted); line-height:1.5;">
-                    현재까지 작성된 모든 생각, 계획표, 메모딱지를 하나의 백업 파일(`idea_drawer_backup.json`)로 안전하게 내려받습니다.
-                  </div>
                   <button class="card-btn" style="background:var(--primary); padding:10px; justify-content:center; margin-top:6px;" onclick="exportBackupData()">
                     💾 백업 파일 다운로드
                   </button>
                 </div>
-
                 <div class="thought-card">
                   <div style="font-weight:bold; font-size:1rem; color:var(--success);">📤 데이터 복원 (기기 변경 시)</div>
-                  <div style="font-size:0.85rem; color:var(--muted); line-height:1.5;">
-                    새 스마트폰에서 백업 파일을 불러와 기존의 모든 생각과 계획을 원상 복원합니다.
-                  </div>
                   <button class="card-btn" style="background:var(--surface); border:1px solid var(--border); padding:10px; justify-content:center; margin-top:6px;" onclick="document.getElementById('backup-import-file').click()">
                     📂 백업 파일 선택하여 복원
                   </button>
@@ -928,46 +1018,19 @@ jobs:
               </div>
             </div>
 
-            <!-- 1분 사용 매뉴얼 모달 -->
             <div id="manual-modal" class="modal-full">
               <div class="modal-top">
-                <span style="font-weight:bold; font-size:1.05rem;">💡 생각서랍 활용 1분 가이드</span>
+                <span style="font-weight:bold; font-size:1.05rem;">💡 가이드</span>
                 <button class="card-btn" style="background:var(--danger);" onclick="closeManualModal()">닫기</button>
               </div>
-              <div class="modal-body" style="gap:12px;">
-                <div class="manual-card">
-                  <div class="manual-title">1. 노란 전구(💡) 플로팅 버튼</div>
-                  <div class="manual-desc">
-                    다른 앱을 사용하는 중에도 노란 전구를 터치하고 말씀하시면, 음성이 자동으로 **[생각서랍]**에 안전하게 보관됩니다.
-                  </div>
+              <div class="modal-body">
+                <div class="thought-card">
+                  <div style="font-weight:bold; color:var(--accent);">1. 쪽잠 타이머</div>
+                  <div style="font-size:0.85rem; color:#ccc;">15/30/45분 원터치 타이머로 종료 시 진동 및 알람이 작동합니다.</div>
                 </div>
-
-                <div class="manual-card">
-                  <div class="manual-title">2. 상단 3분할 모드 전환</div>
-                  <div class="manual-desc">
-                    • **💡 생각서랍**: 번개처럼 떠오른 아이디어를 음성, 글자, 사진으로 담는 깨끗한 빈 도화지<br>
-                    • **📋 나의계획**: `⚡ 오늘 집중`과 `🔄 진행/보관`으로 나뉜 2단 실행 대시보드<br>
-                    • **📑 메모딱지**: 버튼 없는 암전 화면에서 손글씨를 자유롭게 쓰고 찢어버리는 낙서장
-                  </div>
-                </div>
-
-                <div class="manual-card">
-                  <div class="manual-title">3. 📑 메모딱지 지우개 3종 & 제스처</div>
-                  <div class="manual-desc">
-                    • **🧹 지우개**: 원하는 선만 문질러서 지우기<br>
-                    • **↩️ 취소**: 방금 그은 선이나 글씨 1획 되돌리기<br>
-                    • **🔄 싹지우기**: 화면 전체를 검정 도화지로 즉시 완전 리셋<br>
-                    • **더블탭 2단계 (톡톡)**: 상단 바 열린 상태에서 빈 화면을 다시 치면 **생각서랍 자동 저장 후 복귀**<br>
-                    • **좌측 하단 쓸어올리기**: 메모지를 구겨 **휴지통으로 직행**<br>
-                    • **우측 하단 쓸어올리기**: 즉시 **생각서랍에 저장 후 복귀**
-                  </div>
-                </div>
-
-                <div class="manual-card">
-                  <div class="manual-title">4. 데이터 백업 및 휴지통 복원</div>
-                  <div class="manual-desc">
-                    보관함(`📂`)에서 버린 메모딱지를 되살리는 **휴지통**과 스마트폰 교체 시 데이터를 안전하게 보존하는 **백업/복원**을 이용할 수 있습니다.
-                  </div>
+                <div class="thought-card">
+                  <div style="font-weight:bold; color:var(--accent);">2. 하루 일과 타임라인</div>
+                  <div style="font-size:0.85rem; color:#ccc;">오전, 오후, 저녁/야간, 심야 4개 시간대로 작업 일과가 배치됩니다.</div>
                 </div>
               </div>
             </div>
@@ -1007,6 +1070,60 @@ jobs:
               let lastProcessedVoice = '';
               let lastProcessedTime = 0;
 
+              /* 쪽잠 퀵 타이머 엔진 */
+              let napTimerInterval = null;
+              let napEndTime = null;
+
+              function startNapTimer(mins) {
+                stopNapTimer();
+                napEndTime = Date.now() + mins * 60 * 1000;
+                document.getElementById('nap-stop-btn').style.display = 'block';
+                updateNapTimerDisplay();
+                napTimerInterval = setInterval(checkNapTimer, 1000);
+              }
+
+              function stopNapTimer() {
+                if (napTimerInterval) clearInterval(napTimerInterval);
+                napTimerInterval = null;
+                napEndTime = null;
+                document.getElementById('nap-time-display').innerText = '대기 중';
+                document.getElementById('nap-stop-btn').style.display = 'none';
+              }
+
+              function checkNapTimer() {
+                if (!napEndTime) return;
+                const remaining = napEndTime - Date.now();
+                if (remaining <= 0) {
+                  stopNapTimer();
+                  triggerNapAlarm();
+                } else {
+                  updateNapTimerDisplay(remaining);
+                }
+              }
+
+              function updateNapTimerDisplay(remaining) {
+                if (!remaining) return;
+                const totalSec = Math.floor(remaining / 1000);
+                const m = Math.floor(totalSec / 60);
+                const s = totalSec % 60;
+                document.getElementById('nap-time-display').innerText = 
+                  `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')} 남음`;
+              }
+
+              function triggerNapAlarm() {
+                try {
+                  if (navigator.vibrate) navigator.vibrate([400, 200, 400, 200, 600]);
+                  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                  const osc = ctx.createOscillator();
+                  osc.type = 'sine';
+                  osc.frequency.setValueAtTime(880, ctx.currentTime);
+                  osc.connect(ctx.destination);
+                  osc.start();
+                  osc.stop(ctx.currentTime + 1.2);
+                } catch(e) {}
+                alert('⏰ 쪽잠 시간이 종료되었습니다. 일과를 재개합니다.');
+              }
+
               function switchMainMode(mode) {
                 currentMainMode = mode;
                 document.getElementById('tab-btn-idea').classList.toggle('active', mode === 'idea');
@@ -1031,7 +1148,7 @@ jobs:
                   ideaFeed.style.display = 'none';
                   planFeed.style.display = 'flex';
                   plusBtn.style.display = 'none';
-                  input.placeholder = '⚡ 오늘 할 일 또는 새로운 계획을 등록하세요...';
+                  input.placeholder = '새로운 계획을 입력하세요 (시간대 자동배치)...';
                   renderPlanView();
                 }
               }
@@ -1192,7 +1309,7 @@ jobs:
                     saveThought(category, text, [...currentAttachments]);
                     selectCategory('첫 생각');
                   } else {
-                    savePlan(text, true);
+                    savePlanAutoSlot(text);
                     renderPlanView();
                   }
 
@@ -1270,7 +1387,7 @@ jobs:
               let webSpeechInstance = null;
               function startWebSpeechContinuous() {
                 const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (!Speech) { alert('음성인식 기능을 지원하지 않는 기기입니다.'); stopContinuousVoice(); return; }
+                if (!Speech) { alert('음성인식 기능을 지원하지 않는 환경입니다.'); stopContinuousVoice(); return; }
                 webSpeechInstance = new Speech();
                 webSpeechInstance.lang = 'ko-KR';
                 webSpeechInstance.continuous = true;
@@ -1288,12 +1405,13 @@ jobs:
                 webSpeechInstance.start();
               }
 
+              /* 수정: 공백 중첩 제거 및 단어 누락 방지 */
               function appendVoiceResult(text) {
                 if (!text || !text.trim()) return;
                 const clean = text.trim();
                 const now = Date.now();
 
-                if (clean === lastProcessedVoice && (now - lastProcessedTime < 1800)) return;
+                if (clean === lastProcessedVoice && (now - lastProcessedTime < 350)) return;
                 lastProcessedVoice = clean;
                 lastProcessedTime = now;
 
@@ -1326,10 +1444,9 @@ jobs:
                 const before = val.substring(0, start);
                 const after = val.substring(end);
 
-                const needsPreSpace = before.length > 0 && !before.endsWith(' ') && !before.endsWith('\n');
-                const needsPostSpace = after.length > 0 && !after.startsWith(' ') && !after.startsWith('\n');
-
-                const insertChunk = (needsPreSpace ? ' ' : '') + clean + (needsPostSpace ? ' ' : '');
+                // 정밀 공백: 커서 바로 앞이 공백/줄바꿈이 아닐 때만 1칸 띄움
+                const needsSpace = before.length > 0 && !/\s$/.test(before);
+                const insertChunk = (needsSpace ? ' ' : '') + clean;
                 el.value = before + insertChunk + after;
 
                 const nextPos = start + insertChunk.length;
@@ -1387,6 +1504,7 @@ jobs:
                 setThoughtStorage(list);
               }
 
+              /* 타임라인 계획 저장 엔진 */
               function getPlanStorage() {
                 const data = localStorage.getItem('plan_drawer_storage') || '[]';
                 try { return JSON.parse(data); } catch (e) { return []; }
@@ -1395,37 +1513,174 @@ jobs:
                 try { localStorage.setItem('plan_drawer_storage', JSON.stringify(arr)); } catch (e) {}
                 renderPlanView();
               }
-              function savePlan(title, isToday = true) {
+
+              function getAutoTimeSlot() {
+                const hour = new Date().getHours();
+                if (hour >= 6 && hour < 12) return 'morning';
+                if (hour >= 12 && hour < 18) return 'afternoon';
+                if (hour >= 18 && hour < 24) return 'evening';
+                return 'night';
+              }
+
+              function savePlanAutoSlot(title) {
                 if (!title || !title.trim()) return;
                 const list = getPlanStorage();
                 list.unshift({
                   id: Date.now(),
                   title: title.trim(),
                   status: '대기',
-                  isToday: isToday,
+                  timeSlot: getAutoTimeSlot(),
+                  isFocus: false,
                   notes: [],
                   updatedAt: new Date().toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })
                 });
                 setPlanStorage(list);
               }
 
-              function getPadTrashStorage() {
-                const data = localStorage.getItem('memopad_trash_storage') || '[]';
-                try { return JSON.parse(data); } catch (e) { return []; }
-              }
-              function setPadTrashStorage(arr) {
-                try { localStorage.setItem('memopad_trash_storage', JSON.stringify(arr)); } catch (e) {}
-              }
-
               function sendThoughtToPlan(id) {
                 const thought = getThoughtStorage().find(t => t.id === id);
                 if (thought) {
-                  const title = thought.content ? thought.content.split('\n')[0] : `[${thought.category}] 계획 항목`;
-                  savePlan(title, true);
-                  alert('⚡ 오늘 할 일 목록에 등록되었습니다!');
+                  const title = thought.content ? thought.content.split('\n')[0] : `[${thought.category}] 계획`;
+                  savePlanAutoSlot(title);
+                  alert('🗓️ 오늘 타임라인 일과에 등록되었습니다.');
                 }
               }
 
+              /* 타임라인 & 계획표 렌더링 */
+              function renderPlanView() {
+                const list = getPlanStorage();
+                
+                // 타임라인 4슬롯 렌더링
+                const slots = ['morning', 'afternoon', 'evening', 'night'];
+                slots.forEach(s => {
+                  const el = document.getElementById(`slot-items-${s}`);
+                  const items = list.filter(p => p.timeSlot === s);
+                  if (items.length === 0) {
+                    el.innerHTML = '<span style="font-size:0.7rem; color:#444;">배치된 일과 없음</span>';
+                  } else {
+                    el.innerHTML = items.map(p => `
+                      <div class="slot-card-item ${p.status === '완료' ? 'completed' : ''}" onclick="openPlanEditModal(${p.id})">
+                        <span>${p.title}</span>
+                      </div>
+                    `).join('');
+                  }
+                });
+
+                // 지금 집중
+                const focusList = list.filter(p => p.isFocus);
+                document.getElementById('focus-count-badge').innerText = `${focusList.length}건`;
+                const focusContainer = document.getElementById('focus-plan-list');
+                focusContainer.innerHTML = focusList.length === 0
+                  ? '<div style="color:#52525b; font-size:0.8rem; padding:6px 2px;">⚡ 현재 집중 작업이 없습니다.</div>'
+                  : focusList.map(p => renderPlanCardHtml(p)).join('');
+
+                // 대기열 (미지정 또는 집중 외 작업)
+                const backlogList = list.filter(p => !p.isFocus);
+                document.getElementById('backlog-count-badge').innerText = `${backlogList.length}건`;
+                const backlogContainer = document.getElementById('backlog-plan-list');
+                backlogContainer.innerHTML = backlogList.length === 0
+                  ? '<div style="color:#52525b; font-size:0.8rem; padding:6px 2px;">대기열이 비어 있습니다.</div>'
+                  : backlogList.map(p => renderPlanCardHtml(p)).join('');
+              }
+
+              function renderPlanCardHtml(p) {
+                const isDone = p.status === '완료';
+                const statusClass = (p.status === '진행중') ? 'progress' : (isDone ? 'done' : 'waiting');
+                const slotNames = { morning: '오전', afternoon: '오후', evening: '저녁', night: '심야', none: '미지정' };
+
+                return `
+                  <div class="plan-card ${isDone ? 'completed' : ''}">
+                    <div class="plan-card-top">
+                      <span class="status-tag ${statusClass}" onclick="cyclePlanStatus(${p.id})">${p.status}</span>
+                      <div class="plan-title ${isDone ? 'completed' : ''}">${p.title}</div>
+                      <span style="font-size:0.72rem; color:var(--muted);">${slotNames[p.timeSlot || 'none']}</span>
+                    </div>
+                    ${p.notes && p.notes.length > 0 ? `
+                      <div style="font-size:0.78rem; color:#888; background:#141416; padding:6px 8px; border-radius:6px;">
+                        ${p.notes.map(n => `<div>• ${n}</div>`).join('')}
+                      </div>
+                    ` : ''}
+                    <div class="card-actions" style="margin-top:2px;">
+                      <button class="card-btn" onclick="toggleFocusFlag(${p.id})">${p.isFocus ? '⚡ 집중 해제' : '⚡ 지금 집중'}</button>
+                      <button class="card-btn" onclick="openPlanEditModal(${p.id})">✏️ 설정</button>
+                      <button class="card-btn delete" onclick="deletePlan(${p.id})">🗑️ 삭제</button>
+                    </div>
+                  </div>
+                `;
+              }
+
+              function cyclePlanStatus(id) {
+                const list = getPlanStorage();
+                const item = list.find(p => p.id === id);
+                if (item) {
+                  if (item.status === '대기') item.status = '진행중';
+                  else if (item.status === '진행중') item.status = '완료';
+                  else item.status = '대기';
+                  setPlanStorage(list);
+                }
+              }
+
+              function toggleFocusFlag(id) {
+                const list = getPlanStorage();
+                const item = list.find(p => p.id === id);
+                if (item) {
+                  item.isFocus = !item.isFocus;
+                  setPlanStorage(list);
+                }
+              }
+
+              function deletePlan(id) {
+                if (confirm('이 계획을 삭제하시겠습니까?')) {
+                  const list = getPlanStorage().filter(p => p.id !== id);
+                  setPlanStorage(list);
+                }
+              }
+
+              function openPlanEditModal(id) {
+                const item = getPlanStorage().find(p => p.id === id);
+                if (item) {
+                  editingPlanId = id;
+                  document.getElementById('plan-edit-title').value = item.title;
+                  document.getElementById('plan-edit-timeslot').value = item.timeSlot || 'none';
+                  document.getElementById('plan-edit-newnote').value = '';
+                  
+                  const hist = document.getElementById('plan-edit-history');
+                  hist.innerHTML = (item.notes && item.notes.length > 0)
+                    ? item.notes.map(n => `<div>• ${n}</div>`).join('')
+                    : '<span style="color:#52525b;">기록된 진행 메모가 없습니다.</span>';
+
+                  cursorPositions['plan-edit-newnote'] = { start: 0, end: 0 };
+                  document.getElementById('plan-edit-modal').classList.add('active');
+                }
+              }
+
+              function closePlanEditModal() {
+                if (isListeningContinuous) stopContinuousVoice();
+                document.getElementById('plan-edit-modal').classList.remove('active');
+                editingPlanId = null;
+              }
+
+              function confirmEditPlan() {
+                const title = document.getElementById('plan-edit-title').value.trim();
+                const slot = document.getElementById('plan-edit-timeslot').value;
+                const newNote = document.getElementById('plan-edit-newnote').value.trim();
+                const list = getPlanStorage();
+                const target = list.find(p => p.id === editingPlanId);
+
+                if (target && title) {
+                  target.title = title;
+                  target.timeSlot = slot;
+                  if (newNote) {
+                    const timeStamp = new Date().toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' });
+                    target.notes.push(`[${timeStamp}] ${newNote}`);
+                  }
+                  target.updatedAt = new Date().toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' });
+                  setPlanStorage(list);
+                }
+                closePlanEditModal();
+              }
+
+              /* 생각서랍 렌더링 */
               function renderFeed() {
                 const list = getThoughtStorage();
                 const feed = document.getElementById('idea-feed-container');
@@ -1458,18 +1713,16 @@ jobs:
                         <span class="card-time">${item.time}</span>
                       </div>
                       ${item.mediaList && item.mediaList.length > 0 ? `
-                        <div class="${isPad ? '' : 'card-media-grid'}">
+                        <div>
                           ${item.mediaList.map(m => `
-                            <img src="${m.data}" class="${isPad ? '' : 'media-thumb-item'}" 
-                              style="${isPad ? 'width:100%; max-height:220px; object-fit:contain; border-radius:8px; border:1px solid var(--border); background:#000; display:block;' : ''}" />
+                            <img src="${m.data}" style="width:100%; max-height:240px; object-fit:contain; border-radius:8px; border:1px solid var(--border); background:#000; display:block;" />
                           `).join('')}
                         </div>
                       ` : ''}
                       ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
                       <div class="card-actions">
-                        <button class="card-btn plan-send" onclick="sendThoughtToPlan(${item.id})">📋 계획으로</button>
+                        <button class="card-btn plan-send" onclick="sendThoughtToPlan(${item.id})">📋 일과로</button>
                         <button class="card-btn" onclick="openEditModal(${item.id})">✏️ 수정</button>
-                        <button class="card-btn" onclick="copyThought('${encodeURIComponent(item.content || '')}')">📋 복사</button>
                         <button class="card-btn delete" onclick="deleteThought(${item.id})">🗑️ 삭제</button>
                       </div>
                     </div>
@@ -1477,93 +1730,10 @@ jobs:
                 }).join('');
               }
 
-              function copyThought(encoded) {
-                const text = decodeURIComponent(encoded);
-                navigator.clipboard.writeText(text).then(() => alert('클립보드에 복사되었습니다.'));
-              }
-
               function deleteThought(id) {
                 if (confirm('이 생각을 삭제하시겠습니까?')) {
                   const list = getThoughtStorage().filter(i => i.id !== id);
                   setThoughtStorage(list);
-                }
-              }
-
-              function renderPlanView() {
-                const list = getPlanStorage();
-                const todayList = list.filter(p => p.isToday);
-                const backlogList = list.filter(p => !p.isToday);
-
-                document.getElementById('today-count-badge').innerText = `${todayList.length}건`;
-                document.getElementById('backlog-count-badge').innerText = `${backlogList.length}건`;
-
-                const todayContainer = document.getElementById('today-plan-list');
-                const backlogContainer = document.getElementById('backlog-plan-list');
-
-                if (todayList.length === 0) {
-                  todayContainer.innerHTML = '<div style="color:#52525b; font-size:0.85rem; padding:10px 4px;">오늘 집중할 계획이 없습니다. 아래 입력창으로 추가하세요.</div>';
-                } else {
-                  todayContainer.innerHTML = todayList.map(p => renderPlanCardHtml(p)).join('');
-                }
-
-                if (backlogList.length === 0) {
-                  backlogContainer.innerHTML = '<div style="color:#52525b; font-size:0.85rem; padding:10px 4px;">보관된 장기 프로젝트나 대기 작업이 없습니다.</div>';
-                } else {
-                  backlogContainer.innerHTML = backlogList.map(p => renderPlanCardHtml(p)).join('');
-                }
-              }
-
-              function renderPlanCardHtml(p) {
-                const isDone = p.status === '완료';
-                const statusClass = (p.status === '진행중') ? 'progress' : (isDone ? 'done' : 'waiting');
-
-                return `
-                  <div class="plan-card ${isDone ? 'completed' : ''}">
-                    <div class="plan-card-top">
-                      <span class="status-tag ${statusClass}" onclick="cyclePlanStatus(${p.id})">${p.status}</span>
-                      <div class="plan-title ${isDone ? 'completed' : ''}">${p.title}</div>
-                      <span style="font-size:0.75rem; color:var(--muted);">${p.updatedAt}</span>
-                    </div>
-
-                    ${p.notes && p.notes.length > 0 ? `
-                      <div class="plan-notes-box">
-                        ${p.notes.map(n => `<div class="plan-note-item">• ${n}</div>`).join('')}
-                      </div>
-                    ` : ''}
-
-                    <div class="card-actions" style="margin-top:2px;">
-                      <button class="card-btn" onclick="toggleTodayFlag(${p.id})">${p.isToday ? '🔄 보관으로' : '⚡ 오늘로'}</button>
-                      <button class="card-btn" onclick="openPlanEditModal(${p.id})">✏️ 메모/수정</button>
-                      <button class="card-btn delete" onclick="deletePlan(${p.id})">🗑️ 삭제</button>
-                    </div>
-                  </div>
-                `;
-              }
-
-              function cyclePlanStatus(id) {
-                const list = getPlanStorage();
-                const item = list.find(p => p.id === id);
-                if (item) {
-                  if (item.status === '대기') item.status = '진행중';
-                  else if (item.status === '진행중') item.status = '완료';
-                  else item.status = '대기';
-                  setPlanStorage(list);
-                }
-              }
-
-              function toggleTodayFlag(id) {
-                const list = getPlanStorage();
-                const item = list.find(p => p.id === id);
-                if (item) {
-                  item.isToday = !item.isToday;
-                  setPlanStorage(list);
-                }
-              }
-
-              function deletePlan(id) {
-                if (confirm('이 계획을 삭제하시겠습니까?')) {
-                  const list = getPlanStorage().filter(p => p.id !== id);
-                  setPlanStorage(list);
                 }
               }
 
@@ -1583,14 +1753,13 @@ jobs:
                 }
               }
 
-              /* 수정창 이미지 뷰어: 전체 비율 온전 표시 */
               function renderEditMediaPreview() {
                 const mediaBox = document.getElementById('edit-media-preview');
                 if (editingMediaList.length === 0) { mediaBox.innerHTML = ''; return; }
                 mediaBox.innerHTML = editingMediaList.map((m, idx) => `
                   <div style="position:relative; width:100%; max-height:280px; background:#000000; border:1px solid var(--border); border-radius:10px; overflow:hidden; display:flex; justify-content:center; align-items:center;">
                     <img src="${m.data}" style="width:100%; max-height:280px; object-fit:contain; display:block;" />
-                    <button onclick="removeEditMedia(${idx})" style="position:absolute; top:6px; right:6px; width:26px; height:26px; border-radius:50%; background:var(--danger); color:#fff; border:none; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,0.5);">✕</button>
+                    <button onclick="removeEditMedia(${idx})" style="position:absolute; top:6px; right:6px; width:26px; height:26px; border-radius:50%; background:var(--danger); color:#fff; border:none; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
                   </div>
                 `).join('');
               }
@@ -1617,48 +1786,7 @@ jobs:
                 closeEditModal();
               }
 
-              function openPlanEditModal(id) {
-                const item = getPlanStorage().find(p => p.id === id);
-                if (item) {
-                  editingPlanId = id;
-                  document.getElementById('plan-edit-title').value = item.title;
-                  document.getElementById('plan-edit-newnote').value = '';
-                  
-                  const hist = document.getElementById('plan-edit-history');
-                  hist.innerHTML = (item.notes && item.notes.length > 0)
-                    ? item.notes.map(n => `<div>• ${n}</div>`).join('')
-                    : '<span style="color:#52525b;">기록된 진행 메모가 없습니다.</span>';
-
-                  cursorPositions['plan-edit-newnote'] = { start: 0, end: 0 };
-                  document.getElementById('plan-edit-modal').classList.add('active');
-                }
-              }
-
-              function closePlanEditModal() {
-                if (isListeningContinuous) stopContinuousVoice();
-                document.getElementById('plan-edit-modal').classList.remove('active');
-                editingPlanId = null;
-              }
-
-              function confirmEditPlan() {
-                const title = document.getElementById('plan-edit-title').value.trim();
-                const newNote = document.getElementById('plan-edit-newnote').value.trim();
-                const list = getPlanStorage();
-                const target = list.find(p => p.id === editingPlanId);
-
-                if (target && title) {
-                  target.title = title;
-                  if (newNote) {
-                    const timeStamp = new Date().toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' });
-                    target.notes.push(`[${timeStamp}] ${newNote}`);
-                  }
-                  target.updatedAt = new Date().toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' });
-                  setPlanStorage(list);
-                }
-                closePlanEditModal();
-              }
-
-              /* ================== 암전 풀스크린 메모딱지 엔진 ================== */
+              /* 메모딱지 인터랙션 */
               const padScreen = document.getElementById('memopad-screen');
               const padCanvas = document.getElementById('memopad-canvas');
               const padCtx = padCanvas.getContext('2d');
@@ -1674,18 +1802,14 @@ jobs:
 
               let lastTapTime = 0;
               let lastTapX = 0, lastTapY = 0;
-
               let touchStartX = 0, touchStartY = 0;
               let isCornerGesture = null;
-
               let padHistory = [];
               let customStripPosition = null;
 
               function savePadState() {
                 if (padHistory.length > 25) padHistory.shift();
-                try {
-                  padHistory.push(padCtx.getImageData(0, 0, padCanvas.width, padCanvas.height));
-                } catch(e) {}
+                try { padHistory.push(padCtx.getImageData(0, 0, padCanvas.width, padCanvas.height)); } catch(e) {}
               }
 
               function undoPadStroke() {
@@ -1699,7 +1823,7 @@ jobs:
               }
 
               function clearPadCanvas() {
-                if (confirm('도화지를 깨끗하게 모두 지우시겠습니까?')) {
+                if (confirm('도화지를 모두 지우시겠습니까?')) {
                   savePadState();
                   padCtx.fillStyle = '#000000';
                   padCtx.fillRect(0, 0, padCanvas.width, padCanvas.height);
@@ -1711,8 +1835,6 @@ jobs:
                 padScreen.classList.add('active');
                 padToolbar.classList.remove('active');
                 padTextStrip.style.display = 'none';
-                padTextStrip.style.left = '12px';
-                padTextStrip.style.right = '12px';
                 customStripPosition = null;
                 document.getElementById('memopad-text-input').value = '';
                 padTextDisplay.innerText = '';
@@ -1760,50 +1882,14 @@ jobs:
                 if (val && val.trim().length > 0) {
                   padTextStrip.style.display = 'block';
                   padTextDisplay.innerText = val.trim();
-                  updateStripPosition();
+                  if (!customStripPosition) {
+                    const rect = padToolbar.getBoundingClientRect();
+                    padTextStrip.style.top = (rect.bottom + 10) + 'px';
+                  }
                 } else {
                   padTextStrip.style.display = 'none';
                 }
               }
-
-              function updateStripPosition() {
-                if (!customStripPosition) {
-                  if (padToolbar.classList.contains('active')) {
-                    const rect = padToolbar.getBoundingClientRect();
-                    padTextStrip.style.top = (rect.bottom + 10) + 'px';
-                  } else {
-                    padTextStrip.style.top = '14px';
-                  }
-                }
-              }
-
-              let stripDragStartX = 0, stripDragStartY = 0;
-              let stripInitTop = 0, stripInitLeft = 0;
-              let isStripDragging = false;
-
-              padTextStrip.addEventListener('touchstart', (e) => {
-                e.stopPropagation();
-                const t = e.touches[0];
-                stripDragStartX = t.clientX;
-                stripDragStartY = t.clientY;
-                const r = padTextStrip.getBoundingClientRect();
-                stripInitTop = r.top;
-                stripInitLeft = r.left;
-                isStripDragging = true;
-              }, { passive: false });
-
-              padTextStrip.addEventListener('touchmove', (e) => {
-                if (!isStripDragging) return;
-                e.preventDefault();
-                e.stopPropagation();
-                const t = e.touches[0];
-                const dy = t.clientY - stripDragStartY;
-                const newTop = Math.max(10, Math.min(window.innerHeight - 80, stripInitTop + dy));
-                padTextStrip.style.top = newTop + 'px';
-                customStripPosition = { y: newTop };
-              }, { passive: false });
-
-              padTextStrip.addEventListener('touchend', () => { isStripDragging = false; });
 
               padCanvas.addEventListener('touchstart', (e) => {
                 e.preventDefault();
@@ -1811,15 +1897,8 @@ jobs:
                 const x = t.clientX, y = t.clientY;
                 const winW = window.innerWidth, winH = window.innerHeight;
 
-                if (y > winH - 120 && x < 120) {
-                  isCornerGesture = 'left';
-                  touchStartX = x; touchStartY = y;
-                  return;
-                } else if (y > winH - 120 && x > winW - 120) {
-                  isCornerGesture = 'right';
-                  touchStartX = x; touchStartY = y;
-                  return;
-                }
+                if (y > winH - 120 && x < 120) { isCornerGesture = 'left'; touchStartX = x; touchStartY = y; return; }
+                if (y > winH - 120 && x > winW - 120) { isCornerGesture = 'right'; touchStartX = x; touchStartY = y; return; }
 
                 const now = Date.now();
                 if (now - lastTapTime < 320 && Math.abs(x - lastTapX) < 25 && Math.abs(y - lastTapY) < 25) {
@@ -1829,7 +1908,6 @@ jobs:
                     return;
                   } else {
                     padToolbar.classList.add('active');
-                    updateStripPosition();
                     lastTapTime = 0;
                     return;
                   }
@@ -1837,7 +1915,6 @@ jobs:
                 lastTapTime = now;
                 lastTapX = x;
                 lastTapY = y;
-
                 touchStartX = x;
                 touchStartY = y;
                 isMoving = false;
@@ -1876,11 +1953,7 @@ jobs:
                 }
               }, { passive: false });
 
-              padCanvas.addEventListener('touchend', () => {
-                padDrawing = false;
-                isMoving = false;
-                isCornerGesture = null;
-              });
+              padCanvas.addEventListener('touchend', () => { padDrawing = false; isMoving = false; isCornerGesture = null; });
 
               function trashMemoPad() {
                 const dataUrl = padCanvas.toDataURL('image/jpeg', 0.8);
@@ -1902,11 +1975,9 @@ jobs:
 
               function saveMemoPadToDrawer() {
                 const text = document.getElementById('memopad-text-input').value.trim();
-                
                 if (text) {
                   let drawY = customStripPosition ? customStripPosition.y : 14;
                   if (drawY > padCanvas.height - 60) drawY = padCanvas.height - 60;
-
                   padCtx.fillStyle = '#2563eb';
                   padCtx.fillRect(10, drawY, padCanvas.width - 20, 46);
                   padCtx.fillStyle = '#ffffff';
@@ -1921,13 +1992,18 @@ jobs:
                 closeMemoPadDirect();
                 switchMainMode('idea');
                 selectCategory('전체');
-                alert('💾 메모딱지가 생각서랍에 안전하게 보관되었습니다!');
+                alert('💾 생각서랍에 보관되었습니다.');
               }
 
-              function openArchiveModal() {
-                document.getElementById('archive-modal').classList.add('active');
-                switchArchiveTab('archive');
+              function getPadTrashStorage() {
+                const data = localStorage.getItem('memopad_trash_storage') || '[]';
+                try { return JSON.parse(data); } catch (e) { return []; }
               }
+              function setPadTrashStorage(arr) {
+                try { localStorage.setItem('memopad_trash_storage', JSON.stringify(arr)); } catch (e) {}
+              }
+
+              function openArchiveModal() { document.getElementById('archive-modal').classList.add('active'); switchArchiveTab('archive'); }
               function closeArchiveModal() { document.getElementById('archive-modal').classList.remove('active'); }
 
               function switchArchiveTab(tab) {
@@ -1935,75 +2011,21 @@ jobs:
                 document.getElementById('subtab-trash').classList.toggle('active', tab === 'trash');
                 document.getElementById('subtab-backup').classList.toggle('active', tab === 'backup');
 
-                const archiveFeed = document.getElementById('archive-feed');
-                const trashFeed = document.getElementById('trash-feed');
-                const backupPane = document.getElementById('backup-pane');
+                document.getElementById('archive-feed').style.display = (tab === 'archive') ? 'flex' : 'none';
+                document.getElementById('trash-feed').style.display = (tab === 'trash') ? 'flex' : 'none';
+                document.getElementById('backup-pane').style.display = (tab === 'backup') ? 'flex' : 'none';
 
-                archiveFeed.style.display = (tab === 'archive') ? 'flex' : 'none';
-                trashFeed.style.display = (tab === 'trash') ? 'flex' : 'none';
-                backupPane.style.display = (tab === 'backup') ? 'flex' : 'none';
-
-                if (tab === 'archive') renderArchiveFeed();
-                else if (tab === 'trash') renderTrashFeed();
-              }
-
-              function renderArchiveFeed() {
-                const list = getThoughtStorage();
-                const feed = document.getElementById('archive-feed');
-                if (list.length === 0) {
-                  feed.innerHTML = '<p style="color:#55555c; text-align:center; margin-top:40px;">보관된 생각이 없습니다.</p>';
-                  return;
-                }
-                feed.innerHTML = list.map(item => {
-                  const isPad = (item.category === '메모딱지' || item.type === '메모딱지');
-                  return `
-                    <div class="thought-card">
-                      <div class="card-header">
-                        <span class="card-badge">${item.category || item.type || '노트'}</span>
-                        <span class="card-time">${item.time}</span>
-                      </div>
-                      ${item.mediaList && item.mediaList.length > 0 ? `
-                        <div class="${isPad ? '' : 'card-media-grid'}">
-                          ${item.mediaList.map(m => `
-                            <img src="${m.data}" class="${isPad ? '' : 'media-thumb-item'}" 
-                              style="${isPad ? 'width:100%; max-height:220px; object-fit:contain; border-radius:8px; border:1px solid var(--border); background:#000; display:block;' : ''}" />
-                          `).join('')}
-                        </div>
-                      ` : ''}
-                      ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
-                      <div class="card-actions">
-                        <button class="card-btn plan-send" onclick="sendThoughtToPlan(${item.id})">📋 계획으로</button>
-                        <button class="card-btn" onclick="openEditModal(${item.id})">✏️ 수정</button>
-                        <button class="card-btn delete" onclick="deleteThought(${item.id}); renderArchiveFeed();">🗑️ 삭제</button>
-                      </div>
-                    </div>
-                  `;
-                }).join('');
+                if (tab === 'trash') renderTrashFeed();
               }
 
               function renderTrashFeed() {
                 const list = getPadTrashStorage();
                 const feed = document.getElementById('trash-feed');
-                if (list.length === 0) {
-                  feed.innerHTML = '<p style="color:#55555c; text-align:center; margin-top:40px;">휴지통이 비어 있습니다.</p>';
-                  return;
-                }
-
-                feed.innerHTML = `
-                  <div style="display:flex; justify-content:flex-end; margin-bottom:4px;">
-                    <button class="card-btn delete" onclick="clearAllTrash()">🗑️ 휴지통 전체 비우기</button>
-                  </div>
-                ` + list.map(item => `
+                feed.innerHTML = list.length === 0 ? '<p style="color:#555; text-align:center;">비어 있음</p>' : list.map(item => `
                   <div class="thought-card">
-                    <div class="card-header">
-                      <span class="card-badge" style="color:var(--danger);">🗑️ 버려진 떡메모</span>
-                      <span class="card-time">${item.date} ${item.time}</span>
-                    </div>
-                    <img src="${item.imageData}" style="width:100%; max-height:180px; object-fit:contain; border-radius:8px; border:1px solid var(--border); background:#000;" />
-                    ${item.text ? `<div class="card-content">${item.text}</div>` : ''}
+                    <img src="${item.imageData}" style="width:100%; max-height:160px; object-fit:contain; background:#000;" />
                     <div class="card-actions">
-                      <button class="card-btn" style="background:var(--primary);" onclick="restoreTrashItem(${item.id})">↩️ 다시 꺼내기 (복원)</button>
-                      <button class="card-btn delete" onclick="deleteTrashItemPermanently(${item.id})">영구 삭제</button>
+                      <button class="card-btn" onclick="restoreTrashItem(${item.id})">↩️ 복원</button>
                     </div>
                   </div>
                 `).join('');
@@ -2016,68 +2038,40 @@ jobs:
                   saveThought('메모딱지', item.text || '', [{ type: '메모딱지', data: item.imageData, isVideo: false }]);
                   setPadTrashStorage(trashList.filter(t => t.id !== id));
                   renderTrashFeed();
-                  alert('✨ 메모딱지가 생각서랍으로 복원되었습니다!');
-                }
-              }
-
-              function deleteTrashItemPermanently(id) {
-                if (confirm('이 메모딱지를 완전히 영구 삭제하시겠습니까?')) {
-                  const list = getPadTrashStorage().filter(t => t.id !== id);
-                  setPadTrashStorage(list);
-                  renderTrashFeed();
-                }
-              }
-
-              function clearAllTrash() {
-                if (confirm('휴지통을 완전히 비우시겠습니까? 복원할 수 없습니다.')) {
-                  setPadTrashStorage([]);
-                  renderTrashFeed();
                 }
               }
 
               function exportBackupData() {
                 const backupObj = {
-                  version: '1.0',
+                  version: '2.0',
                   exportDate: new Date().toISOString(),
                   thoughts: getThoughtStorage(),
                   plans: getPlanStorage(),
                   trash: getPadTrashStorage()
                 };
-
                 const blob = new Blob([JSON.stringify(backupObj, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = `idea_drawer_backup_${new Date().toISOString().slice(0,10)}.json`;
                 a.click();
-                URL.revokeObjectURL(url);
               }
 
               function importBackupData(input) {
                 const file = input.files[0];
                 if (!file) return;
-
                 const reader = new FileReader();
                 reader.onload = (e) => {
                   try {
                     const parsed = JSON.parse(e.target.result);
-                    if (parsed.thoughts && Array.isArray(parsed.thoughts)) {
-                      setThoughtStorage(parsed.thoughts);
-                    }
-                    if (parsed.plans && Array.isArray(parsed.plans)) {
-                      setPlanStorage(parsed.plans);
-                    }
-                    if (parsed.trash && Array.isArray(parsed.trash)) {
-                      setPadTrashStorage(parsed.trash);
-                    }
-                    alert('🎉 모든 데이터가 성공적으로 완벽 복원되었습니다!');
+                    if (parsed.thoughts) setThoughtStorage(parsed.thoughts);
+                    if (parsed.plans) setPlanStorage(parsed.plans);
+                    if (parsed.trash) setPadTrashStorage(parsed.trash);
+                    alert('복원이 완료되었습니다.');
                     location.reload();
-                  } catch (err) {
-                    alert('잘못된 백업 파일 형식입니다.');
-                  }
+                  } catch (err) { alert('파일 오류'); }
                 };
                 reader.readAsText(file);
-                input.value = '';
               }
 
               function openManualModal() { document.getElementById('manual-modal').classList.add('active'); }
@@ -2212,8 +2206,8 @@ jobs:
 
                   try {
                       Notification notification = new NotificationCompat.Builder(this, "floating_channel")
-                              .setContentTitle("생각서랍 플로팅 실행 중")
-                              .setContentText("터치하여 바로 음성으로 기록하세요.")
+                              .setContentTitle("생각서랍 플로팅")
+                              .setContentText("터치하여 기록")
                               .setSmallIcon(android.R.drawable.ic_btn_speak_now)
                               .setPriority(NotificationCompat.PRIORITY_LOW)
                               .build();
@@ -2307,8 +2301,8 @@ jobs:
                           intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
                           intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
                           
-                          intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 6000L);
-                          intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 6000L);
+                          intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 8000L);
+                          intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 8000L);
 
                           speechRecognizer.setRecognitionListener(new RecognitionListener() {
                               @Override
@@ -2316,7 +2310,6 @@ jobs:
                                   isListening = true;
                                   floatingView.setBackground(activeBg);
                                   floatingView.setText("🎙️");
-                                  Toast.makeText(getApplicationContext(), "💡 듣고 있습니다. 편하게 말씀하세요...", Toast.LENGTH_SHORT).show();
                               }
 
                               @Override public void onBeginningOfSpeech() {}
@@ -2408,7 +2401,6 @@ jobs:
           import android.speech.RecognizerIntent;
           import android.speech.SpeechRecognizer;
           import android.webkit.JavascriptInterface;
-          import android.widget.Toast;
           import androidx.core.app.ActivityCompat;
           import androidx.core.content.ContextCompat;
           import com.getcapacitor.BridgeActivity;
@@ -2493,6 +2485,8 @@ jobs:
                       intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
                       intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
                       intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
+                      intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 8000L);
+                      intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 8000L);
 
                       inAppRecognizer.setRecognitionListener(new RecognitionListener() {
                           @Override public void onReadyForSpeech(Bundle params) {}
@@ -2504,7 +2498,7 @@ jobs:
                           @Override
                           public void onError(int error) {
                               if (isContinuousMode) {
-                                  new Handler(Looper.getMainLooper()).postDelayed(() -> startListeningLoop(), 200);
+                                  new Handler(Looper.getMainLooper()).postDelayed(() -> startListeningLoop(), 50);
                               } else {
                                   evalJS("if (window.onSpeechEndedNative) window.onSpeechEndedNative();");
                               }
@@ -2517,7 +2511,7 @@ jobs:
                                   sendTextToWebView(matches.get(0));
                               }
                               if (isContinuousMode) {
-                                  new Handler(Looper.getMainLooper()).postDelayed(() -> startListeningLoop(), 100);
+                                  new Handler(Looper.getMainLooper()).postDelayed(() -> startListeningLoop(), 50);
                               }
                           }
 
