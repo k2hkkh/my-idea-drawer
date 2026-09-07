@@ -25,19 +25,31 @@
     .card-badge { font-size: 0.75rem; padding: 3px 8px; border-radius: 6px; background: var(--surface); color: var(--accent); font-weight: 600; }
     .card-time { font-size: 0.75rem; color: var(--muted); }
     .card-content { font-size: clamp(0.92rem, 2.7vw, 1.05rem); line-height: 1.5; white-space: pre-wrap; color: #ffffff; }
+    
     .card-five-buttons { display: flex; gap: 5px; overflow-x: auto; white-space: nowrap; border-top: 1px solid #27272a; padding-top: 10px; }
     .five-btn { flex: 1; min-width: 50px; display: inline-flex; align-items: center; justify-content: center; padding: 7px 4px; border-radius: 8px; border: 1px solid #3f3f46; background: #1c1c1e; color: #a1a1aa; font-size: clamp(0.7rem, 2vw, 0.76rem); font-weight: 600; cursor: pointer; }
     .five-btn.active-backlog { background: #1e3a8a; border-color: #3b82f6; color: #ffffff; font-weight: 700; }
     .five-btn.active-time { background: #0369a1; border-color: #38bdf8; color: #ffffff; font-weight: 700; }
     .five-btn.active-focus { background: #7c2d12; border-color: #ea580c; color: #ffedd5; font-weight: 700; }
-    
-    /* 암전 메모딱지 화면 */
+
+    /* 암전 메모딱지 풀스크린 UI */
     #memopad-screen { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: #000000; z-index: 2000; touch-action: none; overflow: hidden; }
     #memopad-screen.active { display: block; }
     #memopad-canvas { width: 100vw; height: 100dvh; display: block; background: #000000; }
-    .memopad-toolbar { display: none; position: absolute; top: 12px; left: 12px; right: 12px; background: rgba(28,28,30,0.95); backdrop-filter: blur(10px); border: 1px solid #3a3a3c; border-radius: 16px; padding: 8px; gap: 6px; z-index: 2100; flex-direction: column; }
+    
+    .memopad-toolbar {
+      display: none; position: absolute; top: env(safe-area-inset-top, 12px); left: 12px; right: 12px;
+      background: rgba(28,28,30,0.95); backdrop-filter: blur(10px); border: 1px solid #3a3a3c;
+      border-radius: 16px; padding: 10px; gap: 8px; z-index: 2100; flex-direction: column;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+    }
     .memopad-toolbar.active { display: flex; }
-
+    .pad-palette { display: flex; gap: 8px; align-items: center; }
+    .color-dot { width: 24px; height: 24px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
+    .color-dot.active { border-color: #ffffff; transform: scale(1.15); }
+    .pad-tool-btn { background: var(--surface); border: 1px solid #3a3a3c; color: #fff; padding: 5px 10px; border-radius: 8px; font-size: 0.78rem; font-weight: bold; cursor: pointer; }
+    .pad-tool-btn.active { background: #3b82f6; border-color: #60a5fa; }
+    
     .bottom-bar-wrapper { padding: 8px 14px calc(14px + env(safe-area-inset-bottom, 0px)) 14px; background: var(--bg); position: relative; flex-shrink: 0; }
     .capsule-box { background: var(--card); border: 1px solid var(--border); border-radius: 30px; padding: 6px 10px; display: flex; align-items: center; gap: 8px; }
     .btn-plus { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); border: none; color: #ffffff; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; cursor: pointer; }
@@ -50,6 +62,11 @@
     .plus-menu-popover.active { display: flex; }
     .menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; color: #ffffff; font-size: 0.9rem; cursor: pointer; }
     .menu-item:active { background: var(--surface); }
+
+    .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.75); z-index: 3000; justify-content: center; align-items: center; padding: 20px; }
+    .modal-backdrop.active { display: flex; }
+    .pop-card { background: #1c1c1e; border: 1px solid #3a3a3c; border-radius: 18px; padding: 18px; width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+    .pop-btn-choice { background: var(--surface); border: 1px solid #3f3f46; color: #ffffff; padding: 13px 14px; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; text-align: left; display: flex; align-items: center; justify-content: space-between; }
   </style>
 </head>
 <body>
@@ -111,24 +128,56 @@
     </div>
   </div>
 
-  <!-- 암전 메모딱지 인터페이스 -->
+  <!-- 암전 메모딱지 인터페이스 (툴바, 컬러, 지우개, 음성 마이크 완비) -->
   <div id="memopad-screen">
     <div id="memopad-toolbar" class="memopad-toolbar">
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span style="color:#fff; font-size:0.85rem; font-weight:bold;">📑 메모딱지</span>
+        <span style="color:#fff; font-size:0.85rem; font-weight:bold;">📑 메모딱지 (화면 톡톡 두드려 툴바 토글)</span>
         <div style="display:flex; gap:6px;">
-          <button onclick="saveMemoPadToDrawer()" style="background:var(--primary); color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:0.75rem; font-weight:bold;">저장</button>
-          <button onclick="closeMemoPadDirect()" style="background:var(--surface); color:#fff; border:none; width:22px; height:22px; border-radius:50%; font-size:0.75rem;">✕</button>
+          <button onclick="saveMemoPadToDrawer()" style="background:var(--primary); color:#fff; border:none; padding:5px 12px; border-radius:8px; font-size:0.78rem; font-weight:bold;">저장</button>
+          <button onclick="closeMemoPadDirect()" style="background:var(--surface); color:#fff; border:none; width:26px; height:26px; border-radius:50%; font-size:0.8rem;">✕</button>
         </div>
       </div>
-      <input id="memopad-text-input" type="text" placeholder="말씀하시거나 텍스트 입력..." style="background:#121214; border:1px solid #3a3a3c; color:#fff; padding:6px; border-radius:8px; font-size:0.85rem; outline:none;" />
+      
+      <div class="pad-palette">
+        <div class="color-dot active" style="background:#ffffff;" onclick="setPadColor('#ffffff', this)"></div>
+        <div class="color-dot" style="background:#facc15;" onclick="setPadColor('#facc15', this)"></div>
+        <div class="color-dot" style="background:#38bdf8;" onclick="setPadColor('#38bdf8', this)"></div>
+        <div class="color-dot" style="background:#ef4444;" onclick="setPadColor('#ef4444', this)"></div>
+        <div style="width:1px; height:20px; background:#3a3a3c; margin:0 4px;"></div>
+        <button id="pad-eraser-btn" class="pad-tool-btn" onclick="togglePadEraser()">🧹 지우개</button>
+        <button class="pad-tool-btn" onclick="undoPadStroke()">↩️ 전단계</button>
+        <button class="pad-tool-btn" onclick="clearPadCanvas()">🔄 모두지우기</button>
+      </div>
+
+      <div style="display:flex; align-items:center; background:#121214; border-radius:10px; padding:6px; border:1px solid #3a3a3c; gap:6px;">
+        <input id="memopad-text-input" type="text" placeholder="음성 입력 또는 텍스트 작성..." style="flex:1; background:transparent; border:none; color:#fff; font-size:0.88rem; outline:none;" />
+        <button class="btn-mic" onpointerdown="event.preventDefault()" onclick="triggerPadVoiceInput()">
+          <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+        </button>
+      </div>
     </div>
     <canvas id="memopad-canvas"></canvas>
   </div>
 
+  <div id="time-sub-modal" class="modal-backdrop" onclick="closeTimeSlotModal(event)">
+    <div class="pop-card" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-weight:bold; font-size:1.05rem; color:#fff;">🕒 계획시간 지정</span>
+        <button onclick="closeTimeSlotModal()" style="background:transparent; border:none; color:#8e8e93; font-size:1.2rem; cursor:pointer;">✕</button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button class="pop-btn-choice" onclick="confirmTimeSlotAssign('morning')">🌅 오전</button>
+        <button class="pop-btn-choice" onclick="confirmTimeSlotAssign('afternoon')">☀️ 오후</button>
+        <button class="pop-btn-choice" onclick="confirmTimeSlotAssign('evening')">🌙 저녁</button>
+        <button class="pop-btn-choice" onclick="confirmTimeSlotAssign('night')">⏱️ 심야</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let currentMainMode = 'idea', currentCategory = '첫 생각', currentAttachments = [];
-    let currentPlanSubtab = 'backlog';
+    let currentPlanSubtab = 'backlog', targetSlotItemId = null, targetSlotSource = 'thought';
 
     function switchMainMode(mode) {
       currentMainMode = mode;
@@ -149,7 +198,6 @@
     function togglePlusMenu() { document.getElementById('plus-menu').classList.toggle('active'); }
     function closePlusMenu() { document.getElementById('plus-menu').classList.remove('active'); }
 
-    /* 네이티브 카메라 연동 */
     function triggerNativeCamera() { closePlusMenu(); if (window.AndroidBridge && window.AndroidBridge.openCamera) window.AndroidBridge.openCamera(); }
     function triggerNativeGallery() { closePlusMenu(); if (window.AndroidBridge && window.AndroidBridge.openGallery) window.AndroidBridge.openGallery(); }
     function triggerNativeVideo() { closePlusMenu(); if (window.AndroidBridge && window.AndroidBridge.openVideo) window.AndroidBridge.openVideo(); }
@@ -197,22 +245,27 @@
       }
     }
 
-    /* 음성 입력 시간 및 띄어쓰기 최적화 (구글 다이얼로그) */
     function triggerVoiceInput() {
       closePlusMenu();
-      if (window.AndroidBridge && window.AndroidBridge.openSpeechDialog) {
-        window.AndroidBridge.openSpeechDialog();
-      }
+      if (window.AndroidBridge && window.AndroidBridge.openSpeechDialog) window.AndroidBridge.openSpeechDialog();
+    }
+    function triggerPadVoiceInput() {
+      if (window.AndroidBridge && window.AndroidBridge.openSpeechDialog) window.AndroidBridge.openSpeechDialog();
     }
     window.receiveVoiceResult = function(text) {
       if (text && text.trim()) {
         const el = document.getElementById('prompt-input');
-        el.value += (el.value ? ' ' : '') + text.trim().replace(/\s+/g, ' ');
-        handleInputChange(el);
+        if (document.getElementById('memopad-screen').classList.contains('active')) {
+          const padEl = document.getElementById('memopad-text-input');
+          padEl.value += (padEl.value ? ' ' : '') + text.trim().replace(/\s+/g, ' ');
+        } else if (el) {
+          el.value += (el.value ? ' ' : '') + text.trim().replace(/\s+/g, ' ');
+          handleInputChange(el);
+        }
       }
     };
 
-    /* 스토리지 관리 */
+    /* 스토리지 관리 (고유 ID 기반 중복 원천 차단) */
     function getThoughtStorage() {
       try { return Array.from(new Map(JSON.parse(localStorage.getItem('idea_drawer_storage') || '[]').map(i => [i.id, i])).values()); } catch(e) { return []; }
     }
@@ -261,6 +314,35 @@
       }
     }
 
+    function openTimeSlotModal(id, source) {
+      targetSlotItemId = id; targetSlotSource = source;
+      document.getElementById('time-sub-modal').classList.add('active');
+    }
+    function closeTimeSlotModal(e) {
+      if (e && e.target && e.target.id !== 'time-sub-modal') return;
+      document.getElementById('time-sub-modal').classList.remove('active');
+      targetSlotItemId = null;
+    }
+    function confirmTimeSlotAssign(chosenSlot) {
+      if (!targetSlotItemId) return;
+      if (targetSlotSource === 'thought') {
+        let thoughts = getThoughtStorage();
+        const item = thoughts.find(t => t.id === targetSlotItemId);
+        if (item) {
+          const plans = getPlanStorage();
+          plans.unshift({ id: Date.now() + Math.random(), title: item.content || '메모', status: '대기', timeSlot: chosenSlot, isFocus: false, mediaList: item.mediaList || [], updatedAt: new Date().toLocaleDateString() });
+          setPlanStorage(plans);
+          setThoughtStorage(thoughts.filter(t => t.id !== targetSlotItemId));
+        }
+      } else {
+        const plans = getPlanStorage();
+        const item = plans.find(p => p.id === targetSlotItemId);
+        if (item) { item.isFocus = false; item.timeSlot = chosenSlot; setPlanStorage(plans); }
+      }
+      document.getElementById('time-sub-modal').classList.remove('active');
+      targetSlotItemId = null;
+    }
+
     function renderFeed() {
       const list = getThoughtStorage();
       const feed = document.getElementById('idea-feed-container');
@@ -280,6 +362,7 @@
           ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
           <div class="card-five-buttons">
             <button class="five-btn active-backlog" onclick="transferThoughtDirect(${item.id}, 'backlog')">🔄 대기</button>
+            <button class="five-btn" onclick="openTimeSlotModal(${item.id}, 'thought')">🕒 계획시간</button>
             <button class="five-btn" onclick="transferThoughtDirect(${item.id}, 'focus')">⚡ 지금집중</button>
             <button class="five-btn" onclick="navigator.clipboard.writeText('${(item.content||'').replace(/'/g, '&#39;')}')">📋 복사</button>
             <button class="five-btn" style="color:#f87171;" onclick="setThoughtStorage(getThoughtStorage().filter(i=>i.id !== ${item.id}))">🗑️ 삭제</button>
@@ -317,6 +400,7 @@
           </div>
           <div class="card-five-buttons">
             <button class="five-btn active-backlog" onclick="reassignPlanSlotDirect(${p.id}, 'backlog')">🔄 대기</button>
+            <button class="five-btn" onclick="openTimeSlotModal(${p.id}, 'plan')">🕒 계획시간</button>
             <button class="five-btn" onclick="reassignPlanSlotDirect(${p.id}, 'focus')">⚡ 지금집중</button>
             <button class="five-btn" style="color:#f87171;" onclick="setPlanStorage(getPlanStorage().filter(x=>x.id !== ${p.id}))">🗑️ 삭제</button>
           </div>
@@ -324,8 +408,10 @@
       `).join('');
     }
 
-    /* 암전 메모딱지 로직 */
-    let padCanvas, padCtx, isDrawing = false;
+    /* 암전 메모딱지 캔버스 & 제스처(더블탭 툴바 토글, 팔레트, 지우개, 전단계, 모두지우기) */
+    let padCanvas, padCtx, isDrawing = false, padColor = '#ffffff', isEraser = false, historyArr = [];
+    let lastTap = 0;
+
     function openMemoPadDirect() {
       closePlusMenu();
       document.getElementById('memopad-screen').classList.add('active');
@@ -336,27 +422,58 @@
       padCanvas.height = window.innerHeight;
       padCtx.fillStyle = '#000000';
       padCtx.fillRect(0, 0, padCanvas.width, padCanvas.height);
-      padCtx.strokeStyle = '#ffffff';
-      padCtx.lineWidth = 3;
-      padCtx.lineCap = 'round';
+      setPadColor('#ffffff');
+      historyArr = [];
     }
     function closeMemoPadDirect() {
       document.getElementById('memopad-screen').classList.remove('active');
       document.getElementById('memopad-toolbar').classList.remove('active');
+    }
+    function setPadColor(color, el) {
+      padColor = color; isEraser = false;
+      if (el) document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+      if (el) el.classList.add('active');
+      document.getElementById('pad-eraser-btn').classList.remove('active');
+      padCtx.strokeStyle = padColor; padCtx.lineWidth = 3.5;
+    }
+    function togglePadEraser() {
+      isEraser = !isEraser;
+      document.getElementById('pad-eraser-btn').classList.toggle('active', isEraser);
+      padCtx.strokeStyle = isEraser ? '#000000' : padColor;
+      padCtx.lineWidth = isEraser ? 24 : 3.5;
+    }
+    function saveCanvasState() {
+      if (historyArr.length > 20) historyArr.shift();
+      historyArr.push(padCtx.getImageData(0, 0, padCanvas.width, padCanvas.height));
+    }
+    function undoPadStroke() {
+      if (historyArr.length > 0) padCtx.putImageData(historyArr.pop(), 0, 0);
+    }
+    function clearPadCanvas() {
+      if (confirm('모두 지우시겠습니까?')) {
+        saveCanvasState();
+        padCtx.fillStyle = '#000000'; padCtx.fillRect(0, 0, padCanvas.width, padCanvas.height);
+      }
     }
     function saveMemoPadToDrawer() {
       const text = document.getElementById('memopad-text-input').value.trim();
       const dataUrl = padCanvas.toDataURL('image/jpeg', 0.85);
       saveThought('메모딱지', text, [{ type: '메모딱지', data: dataUrl, isVideo: false }]);
       closeMemoPadDirect();
-      switchMainMode('idea');
-      selectCategory('전체');
+      switchMainMode('idea'); selectCategory('전체');
     }
 
     padCanvas = document.getElementById('memopad-canvas');
     padCanvas.addEventListener('touchstart', (e) => {
       e.preventDefault();
+      const now = Date.now();
+      if (now - lastTap < 300) {
+        const tb = document.getElementById('memopad-toolbar');
+        tb.classList.toggle('active');
+      }
+      lastTap = now;
       isDrawing = true;
+      saveCanvasState();
       const t = e.touches[0];
       padCtx.beginPath();
       padCtx.moveTo(t.clientX, t.clientY);
