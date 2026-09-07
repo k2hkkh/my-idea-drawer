@@ -113,7 +113,6 @@
 
   <div class="attachment-tray" id="attachment-tray" style="display:none; padding:8px 14px; gap:8px; overflow-x:auto; background:#121214;"></div>
 
-  <!-- 숨겨진 파일 선택기 (사진/동영상 즉시 첨부용) -->
   <input type="file" id="hidden-file-input" style="display:none;" accept="image/*,video/*" multiple onchange="handleFileSelect(this)" />
 
   <div class="bottom-bar-wrapper">
@@ -132,7 +131,6 @@
     </div>
   </div>
 
-  <!-- 암전 메모딱지 UI -->
   <div id="memopad-screen">
     <div class="memopad-top-bar">
       <button class="pad-tool-btn" onclick="togglePadToolbar()">⚙️ 도구 모음 열기/닫기</button>
@@ -201,7 +199,6 @@
     function togglePlusMenu() { document.getElementById('plus-menu').classList.toggle('active'); }
     function closePlusMenu() { document.getElementById('plus-menu').classList.remove('active'); }
 
-    /* 표준 파일/사진/동영상 첨부 처리 */
     function triggerFilePicker(acceptType) {
       closePlusMenu();
       const fi = document.getElementById('hidden-file-input');
@@ -279,7 +276,6 @@
       }
     }
 
-    /* 스토리지 관리 */
     function getThoughtStorage() {
       try { return Array.from(new Map(JSON.parse(localStorage.getItem('idea_drawer_storage') || '[]').map(i => [i.id, i])).values()); } catch(e) { return []; }
     }
@@ -357,12 +353,13 @@
       targetSlotItemId = null;
     }
 
-    /* 수정 기능 (기존 내용 기본값 로드 완벽 반영) */
+    /* 수정 기능 정상화 (기존 본문 데이터 명확히 바인딩) */
     function editThoughtContent(id) {
       const list = getThoughtStorage();
       const item = list.find(i => i.id === id);
       if (!item) return;
-      const newText = prompt('기존 내용을 수정하세요:', item.content || '');
+      const currentText = item.content || '';
+      const newText = prompt('기존 내용을 수정하세요:', currentText);
       if (newText !== null) {
         item.content = newText.trim();
         setThoughtStorage(list);
@@ -372,7 +369,8 @@
       const list = getPlanStorage();
       const item = list.find(p => p.id === id);
       if (!item) return;
-      const newText = prompt('기존 계획을 수정하세요:', item.title || '');
+      const currentTitle = item.title || '';
+      const newText = prompt('기존 계획을 수정하세요:', currentTitle);
       if (newText !== null) {
         item.title = newText.trim();
         setPlanStorage(list);
@@ -446,7 +444,7 @@
       `).join('');
     }
 
-    /* 암전 메모딱지 캔버스 (좌표 오차 완벽 보정 및 흰색 펜 고정) */
+    /* 암전 메모딱지 캔버스 보정 */
     let padCanvas, padCtx, isDrawing = false, padColor = '#ffffff', isEraser = false, historyArr = [];
 
     function openMemoPadDirect() {
