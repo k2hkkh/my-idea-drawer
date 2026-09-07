@@ -34,7 +34,7 @@ jobs:
           mkdir -p www
           cp index.html www/index.html
 
-      - name: 5. 최신 안드로이드 네이티브 브릿지 주입 (FileProvider 보안 우회)
+      - name: 5. 최신 안드로이드 네이티브 브릿지 주입 (오버레이 권한 포함)
         run: |
           cat << 'EOF' > package.json
           {
@@ -95,6 +95,15 @@ jobs:
           sed -i "s/versionCode 1/versionCode $BUILD_NUM/g" android/app/build.gradle
           sed -i "s/versionName \"1.0\"/versionName \"1.0.$BUILD_NUM\"/g" android/app/build.gradle
 
+          node -e '
+          const fs = require("fs");
+          const p = "android/app/src/main/AndroidManifest.xml";
+          let xml = fs.readFileSync(p, "utf8");
+          const perms = "\n    <uses-permission android:name=\"android.permission.SYSTEM_ALERT_WINDOW\" />\n    <uses-permission android:name=\"android.permission.RECORD_AUDIO\" />\n    <uses-permission android:name=\"android.permission.CAMERA\" />\n    <uses-permission android:name=\"android.permission.VIBRATE\" />\n";
+          xml = xml.replace("<application", perms + "    <application");
+          fs.writeFileSync(p, xml, "utf8");
+          '
+
           mkdir -p android/app/src/main/java/com/k2hkkh/ideadrawer
 
           cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/MainActivity.java
@@ -108,6 +117,7 @@ jobs:
           import android.os.Build;
           import android.os.Bundle;
           import android.provider.MediaStore;
+          import android.provider.Settings;
           import android.speech.RecognizerIntent;
           import android.util.Base64;
           import android.webkit.JavascriptInterface;
@@ -127,6 +137,13 @@ jobs:
               public void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
                   requestAppPermissions();
+
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+                      try {
+                          Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+                          startActivity(intent);
+                      } catch (Exception ignored) {}
+                  }
 
                   if (getBridge() != null && getBridge().getWebView() != null) {
                       getBridge().getWebView().addJavascriptInterface(new Object() {
