@@ -54,7 +54,7 @@
     .menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; color: #ffffff; font-size: 0.9rem; cursor: pointer; }
     .menu-item:active { background: var(--surface); }
 
-    /* 메모딱지 UI */
+    /* 암전 메모딱지 UI */
     #memopad-screen { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: #000000; z-index: 2000; overflow: hidden; flex-direction: column; }
     #memopad-screen.active { display: flex; }
     
@@ -113,7 +113,7 @@
 
   <div class="attachment-tray" id="attachment-tray" style="display:none; padding:8px 14px; gap:8px; overflow-x:auto; background:#121214;"></div>
 
-  <!-- 표준 파일 선택기 (사진/동영상 첨부) -->
+  <!-- 표준 파일 선택기 (사진/동영상 즉시 첨부) -->
   <input type="file" id="hidden-file-input" style="display:none;" accept="image/*,video/*" multiple onchange="handleFileSelect(this)" />
 
   <div class="bottom-bar-wrapper">
@@ -355,7 +355,6 @@
       targetSlotItemId = null;
     }
 
-    /* 수정 기능 정상화 (기존 본문 데이터 명확히 바인딩) */
     function editThoughtContent(id) {
       const list = getThoughtStorage();
       const item = list.find(i => i.id === id);
@@ -446,7 +445,6 @@
       `).join('');
     }
 
-    /* 암전 메모딱지 캔버스 보정 */
     let padCanvas, padCtx, isDrawing = false, padColor = '#ffffff', isEraser = false, historyArr = [];
 
     function openMemoPadDirect() {
