@@ -29,12 +29,12 @@ jobs:
         with:
           node-version: 20
 
-      - name: 4. 빌드 에셋 준비
+      - name: 4. 앱 내부 로컬 웹 에셋 주입 (캐시 꼬임 원천 방지)
         run: |
           mkdir -p www
           cp index.html www/index.html
 
-      - name: 5. 고정 네이티브 셸 구성 (카메라/음성/실시간 URL 연동)
+      - name: 5. 고정 네이티브 셸 구성 (카메라/비디오/음성 브릿지 완전 내장)
         run: |
           cat << 'EOF' > package.json
           {
@@ -53,11 +53,7 @@ jobs:
           {
             "appId": "com.k2hkkh.ideadrawer",
             "appName": "생각서랍",
-            "webDir": "www",
-            "server": {
-              "url": "https://k2hkkh.github.io/my-idea-drawer/",
-              "cleartext": true
-            }
+            "webDir": "www"
           }
           EOF
 
@@ -103,8 +99,8 @@ jobs:
           const fs = require("fs");
           const p = "android/app/src/main/AndroidManifest.xml";
           let xml = fs.readFileSync(p, "utf8");
-          const perms = "\n    <uses-permission android:name=\"android.permission.SYSTEM_ALERT_WINDOW\" />\n    <uses-permission android:name=\"android.permission.RECORD_AUDIO\" />\n    <uses-permission android:name=\"android.permission.CAMERA\" />\n    <uses-permission android:name=\"android.permission.VIBRATE\" />\n";
-          xml = xml.replace("<application", perms + "    <application android:usesCleartextTraffic=\"true\"");
+          const perms = "\n    <uses-permission android:name=\"android.permission.RECORD_AUDIO\" />\n    <uses-permission android:name=\"android.permission.CAMERA\" />\n    <uses-permission android:name=\"android.permission.VIBRATE\" />\n";
+          xml = xml.replace("<application", perms + "    <application");
           fs.writeFileSync(p, xml, "utf8");
           '
 
