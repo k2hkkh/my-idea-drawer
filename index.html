@@ -115,9 +115,26 @@
     .empty-canvas {
       margin: auto;
       text-align: center;
-      color: #52525b;
+      color: #71717a;
       font-size: 0.95rem;
       line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .empty-action-btn {
+      padding: 10px 18px;
+      background: var(--primary);
+      color: #ffffff;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(37,99,235,0.3);
     }
     
     .thought-card, .plan-big-card {
@@ -214,6 +231,7 @@
     .plan-time-tab.active { background: #1e3a8a; color: #60a5fa; border-color: #3b82f6; }
     .plan-time-tab.focus-tab.active { background: #9a3412; color: #fdba74; border-color: #f97316; }
 
+    /* 하단 입력바 */
     .bottom-bar-wrapper {
       padding: 8px 14px calc(12px + env(safe-area-inset-bottom, 0px)) 14px;
       background: var(--bg);
@@ -228,11 +246,11 @@
       padding: 6px 10px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
     .btn-plus {
-      width: 36px;
-      height: 36px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
       background: var(--surface);
       border: none;
@@ -243,8 +261,24 @@
       justify-content: center;
       cursor: pointer;
       transition: transform 0.2s;
+      flex-shrink: 0;
     }
     .btn-plus.open { transform: rotate(45deg); background: var(--danger); }
+    
+    .btn-quick-cam {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #1e293b;
+      border: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
     .main-input {
       flex: 1;
       background: transparent;
@@ -271,8 +305,8 @@
     }
     .btn-mic svg { width: 22px; height: 22px; fill: #8e8e93; }
     .btn-action-send {
-      width: 36px;
-      height: 36px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
       background: #2563eb;
       border: none;
@@ -447,9 +481,7 @@
     <div class="category-pill" onclick="selectCategory('전체')">📂 전체</div>
   </div>
 
-  <div class="view-container" id="idea-feed-container">
-    <div class="empty-canvas">떠오르는 생각을 기록하세요. 저장 즉시 서랍으로 들어갑니다.</div>
-  </div>
+  <div class="view-container" id="idea-feed-container"></div>
 
   <div class="view-container" id="plan-feed-container" style="display:none;">
     <div class="plan-time-tabs">
@@ -463,12 +495,10 @@
     <div id="plan-card-list" style="display:flex; flex-direction:column; gap:12px;"></div>
   </div>
 
-  <div class="attachment-tray" id="attachment-tray" style="display:none; padding:8px 14px; gap:8px; overflow-x:auto; background:#121214;"></div>
-
-  <!-- 브라우저 보안 차단을 완벽히 우회하는 투명 파일 입력기 -->
-  <input type="file" id="input-camera-photo" accept="image/*" capture="environment" onchange="handleFileSelect(event, '사진')" style="position:fixed; top:-9999px; left:-9999px; opacity:0; pointer-events:none;" />
-  <input type="file" id="input-camera-video" accept="video/*" capture="environment" onchange="handleFileSelect(event, '동영상')" style="position:fixed; top:-9999px; left:-9999px; opacity:0; pointer-events:none;" />
-  <input type="file" id="input-album-file" accept="image/*,video/*" multiple onchange="handleFileSelect(event, null)" style="position:fixed; top:-9999px; left:-9999px; opacity:0; pointer-events:none;" />
+  <!-- 브라우저 표준 파일 입력기 (화면 밖 안전 배치) -->
+  <input type="file" id="input-camera-photo" accept="image/*" capture="environment" onchange="handleDirectCapture(event, '사진')" style="position:absolute; width:1px; height:1px; opacity:0; clip:rect(0,0,0,0);" />
+  <input type="file" id="input-camera-video" accept="video/*" capture="environment" onchange="handleDirectCapture(event, '동영상')" style="position:absolute; width:1px; height:1px; opacity:0; clip:rect(0,0,0,0);" />
+  <input type="file" id="input-album-file" accept="image/*,video/*" multiple onchange="handleDirectCapture(event, null)" style="position:absolute; width:1px; height:1px; opacity:0; clip:rect(0,0,0,0);" />
 
   <!-- 하단 입력바 -->
   <div class="bottom-bar-wrapper">
@@ -488,6 +518,8 @@
     </div>
     <div class="capsule-box">
       <button id="btn-plus" class="btn-plus" onclick="togglePlusMenu()">＋</button>
+      <!-- 원터치 즉시 카메라 실행 버튼 -->
+      <label for="input-camera-photo" class="btn-quick-cam" title="사진 바로촬영">📷</label>
       <textarea id="prompt-input" class="main-input" placeholder="생각을 입력하세요..." rows="1" oninput="handleInputChange(this);"></textarea>
       <button class="btn-mic" onpointerdown="event.preventDefault()" onclick="triggerVoiceInput()">
         <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
@@ -508,7 +540,7 @@
     </div>
   </div>
 
-  <!-- 시간 슬롯 지정 모달 -->
+  <!-- 시간 슬롯 모달 -->
   <div id="time-sub-modal" class="modal-backdrop" onclick="closeTimeSlotModal(event)">
     <div class="pop-card" onclick="event.stopPropagation()">
       <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -614,26 +646,8 @@
       });
     }
 
-    async function migrateLegacyStorage() {
-      try {
-        const oldThoughts = JSON.parse(localStorage.getItem('idea_drawer_storage') || '[]');
-        if (oldThoughts.length > 0) {
-          for (const item of oldThoughts) await dbPut('thoughts', item);
-          localStorage.removeItem('idea_drawer_storage');
-        }
-        const oldPlans = JSON.parse(localStorage.getItem('plan_drawer_storage') || '[]');
-        if (oldPlans.length > 0) {
-          for (const item of oldPlans) await dbPut('plans', item);
-          localStorage.removeItem('plan_drawer_storage');
-        }
-      } catch (e) {
-        console.warn('Migration note:', e);
-      }
-    }
-
     let currentMainMode = 'idea';
     let currentCategory = '첫 생각';
-    let currentAttachments = [];
     let currentPlanSubtab = 'backlog';
     let targetSlotItemId = null, targetSlotSource = 'thought';
     let editingTargetId = null, editingTargetType = 'thought';
@@ -667,43 +681,41 @@
       document.getElementById('btn-plus').classList.remove('open');
     }
 
-    function handleFileSelect(event, defaultType) {
+    /* 사진/동영상 촬영 즉시 서랍에 자동 보관하는 핵심 핸들러 */
+    async function handleDirectCapture(event, defaultType) {
       const files = event.target.files;
-      if (files && files.length > 0) {
-        Array.from(files).forEach(file => {
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            const isVid = file.type.startsWith('video');
-            currentAttachments.push({
-              type: defaultType || (isVid ? '동영상' : '사진'),
-              data: e.target.result,
-              isVideo: isVid
-            });
-            renderAttachmentTray();
-          };
-          reader.readAsDataURL(file);
-        });
+      if (!files || files.length === 0) return;
+
+      const input = document.getElementById('prompt-input');
+      const extraText = input.value.trim();
+
+      for (const file of Array.from(files)) {
+        const isVid = file.type.startsWith('video');
+        const finalType = defaultType || (isVid ? '동영상' : '사진');
+        const dataUrl = await readFileDataURL(file);
+
+        await saveThought(finalType, extraText, [{
+          type: finalType,
+          data: dataUrl,
+          isVideo: isVid
+        }]);
       }
+
+      input.value = '';
+      input.style.height = 'auto';
       event.target.value = '';
+
+      // 방금 촬영한 미디어가 바로 보이도록 카테고리 전환
+      selectCategory(defaultType || '전체');
     }
 
-    function renderAttachmentTray() {
-      const tray = document.getElementById('attachment-tray');
-      if (currentAttachments.length === 0) {
-        tray.style.display = 'none';
-        tray.innerHTML = '';
-        return;
-      }
-      tray.style.display = 'flex';
-      tray.innerHTML = currentAttachments.map((item, idx) => `
-        <div style="position:relative; width:60px; height:60px; flex-shrink:0;">
-          ${item.isVideo 
-            ? `<div style="width:100%; height:100%; background:#222; display:flex; align-items:center; justify-content:center; color:#fff; border-radius:8px; font-size:0.7rem;">🎬 영상</div>`
-            : `<img src="${item.data}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />`
-          }
-          <button style="position:absolute; top:-4px; right:-4px; width:18px; height:18px; border-radius:50%; background:var(--danger); color:#fff; border:none; cursor:pointer;" onclick="currentAttachments.splice(${idx},1);renderAttachmentTray();">✕</button>
-        </div>
-      `).join('');
+    function readFileDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = (e) => reject(e);
+        reader.readAsDataURL(file);
+      });
     }
 
     function handleInputChange(textarea) {
@@ -714,25 +726,17 @@
     async function handleSendAction() {
       const input = document.getElementById('prompt-input');
       const text = input.value.trim();
-      if (text || currentAttachments.length > 0) {
-        if (currentMainMode === 'idea') {
-          let cat = '노트';
-          if (currentAttachments.length > 0) {
-            cat = currentAttachments.some(a => a.isVideo) ? '동영상' : '사진';
-          }
-          await saveThought(cat, text, [...currentAttachments]);
-          selectCategory('전체');
-        } else {
-          await savePlanToBacklog(text);
-          renderPlanView();
-        }
-        input.value = '';
-        input.style.height = 'auto';
-        currentAttachments = [];
-        renderAttachmentTray();
+      if (!text) return triggerVoiceInput();
+
+      if (currentMainMode === 'idea') {
+        await saveThought('노트', text, []);
+        selectCategory('전체');
       } else {
-        triggerVoiceInput();
+        await savePlanToBacklog(text);
+        renderPlanView();
       }
+      input.value = '';
+      input.style.height = 'auto';
     }
 
     function triggerVoiceInput() {
@@ -902,18 +906,47 @@
       closeEditModal();
     }
 
+    /* 피드 렌더링 & 빈 화면 스마트 액션 버튼 */
     async function renderFeed() {
       const list = (await dbGetAll('thoughts')).reverse();
       const feed = document.getElementById('idea-feed-container');
       
       if (currentCategory === '첫 생각') {
-        feed.innerHTML = `<div class="empty-canvas">떠오르는 생각을 기록하세요.<br/>저장 즉시 서랍으로 들어갑니다.</div>`;
+        feed.innerHTML = `
+          <div class="empty-canvas">
+            <div>💡 떠오르는 생각을 기록하세요.<br/>저장 즉시 서랍으로 안전하게 보관됩니다.</div>
+            <label for="input-camera-photo" class="empty-action-btn">📷 사진 바로 찍기</label>
+          </div>`;
         return;
+      }
+
+      if (currentCategory === '사진') {
+        const photoList = list.filter(i => (i.category || '').includes('사진') || (i.mediaList && i.mediaList.some(m => !m.isVideo)));
+        if (photoList.length === 0) {
+          feed.innerHTML = `
+            <div class="empty-canvas">
+              <div>[사진] 서랍에 보관된 사진이 없습니다.</div>
+              <label for="input-camera-photo" class="empty-action-btn">📷 지금 사진 촬영하기</label>
+            </div>`;
+          return;
+        }
+      }
+
+      if (currentCategory === '동영상') {
+        const videoList = list.filter(i => (i.category || '').includes('동영상') || (i.mediaList && i.mediaList.some(m => m.isVideo)));
+        if (videoList.length === 0) {
+          feed.innerHTML = `
+            <div class="empty-canvas">
+              <div>[동영상] 서랍에 보관된 영상이 없습니다.</div>
+              <label for="input-camera-video" class="empty-action-btn">🎥 지금 영상 녹화하기</label>
+            </div>`;
+          return;
+        }
       }
       
       const filtered = (currentCategory === '전체') ? list : list.filter(i => (i.category || '').includes(currentCategory));
       if (filtered.length === 0) {
-        feed.innerHTML = `<div class="empty-canvas">[${currentCategory}] 카테고리에 저장된 생각이 없습니다.</div>`;
+        feed.innerHTML = `<div class="empty-canvas"><div>[${currentCategory}] 카테고리에 저장된 생각이 없습니다.</div></div>`;
         return;
       }
 
@@ -1073,7 +1106,6 @@
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
-      await migrateLegacyStorage();
       padCanvas = document.getElementById('memopad-canvas');
       
       padCanvas.addEventListener('pointerdown', (e) => {
