@@ -54,7 +54,7 @@
     .menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; color: #ffffff; font-size: 0.9rem; cursor: pointer; }
     .menu-item:active { background: var(--surface); }
 
-    /* 메모딱지 화면 (터치 오차 보정 구조) */
+    /* 암전 메모딱지 UI */
     #memopad-screen { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: #000000; z-index: 2000; overflow: hidden; flex-direction: column; }
     #memopad-screen.active { display: flex; }
     
@@ -113,11 +113,13 @@
 
   <div class="attachment-tray" id="attachment-tray" style="display:none; padding:8px 14px; gap:8px; overflow-x:auto; background:#121214;"></div>
 
+  <!-- 숨겨진 파일 선택기 (사진/동영상 즉시 첨부용) -->
+  <input type="file" id="hidden-file-input" style="display:none;" accept="image/*,video/*" multiple onchange="handleFileSelect(this)" />
+
   <div class="bottom-bar-wrapper">
     <div class="plus-menu-popover" id="plus-menu">
-      <div class="menu-item" onclick="triggerNativeCamera()"><span>📷 카메라 촬영 추가</span></div>
-      <div class="menu-item" onclick="triggerNativeGallery()"><span>🖼️ 사진 선택 (다중)</span></div>
-      <div class="menu-item" onclick="triggerNativeVideo()"><span>🎬 동영상 촬영 추가</span></div>
+      <div class="menu-item" onclick="triggerFilePicker('image/*')"><span>📷 사진 첨부하기</span></div>
+      <div class="menu-item" onclick="triggerFilePicker('video/*')"><span>🎬 동영상 첨부하기</span></div>
       <div class="menu-item" onclick="openMemoPadDirect()"><span>📑 메모딱지 작성</span></div>
     </div>
     <div class="capsule-box">
@@ -152,10 +154,7 @@
         <button class="pad-tool-btn" onclick="clearPadCanvas()">🔄 모두지우기</button>
       </div>
       <div style="display:flex; align-items:center; background:#121214; border-radius:10px; padding:6px; border:1px solid #3a3a3c; gap:6px;">
-        <input id="memopad-text-input" type="text" placeholder="음성 입력 또는 텍스트 작성..." style="flex:1; background:transparent; border:none; color:#fff; font-size:0.88rem; outline:none;" />
-        <button class="btn-mic" onpointerdown="event.preventDefault()" onclick="triggerPadVoiceInput()">
-          <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
-        </button>
+        <input id="memopad-text-input" type="text" placeholder="텍스트 작성..." style="flex:1; background:transparent; border:none; color:#fff; font-size:0.88rem; outline:none;" />
       </div>
     </div>
 
@@ -202,24 +201,36 @@
     function togglePlusMenu() { document.getElementById('plus-menu').classList.toggle('active'); }
     function closePlusMenu() { document.getElementById('plus-menu').classList.remove('active'); }
 
-    function triggerNativeCamera() { closePlusMenu(); if (window.AndroidBridge && window.AndroidBridge.openCamera) window.AndroidBridge.openCamera(); }
-    function triggerNativeGallery() { closePlusMenu(); if (window.AndroidBridge && window.AndroidBridge.openGallery) window.AndroidBridge.openGallery(); }
-    function triggerNativeVideo() { closePlusMenu(); if (window.AndroidBridge && window.AndroidBridge.openVideo) window.AndroidBridge.openVideo(); }
-
-    window.receiveMediaResult = function(base64Data, type) {
-      if (base64Data) {
-        currentAttachments.push({ type: type, data: base64Data, isVideo: (type === '동영상') });
-        renderAttachmentTray();
+    /* 표준 파일/사진/동영상 첨부 처리 */
+    function triggerFilePicker(acceptType) {
+      closePlusMenu();
+      const fi = document.getElementById('hidden-file-input');
+      fi.accept = acceptType;
+      fi.click();
+    }
+    function handleFileSelect(input) {
+      if (input.files && input.files.length > 0) {
+        Array.from(input.files).forEach(file => {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const isVid = file.type.startsWith('video');
+            currentAttachments.push({ type: isVid ? '동영상' : '사진', data: e.target.result, isVideo: isVid });
+            renderAttachmentTray();
+          };
+          reader.readAsDataURL(file);
+        });
       }
-    };
+      input.value = '';
+    }
+
     function renderAttachmentTray() {
       const tray = document.getElementById('attachment-tray');
       if (currentAttachments.length === 0) { tray.style.display = 'none'; tray.innerHTML = ''; return; }
       tray.style.display = 'flex';
       tray.innerHTML = currentAttachments.map((item, idx) => `
         <div style="position:relative; width:60px; height:60px; flex-shrink:0;">
-          <img src="${item.data}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
-          <button style="position:absolute; top:-4px; right:-4px; width:18px; height:18px; border-radius:50%; background:var(--danger); color:#fff; border:none;" onclick="currentAttachments.splice(${idx},1);renderAttachmentTray();">✕</button>
+          ${item.isVideo ? `<div style="width:100%; height:100%; background:#222; display:flex; align-items:center; justify-content:center; color:#fff; border-radius:8px; font-size:0.7rem;">동영상</div>` : `<img src="${item.data}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />`}
+          <button style="position:absolute; top:-4px; right:-4px; width:18px; height:18px; border-radius:50%; background:var(--danger); color:#fff; border:none; cursor:pointer;" onclick="currentAttachments.splice(${idx},1);renderAttachmentTray();">✕</button>
         </div>
       `).join('');
     }
@@ -235,7 +246,7 @@
       if (text || currentAttachments.length > 0) {
         if (currentMainMode === 'idea') {
           let cat = '노트';
-          if (currentAttachments.length > 0) cat = currentAttachments.some(a => a.type === '동영상') ? '동영상' : '사진';
+          if (currentAttachments.length > 0) cat = currentAttachments.some(a => a.isVideo) ? '동영상' : '사진';
           saveThought(cat, text, [...currentAttachments]);
           selectCategory('첫 생각');
         } else {
@@ -251,23 +262,22 @@
 
     function triggerVoiceInput() {
       closePlusMenu();
-      if (window.AndroidBridge && window.AndroidBridge.openSpeechDialog) window.AndroidBridge.openSpeechDialog();
-    }
-    function triggerPadVoiceInput() {
-      if (window.AndroidBridge && window.AndroidBridge.openSpeechDialog) window.AndroidBridge.openSpeechDialog();
-    }
-    window.receiveVoiceResult = function(text) {
-      if (text && text.trim()) {
-        const el = document.getElementById('prompt-input');
-        if (document.getElementById('memopad-screen').classList.contains('active')) {
-          const padEl = document.getElementById('memopad-text-input');
-          padEl.value += (padEl.value ? ' ' : '') + text.trim().replace(/\s+/g, ' ');
-        } else if (el) {
-          el.value += (el.value ? ' ' : '') + text.trim().replace(/\s+/g, ' ');
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'ko-KR';
+        recognition.interimResults = false;
+        recognition.onresult = function(event) {
+          const spokenText = event.results[0][0].transcript;
+          const el = document.getElementById('prompt-input');
+          el.value += (el.value ? ' ' : '') + spokenText;
           handleInputChange(el);
-        }
+        };
+        recognition.start();
+      } else {
+        alert('음성 인식을 지원하지 않는 환경입니다.');
       }
-    };
+    }
 
     /* 스토리지 관리 */
     function getThoughtStorage() {
@@ -347,12 +357,12 @@
       targetSlotItemId = null;
     }
 
-    /* 수정 기능 보완 (기존 내용 불러오기 적용) */
+    /* 수정 기능 (기존 내용 기본값 로드 완벽 반영) */
     function editThoughtContent(id) {
       const list = getThoughtStorage();
       const item = list.find(i => i.id === id);
       if (!item) return;
-      const newText = prompt('내용을 수정하세요:', item.content || '');
+      const newText = prompt('기존 내용을 수정하세요:', item.content || '');
       if (newText !== null) {
         item.content = newText.trim();
         setThoughtStorage(list);
@@ -362,7 +372,7 @@
       const list = getPlanStorage();
       const item = list.find(p => p.id === id);
       if (!item) return;
-      const newText = prompt('계획 내용을 수정하세요:', item.title || '');
+      const newText = prompt('기존 계획을 수정하세요:', item.title || '');
       if (newText !== null) {
         item.title = newText.trim();
         setPlanStorage(list);
@@ -384,7 +394,7 @@
       feed.innerHTML = filtered.map(item => `
         <div class="thought-card">
           <div class="card-header"><span class="card-badge">${item.category || '노트'}</span><span class="card-time">${item.time}</span></div>
-          ${item.mediaList && item.mediaList.length > 0 ? `<div>${item.mediaList.map(m => `<img src="${m.data}" style="width:100%; max-height:240px; object-fit:contain; background:#000;" />`).join('')}</div>` : ''}
+          ${item.mediaList && item.mediaList.length > 0 ? `<div>${item.mediaList.map(m => m.isVideo ? `<video src="${m.data}" controls style="width:100%; max-height:240px; background:#000;"></video>` : `<img src="${m.data}" style="width:100%; max-height:240px; object-fit:contain; background:#000;" />`).join('')}</div>` : ''}
           ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
           <div class="card-five-buttons">
             <button class="five-btn active-backlog" onclick="transferThoughtDirect(${item.id}, 'backlog')">🔄 대기</button>
@@ -436,7 +446,7 @@
       `).join('');
     }
 
-    /* 암전 메모딱지 캔버스 (좌표 오차 보정 및 흰색 펜 고정) */
+    /* 암전 메모딱지 캔버스 (좌표 오차 완벽 보정 및 흰색 펜 고정) */
     let padCanvas, padCtx, isDrawing = false, padColor = '#ffffff', isEraser = false, historyArr = [];
 
     function openMemoPadDirect() {
