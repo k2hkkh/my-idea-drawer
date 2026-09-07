@@ -29,12 +29,12 @@ jobs:
         with:
           node-version: 20
 
-      - name: 4. 앱 내부 로컬 웹 에셋 주입 (캐시 꼬임 원천 방지)
+      - name: 4. 로컬 웹 에셋 복사
         run: |
           mkdir -p www
           cp index.html www/index.html
 
-      - name: 5. 고정 네이티브 셸 구성 (카메라/비디오/음성 브릿지 완전 내장)
+      - name: 5. 최신 안드로이드 네이티브 브릿지 주입 (FileProvider 보안 우회)
         run: |
           cat << 'EOF' > package.json
           {
@@ -95,14 +95,7 @@ jobs:
           sed -i "s/versionCode 1/versionCode $BUILD_NUM/g" android/app/build.gradle
           sed -i "s/versionName \"1.0\"/versionName \"1.0.$BUILD_NUM\"/g" android/app/build.gradle
 
-          node -e '
-          const fs = require("fs");
-          const p = "android/app/src/main/AndroidManifest.xml";
-          let xml = fs.readFileSync(p, "utf8");
-          const perms = "\n    <uses-permission android:name=\"android.permission.RECORD_AUDIO\" />\n    <uses-permission android:name=\"android.permission.CAMERA\" />\n    <uses-permission android:name=\"android.permission.VIBRATE\" />\n";
-          xml = xml.replace("<application", perms + "    <application");
-          fs.writeFileSync(p, xml, "utf8");
-          '
+          mkdir -p android/app/src/main/java/com/k2hkkh/ideadrawer
 
           cat << 'EOF' > android/app/src/main/java/com/k2hkkh/ideadrawer/MainActivity.java
           package com.k2hkkh.ideadrawer;
@@ -142,10 +135,7 @@ jobs:
                               Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
                               intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
                               intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
-                              intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "생각을 말씀하세요...");
-                              try {
-                                  startActivityForResult(intent, SPEECH_REQ);
-                              } catch (Exception ignored) {}
+                              try { startActivityForResult(intent, SPEECH_REQ); } catch (Exception ignored) {}
                           }
 
                           @JavascriptInterface
@@ -181,8 +171,9 @@ jobs:
                           evalJS("if (window.receiveVoiceResult) window.receiveVoiceResult('" + spokenText + "');");
                       }
                   } else if (requestCode == REQ_CAMERA) {
-                      Bitmap photo = (Bitmap) data.getExtras().get("data");
-                      if (photo != null) {
+                      Bundle extras = data.getExtras();
+                      if (extras != null && extras.get("data") != null) {
+                          Bitmap photo = (Bitmap) extras.get("data");
                           ByteArrayOutputStream stream = new ByteArrayOutputStream();
                           photo.compress(Bitmap.CompressFormat.JPEG, 75, stream);
                           String base64 = "data:image/jpeg;base64," + Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP);
@@ -193,11 +184,6 @@ jobs:
                       if (selected != null) {
                           try {
                               Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selected);
-                              int maxDim = 800;
-                              if (bitmap.getWidth() > maxDim || bitmap.getHeight() > maxDim) {
-                                  float ratio = Math.min((float) maxDim / bitmap.getWidth(), (float) maxDim / bitmap.getHeight());
-                                  bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(bitmap.getWidth() * ratio), Math.round(bitmap.getHeight() * ratio), true);
-                              }
                               ByteArrayOutputStream stream = new ByteArrayOutputStream();
                               bitmap.compress(Bitmap.CompressFormat.JPEG, 70, stream);
                               String base64 = "data:image/jpeg;base64," + Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP);
@@ -210,14 +196,13 @@ jobs:
                           android.media.MediaMetadataRetriever retriever = new android.media.MediaMetadataRetriever();
                           retriever.setDataSource(this, videoUri);
                           Bitmap thumb = retriever.getFrameAtTime(500000);
-                          if (thumb == null) thumb = retriever.getFrameAtTime();
-                          retriever.release();
                           if (thumb != null) {
                               ByteArrayOutputStream stream = new ByteArrayOutputStream();
                               thumb.compress(Bitmap.CompressFormat.JPEG, 70, stream);
                               String base64 = "data:image/jpeg;base64," + Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP);
                               evalJS("if (window.receiveMediaResult) window.receiveMediaResult('" + base64 + "', '동영상');");
                           }
+                          retriever.release();
                       } catch (Exception ignored) {}
                   }
               }
