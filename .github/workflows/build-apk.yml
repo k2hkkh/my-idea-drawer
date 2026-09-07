@@ -34,7 +34,7 @@ jobs:
           mkdir -p www
           cp index.html www/index.html
 
-      - name: 5. 네이티브 브릿지 구성
+      - name: 5. 네이티브 브릿지 및 매니페스트 권한 주입
         run: |
           cat << 'EOF' > package.json
           {
@@ -94,6 +94,15 @@ jobs:
           BUILD_NUM=${{ github.run_number }}
           sed -i "s/versionCode 1/versionCode $BUILD_NUM/g" android/app/build.gradle
           sed -i "s/versionName \"1.0\"/versionName \"1.0.$BUILD_NUM\"/g" android/app/build.gradle
+
+          node -e '
+          const fs = require("fs");
+          const p = "android/app/src/main/AndroidManifest.xml";
+          let xml = fs.readFileSync(p, "utf8");
+          const perms = "\n    <uses-permission android:name=\"android.permission.SYSTEM_ALERT_WINDOW\" />\n    <uses-permission android:name=\"android.permission.RECORD_AUDIO\" />\n    <uses-permission android:name=\"android.permission.CAMERA\" />\n    <uses-permission android:name=\"android.permission.VIBRATE\" />\n";
+          xml = xml.replace("<application", perms + "    <application");
+          fs.writeFileSync(p, xml, "utf8");
+          '
 
           mkdir -p android/app/src/main/java/com/k2hkkh/ideadrawer
 
