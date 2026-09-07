@@ -189,29 +189,37 @@ jobs:
               .card-time { font-size: 0.75rem; color: var(--muted); }
               .card-content { font-size: clamp(0.92rem, 2.7vw, 1.05rem); line-height: 1.5; white-space: pre-wrap; color: #ffffff; }
 
-              /* 생각서랍 6개 원터치 이동 버튼 그리드 */
-              .thought-slot-grid {
-                display: grid;
-                grid-template-columns: repeat(6, 1fr);
-                gap: 4px;
+              /* 가로 1열 스크롤 칩 바 (생각서랍 카드 하단 8버튼) */
+              .thought-slot-scroll {
+                display: flex;
+                gap: 6px;
+                overflow-x: auto;
+                white-space: nowrap;
+                padding: 8px 2px 2px 2px;
                 border-top: 1px solid #27272a;
-                padding-top: 10px;
-                margin-top: 4px;
+                -webkit-overflow-scrolling: touch;
               }
-              .thought-slot-btn {
-                padding: 7px 0;
+              .thought-slot-scroll::-webkit-scrollbar { display: none; }
+              
+              .thought-slot-chip {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 6px 12px;
                 border-radius: 8px;
                 border: 1px solid #3f3f46;
                 background: var(--surface);
                 color: #ffffff;
-                font-size: clamp(0.68rem, 2vw, 0.74rem);
-                font-weight: bold;
-                text-align: center;
+                font-size: 0.76rem;
+                font-weight: 600;
                 cursor: pointer;
-                white-space: nowrap;
+                flex-shrink: 0;
+                transition: background 0.15s;
               }
-              .thought-slot-btn.focus { background: #7c2d12; border-color: #ea580c; color: #ffedd5; }
-              .thought-slot-btn.delete { background: #450a0a; border-color: #dc2626; color: #fecaca; }
+              .thought-slot-chip:active { transform: scale(0.96); }
+              .thought-slot-chip.focus { background: #3f2214; border-color: #ea580c; color: #fed7aa; }
+              .thought-slot-chip.copy { background: #1e293b; border-color: #475569; color: #cbd5e1; }
+              .thought-slot-chip.delete { background: #3b1414; border-color: #ef4444; color: #fca5a5; }
 
               /* 쪽잠 1줄 슬림 바 */
               .nap-slim-bar {
@@ -274,7 +282,7 @@ jobs:
                 border-color: #f97316;
               }
 
-              /* 큼직한 계획 카드 (가독성 1.5배 확대) */
+              /* 큼직한 계획 카드 */
               .plan-big-card {
                 background: var(--card);
                 border: 1px solid var(--border);
@@ -310,43 +318,42 @@ jobs:
               .status-badge-lg.progress { background: #1e3a8a; color: #93c5fd; }
               .status-badge-lg.done { background: #064e3b; color: #6ee7b7; }
 
-              /* 계획 카드 하단 원터치 자유 재배치 바 */
-              .plan-relocate-bar {
+              /* 계획 카드 하단 스크롤 재배치 바 */
+              .plan-relocate-scroll {
                 display: flex;
                 align-items: center;
-                justify-content: space-between;
-                gap: 4px;
+                gap: 6px;
+                overflow-x: auto;
+                white-space: nowrap;
                 border-top: 1px solid #27272a;
                 padding-top: 10px;
-                flex-wrap: wrap;
+                -webkit-overflow-scrolling: touch;
               }
-              .relocate-btn-group {
-                display: flex;
-                gap: 4px;
-                flex: 1;
-                overflow-x: auto;
-              }
-              .relocate-btn {
+              .plan-relocate-scroll::-webkit-scrollbar { display: none; }
+              
+              .relocate-chip {
                 background: var(--surface);
                 border: 1px solid #3f3f46;
                 color: #a1a1aa;
-                padding: 5px 8px;
+                padding: 6px 10px;
                 border-radius: 6px;
-                font-size: 0.72rem;
+                font-size: 0.74rem;
                 font-weight: 600;
                 cursor: pointer;
-                white-space: nowrap;
+                flex-shrink: 0;
               }
-              .relocate-btn.active {
+              .relocate-chip.active {
                 background: #2563eb;
                 color: #ffffff;
                 border-color: #38bdf8;
               }
-              .relocate-btn.focus.active {
+              .relocate-chip.focus.active {
                 background: #ea580c;
                 color: #ffffff;
                 border-color: #fdba74;
               }
+              .relocate-chip.copy { background: #1e293b; border-color: #475569; color: #cbd5e1; }
+              .relocate-chip.delete { background: #3b1414; border-color: #ef4444; color: #fca5a5; }
 
               .attachment-tray {
                 display: none;
@@ -366,7 +373,6 @@ jobs:
                 background: var(--danger); color: #fff; font-size: 0.7rem; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer;
               }
 
-              /* 하단 고정 UI */
               .bottom-bar-wrapper {
                 padding: 8px 14px calc(14px + env(safe-area-inset-bottom, 0px)) 14px;
                 background: var(--bg);
@@ -490,7 +496,6 @@ jobs:
                 font-size: 1rem;
               }
 
-              /* 모달 공통 */
               .modal-full {
                 display: none;
                 position: fixed;
@@ -923,13 +928,13 @@ jobs:
                 <div class="thought-card">
                   <div style="font-weight:bold; color:var(--accent);">1. 생각서랍 ➔ 나의계획 즉시 연동</div>
                   <div style="font-size:0.85rem; color:#ccc; line-height:1.5;">
-                    생각서랍 카드 하단의 `[⚡집중] [오전] [오후] [저녁] [심야]` 버튼을 누르면 해당 시간대의 계획으로 즉시 배치됩니다.
+                    생각서랍 카드 하단의 가로 스크롤 바에서 `[⚡집중] [오전] [오후] [저녁] [심야] [대기]`를 누르면 계획표로 옮겨지며 서랍에서 자동 정리됩니다.
                   </div>
                 </div>
                 <div class="thought-card">
-                  <div style="font-weight:bold; color:var(--accent);">2. 나의계획 시간대 상호 이동</div>
+                  <div style="font-weight:bold; color:var(--accent);">2. 나의계획 시간대 자유 이동</div>
                   <div style="font-size:0.85rem; color:#ccc; line-height:1.5;">
-                    나의계획 카드 하단 바에서 원하는 시간대 버튼을 터치하면 다른 시간대로 자유롭게 즉시 이동합니다.
+                    나의계획 카드 하단의 시간대 칩을 누르면 다른 시간대로 언제든 자유롭게 재배치됩니다.
                   </div>
                 </div>
               </div>
@@ -944,7 +949,6 @@ jobs:
               let activeTargetContext = 'main';
               let activeVoiceTarget = 'main';
               let isListeningContinuous = false;
-              let webSpeechInstance = null;
 
               let cursorPositions = {
                 'prompt-input': { start: 0, end: 0 },
@@ -967,7 +971,7 @@ jobs:
               let lastProcessedVoice = '';
               let lastProcessedTime = 0;
 
-              /* 쪽잠 타이머 엔진 */
+              /* 쪽잠 타이머 */
               let napTimerInterval = null;
               let napEndTime = null;
 
@@ -1221,7 +1225,7 @@ jobs:
                 }
               }
 
-              /* 음성 스트리밍 (비프음 완전 제거) */
+              /* 음성 제어: 네이티브 브릿지 + 비프음 음소거 결합 */
               function toggleContinuousVoice(target) {
                 activeVoiceTarget = target;
                 closePlusMenu();
@@ -1240,51 +1244,36 @@ jobs:
               }
 
               function startContinuousVoice() {
-                const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (!Speech) {
-                  alert('음성 인식을 지원하지 않는 환경입니다.');
-                  return;
-                }
+                isListeningContinuous = true;
+                updateVoiceButtonUI(true);
 
-                try {
-                  if (webSpeechInstance) {
-                    try { webSpeechInstance.abort(); } catch(e) {}
+                if (window.AndroidBridge && window.AndroidBridge.startContinuousSpeech) {
+                  window.AndroidBridge.startContinuousSpeech();
+                } else {
+                  // 브라우저 테스트 환경용 대체
+                  const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+                  if (Speech) {
+                    try {
+                      window.tempWebRec = new Speech();
+                      window.tempWebRec.lang = 'ko-KR';
+                      window.tempWebRec.continuous = true;
+                      window.tempWebRec.onresult = (e) => {
+                        appendVoiceResult(e.results[e.results.length - 1][0].transcript);
+                      };
+                      window.tempWebRec.start();
+                    } catch(e) {}
                   }
-
-                  webSpeechInstance = new Speech();
-                  webSpeechInstance.lang = 'ko-KR';
-                  webSpeechInstance.continuous = true;
-                  webSpeechInstance.interimResults = false;
-
-                  webSpeechInstance.onresult = (e) => {
-                    for (let i = e.resultIndex; i < e.results.length; ++i) {
-                      if (e.results[i].isFinal) {
-                        appendVoiceResult(e.results[i][0].transcript);
-                      }
-                    }
-                  };
-
-                  webSpeechInstance.onerror = () => { stopContinuousVoice(); };
-                  webSpeechInstance.onend = () => {
-                    if (isListeningContinuous) {
-                      try { webSpeechInstance.start(); } catch(e) {}
-                    }
-                  };
-
-                  isListeningContinuous = true;
-                  updateVoiceButtonUI(true);
-                  webSpeechInstance.start();
-                } catch(err) {
-                  stopContinuousVoice();
                 }
               }
 
               function stopContinuousVoice() {
                 isListeningContinuous = false;
                 updateVoiceButtonUI(false);
-                if (webSpeechInstance) {
-                  try { webSpeechInstance.stop(); } catch(e) {}
-                  webSpeechInstance = null;
+                if (window.AndroidBridge && window.AndroidBridge.stopContinuousSpeech) {
+                  window.AndroidBridge.stopContinuousSpeech();
+                }
+                if (window.tempWebRec) {
+                  try { window.tempWebRec.stop(); } catch(e) {}
                 }
               }
 
@@ -1299,7 +1288,7 @@ jobs:
                 if (btnMicPad) btnMicPad.classList.toggle('listening', listening);
               }
 
-              /* 단일 공백 정밀 강제 보정 */
+              /* 띄어쓰기 2중 공백 강제 정규화 */
               function appendVoiceResult(text) {
                 if (!text || !text.trim()) return;
                 const clean = text.trim().replace(/\s+/g, ' ');
@@ -1348,6 +1337,14 @@ jobs:
                 if (targetId === 'prompt-input') handleInputChange(el);
                 if (targetId === 'memopad-text-input') handlePadTextInput(el.value);
               }
+
+              window.receiveVoiceResult = function(text) {
+                if (text && text.trim()) appendVoiceResult(text);
+              };
+
+              window.onSpeechEndedNative = function() {
+                if (!isListeningContinuous) updateVoiceButtonUI(false);
+              };
 
               function pollFloatingVoiceText() {
                 if (window.AndroidBridge && window.AndroidBridge.getPendingVoiceText) {
@@ -1420,7 +1417,7 @@ jobs:
                 setPlanStorage(list);
               }
 
-              /* 생각서랍 ➔ 나의계획 6개 버튼 즉시 이동 함수 */
+              /* 생각서랍 ➔ 나의계획 이동 (서랍에서 즉시 삭제) */
               function transferThoughtToPlan(id, targetSlot) {
                 const thoughts = getThoughtStorage();
                 const item = thoughts.find(t => t.id === id);
@@ -1430,7 +1427,7 @@ jobs:
                 const plans = getPlanStorage();
 
                 const isFocus = (targetSlot === 'focus');
-                const slot = isFocus ? getAutoTimeSlot() : targetSlot;
+                const slot = isFocus ? getAutoTimeSlot() : (targetSlot === 'backlog' ? 'none' : targetSlot);
 
                 plans.unshift({
                   id: Date.now(),
@@ -1444,17 +1441,51 @@ jobs:
                 });
                 setPlanStorage(plans);
 
+                // 원본 생각서랍에서 완전 삭제
+                const remainingThoughts = thoughts.filter(t => t.id !== id);
+                setThoughtStorage(remainingThoughts);
+
                 const slotLabels = {
                   focus: '⚡ 집중',
                   morning: '🌅 오전',
                   afternoon: '☀️ 오후',
                   evening: '🌙 저녁',
-                  night: '⏱️ 심야'
+                  night: '⏱️ 심야',
+                  backlog: '🔄 대기'
                 };
-                alert(`📋 [${slotLabels[targetSlot]}] 일과로 이동·등록되었습니다!`);
+                alert(`📋 [${slotLabels[targetSlot]}] 일과로 이동되었습니다!`);
               }
 
-              /* 생각서랍 피드 렌더링 (6개 버튼 그리드) */
+              /* 카드 본문 클립보드 복사 */
+              function copyCardContent(text) {
+                if (!text || !text.trim()) {
+                  alert('복사할 텍스트가 없습니다.');
+                  return;
+                }
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                  navigator.clipboard.writeText(text).then(() => {
+                    alert('📋 내용이 클립보드에 복사되었습니다.');
+                  }).catch(() => {
+                    fallbackCopy(text);
+                  });
+                } else {
+                  fallbackCopy(text);
+                }
+              }
+
+              function fallbackCopy(text) {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                alert('📋 내용이 복사되었습니다.');
+              }
+
+              /* 생각서랍 피드 렌더링 (가로 1열 스크롤 8버튼 칩 바 탑재) */
               function renderFeed() {
                 const list = getThoughtStorage();
                 const feed = document.getElementById('idea-feed-container');
@@ -1484,30 +1515,37 @@ jobs:
                   return;
                 }
 
-                feed.innerHTML = filtered.map(item => `
-                  <div class="thought-card">
-                    <div class="card-header">
-                      <span class="card-badge">${item.category || item.type || '노트'}</span>
-                      <span class="card-time">${item.time}</span>
-                    </div>
-                    ${item.mediaList && item.mediaList.length > 0 ? `
-                      <div>
-                        ${item.mediaList.map(m => `
-                          <img src="${m.data}" style="width:100%; max-height:240px; object-fit:contain; border-radius:8px; border:1px solid var(--border); background:#000; display:block;" />
-                        `).join('')}
+                feed.innerHTML = filtered.map(item => {
+                  const safeContent = (item.content || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                  return `
+                    <div class="thought-card">
+                      <div class="card-header">
+                        <span class="card-badge">${item.category || item.type || '노트'}</span>
+                        <span class="card-time">${item.time}</span>
                       </div>
-                    ` : ''}
-                    ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
-                    <div class="thought-slot-grid">
-                      <button class="thought-slot-btn focus" onclick="transferThoughtToPlan(${item.id}, 'focus')">⚡ 집중</button>
-                      <button class="thought-slot-btn" onclick="transferThoughtToPlan(${item.id}, 'morning')">🌅 오전</button>
-                      <button class="thought-slot-btn" onclick="transferThoughtToPlan(${item.id}, 'afternoon')">☀️ 오후</button>
-                      <button class="thought-slot-btn" onclick="transferThoughtToPlan(${item.id}, 'evening')">🌙 저녁</button>
-                      <button class="thought-slot-btn" onclick="transferThoughtToPlan(${item.id}, 'night')">⏱️ 심야</button>
-                      <button class="thought-slot-btn delete" onclick="deleteThought(${item.id})">🗑️ 삭제</button>
+                      ${item.mediaList && item.mediaList.length > 0 ? `
+                        <div>
+                          ${item.mediaList.map(m => `
+                            <img src="${m.data}" style="width:100%; max-height:240px; object-fit:contain; border-radius:8px; border:1px solid var(--border); background:#000; display:block;" />
+                          `).join('')}
+                        </div>
+                      ` : ''}
+                      ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
+                      
+                      <!-- 가로 1열 스크롤 칩 바 (8개 버튼) -->
+                      <div class="thought-slot-scroll">
+                        <button class="thought-slot-chip focus" onclick="transferThoughtToPlan(${item.id}, 'focus')">⚡ 집중</button>
+                        <button class="thought-slot-chip" onclick="transferThoughtToPlan(${item.id}, 'morning')">🌅 오전</button>
+                        <button class="thought-slot-chip" onclick="transferThoughtToPlan(${item.id}, 'afternoon')">☀️ 오후</button>
+                        <button class="thought-slot-chip" onclick="transferThoughtToPlan(${item.id}, 'evening')">🌙 저녁</button>
+                        <button class="thought-slot-chip" onclick="transferThoughtToPlan(${item.id}, 'night')">⏱️ 심야</button>
+                        <button class="thought-slot-chip" onclick="transferThoughtToPlan(${item.id}, 'backlog')">🔄 대기</button>
+                        <button class="thought-slot-chip copy" onclick="copyCardContent('${safeContent}')">📋 복사</button>
+                        <button class="thought-slot-chip delete" onclick="deleteThought(${item.id})">🗑️ 삭제</button>
+                      </div>
                     </div>
-                  </div>
-                `).join('');
+                  `;
+                }).join('');
               }
 
               function deleteThought(id) {
@@ -1517,7 +1555,7 @@ jobs:
                 }
               }
 
-              /* 나의계획 탭 전환 및 대형 카드 렌더링 */
+              /* 나의계획 탭 전환 및 대형 카드 렌더링 (집중/시간대 상호 배타적 분리) */
               function switchPlanSubtab(tab) {
                 currentPlanSubtab = tab;
                 document.querySelectorAll('.plan-time-tab').forEach(b => b.classList.remove('active'));
@@ -1532,11 +1570,14 @@ jobs:
 
                 let filtered = [];
                 if (currentPlanSubtab === 'focus') {
+                  // 집중 탭: isFocus가 true인 것만
                   filtered = list.filter(p => p.isFocus);
                 } else if (currentPlanSubtab === 'backlog') {
-                  filtered = list.filter(p => !p.timeSlot || p.timeSlot === 'none');
+                  // 대기 탭: isFocus가 아니고 시간대 미지정/대기인 것
+                  filtered = list.filter(p => !p.isFocus && (!p.timeSlot || p.timeSlot === 'none' || p.timeSlot === 'backlog'));
                 } else {
-                  filtered = list.filter(p => p.timeSlot === currentPlanSubtab);
+                  // 일반 시간대 탭: isFocus가 아니며 해당 시간대인 것만 (오후에 집중 항목 중복 노출 차단)
+                  filtered = list.filter(p => !p.isFocus && p.timeSlot === currentPlanSubtab);
                 }
 
                 if (filtered.length === 0) {
@@ -1547,13 +1588,13 @@ jobs:
                 container.innerHTML = filtered.map(p => {
                   const isDone = p.status === '완료';
                   const statusClass = (p.status === '진행중') ? 'progress' : (isDone ? 'done' : 'waiting');
+                  const safeTitle = (p.title || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
                   return `
                     <div class="plan-big-card ${isDone ? 'completed' : ''}">
                       <div class="plan-big-card-top">
                         <span class="status-badge-lg ${statusClass}" onclick="cyclePlanStatus(${p.id})">${p.status}</span>
                         <div class="plan-big-title ${isDone ? 'completed' : ''}">${p.title}</div>
-                        <button style="background:transparent; border:none; color:var(--danger); font-size:1.1rem; cursor:pointer;" onclick="deletePlan(${p.id})">🗑️</button>
                       </div>
 
                       ${p.mediaList && p.mediaList.length > 0 ? `
@@ -1564,16 +1605,16 @@ jobs:
                         </div>
                       ` : ''}
 
-                      <div class="plan-relocate-bar">
-                        <span style="font-size:0.72rem; color:#888;">이동:</span>
-                        <div class="relocate-btn-group">
-                          <button class="relocate-btn focus ${p.isFocus ? 'active' : ''}" onclick="reassignPlanSlot(${p.id}, 'focus')">⚡집중</button>
-                          <button class="relocate-btn ${p.timeSlot === 'morning' && !p.isFocus ? 'active' : ''}" onclick="reassignPlanSlot(${p.id}, 'morning')">오전</button>
-                          <button class="relocate-btn ${p.timeSlot === 'afternoon' && !p.isFocus ? 'active' : ''}" onclick="reassignPlanSlot(${p.id}, 'afternoon')">오후</button>
-                          <button class="relocate-btn ${p.timeSlot === 'evening' && !p.isFocus ? 'active' : ''}" onclick="reassignPlanSlot(${p.id}, 'evening')">저녁</button>
-                          <button class="relocate-btn ${p.timeSlot === 'night' && !p.isFocus ? 'active' : ''}" onclick="reassignPlanSlot(${p.id}, 'night')">심야</button>
-                          <button class="relocate-btn ${p.timeSlot === 'none' && !p.isFocus ? 'active' : ''}" onclick="reassignPlanSlot(${p.id}, 'none')">대기</button>
-                        </div>
+                      <!-- 나의계획 하단 가로 스크롤 이동 및 관리 바 -->
+                      <div class="plan-relocate-scroll">
+                        <button class="relocate-chip focus ${p.isFocus ? 'active' : ''}" onclick="reassignPlanSlot(${p.id}, 'focus')">⚡집중</button>
+                        <button class="relocate-chip ${p.timeSlot === 'morning' && !p.isFocus ? 'active' : ''}" onclick="reassignPlanSlot(${p.id}, 'morning')">오전</button>
+                        <button class="relocate-chip ${p.timeSlot === 'afternoon' && !p.isFocus ? 'active' : ''}" onclick="reassignPlanSlot(${p.id}, 'afternoon')">오후</button>
+                        <button class="relocate-chip ${p.timeSlot === 'evening' && !p.isFocus ? 'active' : ''}" onclick="reassignPlanSlot(${p.id}, 'evening')">저녁</button>
+                        <button class="relocate-chip ${p.timeSlot === 'night' && !p.isFocus ? 'active' : ''}" onclick="reassignPlanSlot(${p.id}, 'night')">심야</button>
+                        <button class="relocate-chip ${p.timeSlot === 'none' && !p.isFocus ? 'active' : ''}" onclick="reassignPlanSlot(${p.id}, 'none')">대기</button>
+                        <button class="relocate-chip copy" onclick="copyCardContent('${safeTitle}')">📋 복사</button>
+                        <button class="relocate-chip delete" onclick="deletePlan(${p.id})">🗑️ 삭제</button>
                       </div>
                     </div>
                   `;
@@ -1856,13 +1897,13 @@ jobs:
                     </div>
                     ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
                     <div style="display:flex; justify-content:flex-end; gap:6px;">
-                      <button class="card-btn delete" style="border:none; border-radius:6px; padding:6px 12px;" onclick="deleteThought(${item.id}); renderArchiveFeed();">🗑️ 삭제</button>
+                      <button class="thought-slot-chip delete" onclick="deleteThought(${item.id}); renderArchiveFeed();">🗑️ 삭제</button>
                     </div>
                   </div>
                 `).join('');
               }
 
-              /* 휴지통: 영구 삭제 및 전체 비우기 렌더링 */
+              /* 휴지통: 영구 삭제 및 전체 비우기 정상 렌더링 */
               function renderTrashFeed() {
                 const list = getPadTrashStorage();
                 const feed = document.getElementById('trash-feed');
@@ -1873,7 +1914,7 @@ jobs:
 
                 feed.innerHTML = `
                   <div style="display:flex; justify-content:flex-end; margin-bottom:6px;">
-                    <button class="card-btn delete" style="border:none; border-radius:8px; padding:6px 12px; font-size:0.75rem;" onclick="clearAllTrash()">🗑️ 휴지통 전체 비우기</button>
+                    <button class="thought-slot-chip delete" onclick="clearAllTrash()">🗑️ 휴지통 전체 비우기</button>
                   </div>
                 ` + list.map(item => `
                   <div class="thought-card">
@@ -1884,8 +1925,8 @@ jobs:
                     <img src="${item.imageData}" style="width:100%; max-height:180px; object-fit:contain; border-radius:8px; border:1px solid var(--border); background:#000;" />
                     ${item.text ? `<div class="card-content">${item.text}</div>` : ''}
                     <div style="display:flex; justify-content:flex-end; gap:6px;">
-                      <button class="card-btn" style="background:var(--primary); border:none; color:#fff; border-radius:6px; padding:6px 12px;" onclick="restoreTrashItem(${item.id})">↩️ 복원</button>
-                      <button class="card-btn delete" style="border:none; border-radius:6px; padding:6px 12px;" onclick="deleteTrashItemPermanently(${item.id})">🗑️ 영구 삭제</button>
+                      <button class="thought-slot-chip" style="background:var(--primary);" onclick="restoreTrashItem(${item.id})">↩️ 복원</button>
+                      <button class="thought-slot-chip delete" onclick="deleteTrashItemPermanently(${item.id})">🗑️ 영구 삭제</button>
                     </div>
                   </div>
                 `).join('');
@@ -1988,7 +2029,7 @@ jobs:
           </html>
           EOF
 
-      - name: 5. 고정 Keystore 및 네이티브 위젯 엔진 주입
+      - name: 5. 고정 Keystore 및 음소거 네이티브 음성 브릿지 주입
         run: |
           cat << 'EOF' > package.json
           {
@@ -2292,18 +2333,29 @@ jobs:
           package com.k2hkkh.ideadrawer;
 
           import android.Manifest;
+          import android.content.Context;
           import android.content.Intent;
           import android.content.SharedPreferences;
           import android.content.pm.PackageManager;
+          import android.media.AudioManager;
           import android.os.Build;
           import android.os.Bundle;
+          import android.os.Handler;
+          import android.os.Looper;
           import android.provider.Settings;
+          import android.speech.RecognitionListener;
+          import android.speech.RecognizerIntent;
+          import android.speech.SpeechRecognizer;
           import android.webkit.JavascriptInterface;
           import androidx.core.app.ActivityCompat;
           import androidx.core.content.ContextCompat;
           import com.getcapacitor.BridgeActivity;
+          import java.util.ArrayList;
 
           public class MainActivity extends BridgeActivity {
+              private SpeechRecognizer inAppRecognizer;
+              private boolean isContinuousMode = false;
+
               @Override
               public void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
@@ -2312,6 +2364,28 @@ jobs:
 
                   if (getBridge() != null && getBridge().getWebView() != null) {
                       getBridge().getWebView().addJavascriptInterface(new Object() {
+                          @JavascriptInterface
+                          public void startContinuousSpeech() {
+                              new Handler(Looper.getMainLooper()).post(() -> {
+                                  isContinuousMode = true;
+                                  startListeningLoop();
+                              });
+                          }
+
+                          @JavascriptInterface
+                          public void stopContinuousSpeech() {
+                              new Handler(Looper.getMainLooper()).post(() -> {
+                                  isContinuousMode = false;
+                                  muteSystemAudio(false);
+                                  if (inAppRecognizer != null) {
+                                      inAppRecognizer.stopListening();
+                                      inAppRecognizer.destroy();
+                                      inAppRecognizer = null;
+                                  }
+                                  evalJS("if (window.onSpeechEndedNative) window.onSpeechEndedNative();");
+                              });
+                          }
+
                           @JavascriptInterface
                           public String getPendingVoiceText() {
                               SharedPreferences prefs = getSharedPreferences("IdeaPrefs", MODE_PRIVATE);
@@ -2323,6 +2397,19 @@ jobs:
                           }
                       }, "AndroidBridge");
                   }
+              }
+
+              private void muteSystemAudio(boolean mute) {
+                  try {
+                      AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                      if (am != null) {
+                          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                              am.adjustStreamVolume(AudioManager.STREAM_SYSTEM, mute ? AudioManager.ADJUST_MUTE : AudioManager.ADJUST_UNMUTE, 0);
+                          } else {
+                              am.setStreamMute(AudioManager.STREAM_SYSTEM, mute);
+                          }
+                      }
+                  } catch (Exception ignored) {}
               }
 
               private void requestAppPermissions() {
@@ -2337,6 +2424,83 @@ jobs:
                   }
               }
 
+              private void startListeningLoop() {
+                  if (!isContinuousMode) return;
+
+                  if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                      requestAppPermissions();
+                      isContinuousMode = false;
+                      evalJS("if (window.onSpeechEndedNative) window.onSpeechEndedNative();");
+                      return;
+                  }
+
+                  try {
+                      if (inAppRecognizer != null) {
+                          inAppRecognizer.destroy();
+                          inAppRecognizer = null;
+                      }
+
+                      inAppRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
+                      Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                      intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                      intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
+                      intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
+                      intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 8000L);
+                      intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 8000L);
+
+                      // 마이크 비프음 억제를 위한 시작 순간 시스템 음소거
+                      muteSystemAudio(true);
+
+                      inAppRecognizer.setRecognitionListener(new RecognitionListener() {
+                          @Override 
+                          public void onReadyForSpeech(Bundle params) {
+                              new Handler(Looper.getMainLooper()).postDelayed(() -> muteSystemAudio(false), 300);
+                          }
+                          @Override public void onBeginningOfSpeech() {}
+                          @Override public void onRmsChanged(float rmsdB) {}
+                          @Override public void onBufferReceived(byte[] buffer) {}
+                          @Override public void onEndOfSpeech() {}
+
+                          @Override
+                          public void onError(int error) {
+                              muteSystemAudio(false);
+                              if (isContinuousMode) {
+                                  new Handler(Looper.getMainLooper()).postDelayed(() -> startListeningLoop(), 200);
+                              } else {
+                                  evalJS("if (window.onSpeechEndedNative) window.onSpeechEndedNative();");
+                              }
+                          }
+
+                          @Override
+                          public void onResults(Bundle results) {
+                              muteSystemAudio(false);
+                              ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                              if (matches != null && !matches.isEmpty()) {
+                                  sendTextToWebView(matches.get(0));
+                              }
+                              if (isContinuousMode) {
+                                  new Handler(Looper.getMainLooper()).postDelayed(() -> startListeningLoop(), 100);
+                              }
+                          }
+
+                          @Override public void onPartialResults(Bundle partialResults) {}
+                          @Override public void onEvent(int eventType, Bundle params) {}
+                      });
+
+                      inAppRecognizer.startListening(intent);
+                  } catch (Exception e) {
+                      muteSystemAudio(false);
+                      isContinuousMode = false;
+                      evalJS("if (window.onSpeechEndedNative) window.onSpeechEndedNative();");
+                  }
+              }
+
+              private void evalJS(String script) {
+                if (getBridge() != null && getBridge().getWebView() != null) {
+                    getBridge().getWebView().post(() -> getBridge().getWebView().evaluateJavascript(script, null));
+                }
+              }
+
               @Override
               public void onResume() {
                   super.onResume();
@@ -2347,6 +2511,13 @@ jobs:
               public void onNewIntent(Intent intent) {
                   super.onNewIntent(intent);
                   setIntent(intent);
+              }
+
+              private void sendTextToWebView(String text) {
+                  if (text != null) {
+                      String cleanText = text.replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ");
+                      evalJS("if (window.receiveVoiceResult) window.receiveVoiceResult('" + cleanText + "');");
+                  }
               }
 
               private void startWidgetIfAllowed() {
