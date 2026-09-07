@@ -353,7 +353,6 @@
       targetSlotItemId = null;
     }
 
-    /* 수정 기능 정상화 (기존 본문 데이터 명확히 바인딩) */
     function editThoughtContent(id) {
       const list = getThoughtStorage();
       const item = list.find(i => i.id === id);
@@ -444,7 +443,6 @@
       `).join('');
     }
 
-    /* 암전 메모딱지 캔버스 보정 */
     let padCanvas, padCtx, isDrawing = false, padColor = '#ffffff', isEraser = false, historyArr = [];
 
     function openMemoPadDirect() {
