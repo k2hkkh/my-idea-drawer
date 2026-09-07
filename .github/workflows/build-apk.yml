@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: 4. 생각서랍 전체 통합 웹 UI 구성 및 Vercel 동기화
+      - name: 4. 생각서랍 전체 통합 웹 UI 구성
         run: |
           mkdir -p www
           cat << 'EOF' > www/index.html
@@ -237,7 +237,7 @@ jobs:
               }
               .nap-btn-mini.stop { background: var(--danger); border-color: #f87171; }
 
-              /* 나의계획: 단일 화면 대형 탭 바 */
+              /* 나의계획 탭 바 */
               .plan-time-tabs {
                 display: flex;
                 gap: 6px;
@@ -271,7 +271,7 @@ jobs:
                 border-color: #f97316;
               }
 
-              /* 큼직한 계획 카드 (1.5배 확대 및 시원한 여백) */
+              /* 큼직한 계획 카드 */
               .plan-big-card {
                 background: var(--card);
                 border: 1px solid var(--border);
@@ -349,7 +349,6 @@ jobs:
                 background: var(--danger); color: #fff; font-size: 0.7rem; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer;
               }
 
-              /* 하단 고정 UI */
               .bottom-bar-wrapper {
                 padding: 8px 14px calc(14px + env(safe-area-inset-bottom, 0px)) 14px;
                 background: var(--bg);
@@ -768,7 +767,7 @@ jobs:
               <div class="category-pill" onclick="selectCategory('전체')">📂 전체</div>
             </div>
 
-            <!-- 생각서랍 피드 뷰 -->
+            <!-- 생각서랍 뷰 -->
             <div class="view-container" id="idea-feed-container">
               <div class="empty-canvas" id="empty-hint">
                 떠오르는 생각을 자유롭게 기록하세요.<br>
@@ -776,9 +775,8 @@ jobs:
               </div>
             </div>
 
-            <!-- 나의계획: 단일 화면 대형 탭 뷰 (오전/오후/저녁/심야/집중) -->
+            <!-- 나의계획: 단일 화면 대형 탭 뷰 -->
             <div class="view-container" id="plan-feed-container" style="display:none;">
-              <!-- 쪽잠 슬림 바 -->
               <div class="nap-slim-bar">
                 <span class="nap-label">⏱️ 쪽잠</span>
                 <span class="nap-display" id="nap-time-display">대기</span>
@@ -790,7 +788,6 @@ jobs:
                 </div>
               </div>
 
-              <!-- 상단 대형 탭 바 (화면별 1개씩 단독 표시) -->
               <div class="plan-time-tabs">
                 <button class="plan-time-tab focus-tab active" id="ptab-focus" onclick="switchPlanSubtab('focus')">⚡ 집중</button>
                 <button class="plan-time-tab" id="ptab-morning" onclick="switchPlanSubtab('morning')">🌅 오전</button>
@@ -800,7 +797,6 @@ jobs:
                 <button class="plan-time-tab" id="ptab-backlog" onclick="switchPlanSubtab('backlog')">🔄 대기</button>
               </div>
 
-              <!-- 선택된 시간대의 대형 카드 목록 -->
               <div id="plan-card-list" style="display:flex; flex-direction:column; gap:12px;"></div>
             </div>
 
@@ -963,7 +959,7 @@ jobs:
               </div>
             </div>
 
-            <!-- 통합 보관함 / 휴지통 / 백업 -->
+            <!-- 통합 보관함 -->
             <div id="archive-modal" class="modal-full">
               <div class="modal-top">
                 <span style="font-weight:bold; font-size:1.05rem;">📂 생각보관함 & 관리</span>
@@ -978,23 +974,20 @@ jobs:
               </div>
 
               <div class="view-container" id="archive-feed"></div>
-              
-              <!-- 휴지통 (영구 삭제 및 전체 비우기 정상 탑재) -->
               <div class="view-container" id="trash-feed" style="display:none;"></div>
 
-              <!-- 백업 및 복원 -->
               <div class="view-container" id="backup-pane" style="display:none; gap:16px;">
                 <div class="thought-card">
                   <div style="font-weight:bold; font-size:1rem; color:var(--accent);">📥 전체 데이터 백업</div>
                   <div style="font-size:0.85rem; color:var(--muted); line-height:1.5;">
-                    작성된 모든 생각, 계획, 메모를 스마트폰 `Download` 폴더에 파일로 직접 저장하거나 클립보드에 복사합니다.
+                    모든 생각, 계획, 메모를 스마트폰 `Download` 폴더에 파일로 직접 저장하거나 클립보드에 복사합니다.
                   </div>
                   <div style="display:flex; gap:8px; margin-top:8px;">
                     <button class="card-btn" style="background:var(--primary); flex:1; justify-content:center; padding:10px;" onclick="exportBackupData()">
                       💾 Download 폴더에 저장
                     </button>
                     <button class="card-btn" style="background:var(--surface); border:1px solid #444; flex:1; justify-content:center; padding:10px;" onclick="copyBackupToClipboard()">
-                      📋 클립보드 전체 복사
+                      📋 클립보드 복사
                     </button>
                   </div>
                 </div>
@@ -1065,7 +1058,6 @@ jobs:
               let lastProcessedVoice = '';
               let lastProcessedTime = 0;
 
-              /* 쪽잠 타이머 */
               let napTimerInterval = null;
               let napEndTime = null;
 
@@ -2058,7 +2050,6 @@ jobs:
                 `).join('');
               }
 
-              /* 떡메모지 휴지통: 영구 삭제 및 전체 비우기 정상 렌더링 */
               function renderTrashFeed() {
                 const list = getPadTrashStorage();
                 const feed = document.getElementById('trash-feed');
@@ -2113,7 +2104,6 @@ jobs:
                 }
               }
 
-              /* 네이티브 다운로드 연동 백업 */
               function exportBackupData() {
                 const backupObj = {
                   version: '3.0',
@@ -2185,15 +2175,7 @@ jobs:
           </html>
           EOF
 
-          # 저장소 루트의 index.html을 동기화하여 Vercel 자동 배포 트리거
-          cp www/index.html index.html
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
-          git add index.html
-          git commit -m "Sync index.html for Vercel live updates [skip ci]" || true
-          git push origin HEAD || true
-
-      - name: 5. Vercel 원격 URL 연결 및 네이티브 백업 저장 엔진 주입
+      - name: 5. 고정 Keystore 및 네이티브 백업/위젯 엔진 주입
         run: |
           cat << 'EOF' > package.json
           {
@@ -2208,16 +2190,11 @@ jobs:
           }
           EOF
 
-          # Vercel 라이브 URL을 직접 로드하도록 설정 (닫았다 열면 실시간 자동 반영)
           cat << 'EOF' > capacitor.config.json
           {
             "appId": "com.k2hkkh.ideadrawer",
             "appName": "생각서랍",
-            "webDir": "www",
-            "server": {
-              "url": "https://my-idea-drawer.vercel.app",
-              "cleartext": true
-            }
+            "webDir": "www"
           }
           EOF
 
@@ -2575,9 +2552,9 @@ jobs:
                                       writer.write(jsonContent);
                                       writer.flush();
                                       writer.close();
-                                      Toast.makeText(getApplicationContext(), "💾 [Download] 폴더에 백업 저장 완료: " + fileName, Toast.LENGTH_LONG).show();
+                                      Toast.makeText(getApplicationContext(), "💾 [Download] 폴더에 저장 완료: " + fileName, Toast.LENGTH_LONG).show();
                                   } catch (Exception e) {
-                                      Toast.makeText(getApplicationContext(), "백업 저장 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                      Toast.makeText(getApplicationContext(), "저장 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                                   }
                               });
                           }
