@@ -11,7 +11,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif; background-color: var(--bg); color: var(--text); height: 100dvh; display: flex; flex-direction: column; overflow: hidden; padding-top: env(safe-area-inset-top, 0px); }
     
-    /* 상단 메인 메뉴바 (3개 메뉴 화면 전체 비율 균등 분할) */
     header { padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; background: var(--bg); border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 6px; }
     .main-mode-switch { display: flex; background: #141416; padding: 3px; border-radius: 20px; border: 1px solid var(--border); gap: 2px; flex: 1; justify-content: stretch; }
     .mode-btn { flex: 1; padding: 8px 4px; border-radius: 16px; border: none; background: transparent; color: var(--muted); font-size: clamp(0.78rem, 2.4vw, 0.88rem); font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; transition: all 0.2s; }
@@ -30,20 +29,17 @@
     .card-time { font-size: 0.75rem; color: var(--muted); }
     .card-content, .plan-big-title { font-size: clamp(0.92rem, 2.7vw, 1.05rem); line-height: 1.5; white-space: pre-wrap; color: #ffffff; }
 
-    /* 버튼 영역 (수정 버튼 추가 포함) */
     .card-five-buttons { display: flex; gap: 4px; overflow-x: auto; white-space: nowrap; border-top: 1px solid #27272a; padding-top: 10px; }
     .five-btn { flex: 1; min-width: 46px; display: inline-flex; align-items: center; justify-content: center; padding: 7px 2px; border-radius: 8px; border: 1px solid #3f3f46; background: #1c1c1e; color: #a1a1aa; font-size: clamp(0.68rem, 1.8vw, 0.74rem); font-weight: 600; cursor: pointer; }
     .five-btn.active-backlog { background: #1e3a8a; border-color: #3b82f6; color: #ffffff; font-weight: 700; }
     .five-btn.active-time { background: #0369a1; border-color: #38bdf8; color: #ffffff; font-weight: 700; }
     .five-btn.active-focus { background: #7c2d12; border-color: #ea580c; color: #ffedd5; font-weight: 700; }
 
-    /* 나의계획 상단 탭 (화면 좌우 끝 비율 균등 분할) */
     .plan-time-tabs { display: flex; gap: 4px; width: 100%; flex-shrink: 0; }
     .plan-time-tab { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 8px 2px; color: var(--muted); font-size: clamp(0.68rem, 2vw, 0.76rem); font-weight: bold; text-align: center; cursor: pointer; white-space: nowrap; }
     .plan-time-tab.active { background: #1e3a8a; color: #60a5fa; border-color: #3b82f6; }
     .plan-time-tab.focus-tab.active { background: #9a3412; color: #fdba74; border-color: #f97316; }
 
-    /* 하단 입력 툴바 (위로 화살표 '↑' 적용) */
     .bottom-bar-wrapper { padding: 8px 14px calc(14px + env(safe-area-inset-bottom, 0px)) 14px; background: var(--bg); position: relative; flex-shrink: 0; }
     .capsule-box { background: var(--card); border: 1px solid var(--border); border-radius: 30px; padding: 6px 10px; display: flex; align-items: center; gap: 8px; }
     .btn-plus { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); border: none; color: #ffffff; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; cursor: pointer; }
@@ -58,7 +54,7 @@
     .menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; color: #ffffff; font-size: 0.9rem; cursor: pointer; }
     .menu-item:active { background: var(--surface); }
 
-    /* 암전 메모딱지 UI (상단 고정 도구모음 버튼 및 밀림 현상 방지 구조) */
+    /* 메모딱지 화면 (터치 오차 보정 구조) */
     #memopad-screen { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: #000000; z-index: 2000; overflow: hidden; flex-direction: column; }
     #memopad-screen.active { display: flex; }
     
@@ -134,7 +130,7 @@
     </div>
   </div>
 
-  <!-- 암전 메모딱지 UI (대안 1: 상단 고정 토글 버튼 적용) -->
+  <!-- 암전 메모딱지 UI -->
   <div id="memopad-screen">
     <div class="memopad-top-bar">
       <button class="pad-tool-btn" onclick="togglePadToolbar()">⚙️ 도구 모음 열기/닫기</button>
@@ -351,7 +347,7 @@
       targetSlotItemId = null;
     }
 
-    /* 수정 기능 추가 */
+    /* 수정 기능 보완 (기존 내용 불러오기 적용) */
     function editThoughtContent(id) {
       const list = getThoughtStorage();
       const item = list.find(i => i.id === id);
@@ -440,7 +436,7 @@
       `).join('');
     }
 
-    /* 암전 메모딱지 캔버스 & 상단 고정 토글 툴바 로직 (기본 흰색 펜 고정) */
+    /* 암전 메모딱지 캔버스 (좌표 오차 보정 및 흰색 펜 고정) */
     let padCanvas, padCtx, isDrawing = false, padColor = '#ffffff', isEraser = false, historyArr = [];
 
     function openMemoPadDirect() {
@@ -464,6 +460,13 @@
     }
     function togglePadToolbar() {
       document.getElementById('memopad-collapsible-toolbar').classList.toggle('active');
+      setTimeout(() => {
+        const container = document.getElementById('memopad-canvas-container');
+        const imgData = padCtx.getImageData(0, 0, padCanvas.width, padCanvas.height);
+        padCanvas.width = container.clientWidth;
+        padCanvas.height = container.clientHeight;
+        padCtx.putImageData(imgData, 0, 0);
+      }, 200);
     }
     function setPadColor(color, el) {
       padColor = color; isEraser = false;
